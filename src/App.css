@@ -1,0 +1,547 @@
+/*=============== GOOGLE FONTS ===============*/
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+/*=============== VARIABLES CSS ===============*/
+:root {
+  /*========== Colors ==========*/
+  /*Color mode HSL(hue, saturation, lightness)*/
+  --white-color: hsl(0, 0%, 100%);
+  --black-color: hsl(0, 0%, 0%);
+
+  /*========== Font and typography ==========*/
+  /*.5rem = 8px | 1rem = 16px ...*/
+  --body-font: "Poppins", sans-serif;
+  --h1-font-size: 1rem;
+  --normal-font-size: 1rem;
+  --small-font-size: .813rem;
+}
+
+/*=============== BASE ===============*/
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body,
+input,
+button {
+  font-family: var(--body-font);
+  font-size: var(--normal-font-size);
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+/* Start 06-01-25  */
+
+/* End 06-01-25  */
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+/* Start Css 17-01-25 */
+button.property-div {
+  width: 100%;
+  margin: 5px;
+  padding: 5px;
+}
+
+
+
+.sale-image-div {
+  overflow: hidden !important;
+}
+.sale-image-div img{
+  width: 100% ;
+}
+.slider-main-div .slick-list {
+  padding: 25px 3px !important;
+}
+.main-sale-div {
+  margin: 0 10px;
+}
+.slider-main-div .slick-dots {
+    bottom: 0 !important;
+}
+.sale-image-div img:hover {
+  transform: scale(1.2);
+  transition: all 0.5s ease;
+}
+.home-rent-div {
+    width: 30%;
+}
+.project-rent-div
+ {
+    display: flex;
+    gap: 20px;
+}
+.project-home-div .slick-slide {
+    margin: 0 10px;
+    width: 383px !important;
+}
+
+.project-home-div
+ {
+    width: 70%;
+}
+
+
+
+/*---- For Sale Css --- */
+.for-sale-div {
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  background: red;
+  padding: 7px 4px ;
+  border-radius: 58px;
+  height: 44px;
+  text-align: center;
+  width: 47px;
+  color: white;
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 14px;
+}
+.menu-item {
+  font-weight: 500;
+}
+.slider-main-div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.slider-main-div .slider-inner-div {
+  width: 100%;
+}
+.for-rent-div {
+  position: absolute;
+  top: -10px;
+  left: -15px;
+  background: #00a4ff;
+  padding: 4px 8px;
+  border: 2px solid white;
+  border-radius: 58px;
+  text-align: center;
+  color: white;
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+/* .rent-inner-div {
+  position: relative;
+}
+.rent-inner-div .bathroom-div {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+} */
+.headingStyle{
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+}
+.property-address {
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 17px !important;
+  line-height: 18.2px;
+  font-weight: 500 !important;
+}
+.inner-rooms-heading {
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+}
+.rent-image-div {
+  position: relative;
+}
+.App-link {
+  color: #61dafb;
+}
+.rent-inner-div {
+  padding-top: 20px;
+}
+.rent-image-div .rent-inner-heading {
+  position: absolute;
+  bottom: -9px;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  background: #5f8c5f;
+  text-transform: capitalize;
+  padding: 4px;
+  color: white;
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+button.rent-view-more {
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 17px !important;
+  line-height: 18.2px;
+  font-weight: 500 !important;
+  width: 100%;
+  color: white;
+  background: red;
+  padding: 8px 10px;
+}
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.activess {
+  background-color: black !important;
+  color: white !important;
+}
+@keyframes slidein {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+.animate-slidein {
+  animation: slidein 10s ease-out infinite;
+}
+
+.animate-scrolling {
+  animation: scrolling 10s linear infinite;
+  transform-origin: 0% 50%;
+}
+
+@keyframes scrolling {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+.slick-arrow {
+  display: none !important;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+.rate {
+  float: left;
+  height: 46px;
+  padding: 0 10px;
+}
+.rate:not(:checked) > input {
+  position: absolute;
+  top: -9999px;
+}
+.rate:not(:checked) > label {
+  float: right;
+  width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 30px;
+  color: #fcfafa;
+}
+.rate:not(:checked) > label:before {
+  content: "★ ";
+}
+.rate > input:checked ~ label {
+  color: #ffc700;
+}
+.rate:not(:checked) > label:hover,
+.rate:not(:checked) > label:hover ~ label {
+  color: #deb217;
+}
+.rate > input:checked + label:hover,
+.rate > input:checked + label:hover ~ label,
+.rate > input:checked ~ label:hover,
+.rate > input:checked ~ label:hover ~ label,
+.rate > label:hover ~ input:checked ~ label {
+  color: #c59b08;
+}
+
+
+
+.image-four {
+  background-image: url("../src/assets/img/bottom.jpg");
+  position: relative;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.rate {
+  float: left;
+}
+.rate:not(:checked) > input {
+  position: absolute;
+  top: -9999px;
+}
+.rate:not(:checked) > label {
+  float: right;
+  width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 30px;
+  color: black;
+}
+.rate:not(:checked) > label:before {
+  content: "★ ";
+}
+.rate > input:checked ~ label {
+  color: #ffc700;
+}
+.rate:not(:checked) > label:hover,
+.rate:not(:checked) > label:hover ~ label {
+  color: #deb217;
+}
+.rate > input:checked + label:hover,
+.rate > input:checked + label:hover ~ label,
+.rate > input:checked ~ label:hover,
+.rate > input:checked ~ label:hover ~ label,
+.rate > label:hover ~ input:checked ~ label {
+  color: #c59b08;
+}
+header {
+  background: rgba(232, 226, 226, 0.8);
+}
+.slider {
+  width: 100%;
+  overflow: hidden;
+}
+
+.slides {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.slider img {
+  width: 100%;
+  height: auto;
+}
+
+/* Animation */
+@keyframes slide {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-100%);
+  }
+  45% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(-200%);
+  }
+  70% {
+    transform: translateX(-200%);
+  }
+  75% {
+    transform: translateX(-300%);
+  }
+  95% {
+    transform: translateX(-300%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+/* YourComponent.css */
+
+.marquee {
+  animation: fade 3s infinite; /* Adjust the duration as needed */
+}
+@keyframes fade {
+  0%, 100% {
+    opacity: 0;
+  }
+
+  10%, 90% {
+    opacity: 1;
+  }
+}
+.text-3d {
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3); /* Adjust the shadow values as needed */
+}
+/* YourComponent.css */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animation {
+  display: inline-block;
+}
+
+.animation span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.animation span:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.animation span:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.animation span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+/* YourComponent.css */
+
+.buy-container:hover + div {
+  display: block;
+}
+
+.buy-container + div {
+  display: none;
+}
+.custom-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.ReactModal__Overlay {
+  z-index: 999999 !important;
+}
+
+.selected-option {
+  /* Adjust the background color as needed */
+  color: #ffffff;
+  cursor: pointer;
+}
+.property-address svg {
+  fill: #14532d !important;
+  margin-right: 0 !important;
+}
+.property-title, .rent-title {
+  border-bottom: 2px solid green;
+  margin: 20px;
+}
+.deal-title{
+  border-bottom: 2px solid red;
+  margin: 20px;
+}
+.home-single {
+  padding-top: 15px;
+}
+
+.options {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: none;
+}
+.property-address-div {
+  font-family: "Poppins", Sans-serif !important;
+  font-size: 16px !important;
+  line-height: 18.2px;
+  font-weight: 400 !important;
+}
+
+.options li {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 8px;
+  cursor: pointer;
+}
+.check-box-div{
+  position: relative;
+}
+.dropdown-content-div {
+  position: absolute;
+  background: white;
+  z-index: 99;
+  padding: 20px;
+  width: 200px;
+  top: 43px;
+  left: 0;
+  right: 50%;
+}
+
+.custom-dropdown:hover .options {
+  display: block;
+}
+/* Map container */
+.map-container {
+  width: 100%; /* Adjust width as needed */
+  height: 500px; /* Adjust height as needed */
+  border: 1px solid #ccc; /* Add a border for better visibility */
+  border-radius: 5px; /* Optional: Add border radius for rounded corners */
+}
+.sale-address{
+  margin-top: 0 !important;
+}
+
+/*  ----------- Start Media Query --------------------- */
+@media (max-width:768px){
+  .main-navbar-div  {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.nav-items-div {
+  gap: 10px;
+}
+.slider-main-div .slider-inner-div {
+  width: 100% !important;
+}
+.header-link-image img {
+  width: 125px;
+  height: auto;
+}
+}
+@media (max-width:575px){
+  .nav-items-div {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+}

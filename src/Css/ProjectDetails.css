@@ -1,0 +1,496 @@
+p{
+  color: black !important;
+}
+
+.property-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .container{
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  /* image slide css */
+  .img-gallery {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .slider-section{
+    width: 65%;
+  }
+  .video-section {
+    width: 33%;
+  }
+  .video-section iframe {
+    width: 100%;
+    height: 250px !important;
+}
+.slider-section .slick-track .slider-image {
+  width: 100%;
+  height: 250px;
+  padding: 0 5px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+  
+  .slider-image {
+    width: 100%;
+    height: auto;
+  }
+  
+  .video-section iframe {
+    border-radius: 8px;
+  }
+  
+  /* image slide css */
+
+
+  
+  .property-card-header {
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  .gallery-content {
+    padding: 10px;
+}
+  .image-inner-div {
+    background: whitesmoke;
+}
+  .banner-content h1 {
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.banner-content p {
+  font-size: 16px;
+  color: white !important;
+}
+
+  
+  .property-small-images img {
+    width: 100px; /* Adjust size as needed */
+    overflow: hidden;
+  }
+  
+  .lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .lightbox-content img {
+    max-width: 50%;
+    max-height: 50%;
+    margin:auto;
+  }
+  .image-inner-div {
+    width: 100%;
+    margin: 0 10px;
+}
+  
+  .lightbox-content {
+    position: relative;
+  }
+  
+  .lightbox:before {
+    content: "×";
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    z-index: 1001;
+  }
+  
+  .property-card-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #006400;
+  }
+  
+  .property-card-header h3 {
+    margin: 5px 0;
+    font-size: 20px;
+    color: #007BFF;
+  }
+  
+  /* .property-card-body {
+    display: flex;
+  } */
+
+  .inner-pro-main {
+    display: flex;
+    width: 100%;
+    padding: 30px 0;
+}
+.inner-pro-main .left-bar {
+  width: 70%;
+}
+.inner-pro-main .right-side {
+  width: 30%;
+}
+  
+  .property-images {
+    padding: 80px 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    width: 100%;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+  }
+  .banner-content {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+    background: #00000087;
+    padding: 40px 30px;
+    color: white;
+}
+  
+  .property-images img {
+    width: 100%;
+    height: auto;
+  }
+  
+  .property-small-images {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .property-small-images img {
+    width: 100%;
+    height: auto;
+  }
+  
+  .property-details {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .property-info {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .property-info div {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .property-amenities ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .property-amenities ul li {
+    margin-bottom: 5px;
+    color: green;
+    list-style: disc;
+  }
+  
+  .contact-button {
+    background-color: #9e2328;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    align-self: start;
+  }
+  
+  .property-address {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .property-address p {
+    margin: 5px 0;
+  }
+  
+
+
+
+
+
+
+
+
+
+
+  .map-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f7f7f7;
+    margin: 40px 0;
+  }
+  
+  .content {
+    max-width: 100%;
+  }
+  
+  h2 {
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .line {
+    width: 50px;
+    border: 2px solid #a0212a;
+    margin: 10px 0;
+  }
+  
+  .description {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .company-content-div {
+    width: 100%;
+    padding-right: 20px;
+}
+  
+  .item {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+  }
+  
+  .icon {
+    font-size: 24px;
+    color: #a3e635;
+    margin-right: 10px;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #777;
+  }
+  
+  .image img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    padding: 5px;
+    background-color: #fff;
+  }
+  /* Amities hi  */
+
+  .amenities-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px;
+  }
+  
+  .amenities-content {
+    width: 100%;
+  }
+  
+  .amenities-content h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .amenities-content p {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .amenities-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .amenities-content li {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .amenities-content li::before {
+    content: '➔';
+    margin-right: 10px;
+    color: #000;
+  }
+  
+  .amenities-images {
+    width: 50%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .amenity-image {
+    text-align: center;
+    box-shadow: 0 0 2px 1px #0000001c;
+    border-radius: 10px;
+  }
+  
+  .amenity-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .amenity-image p {
+    margin-top: 10px;
+    font-size: 1rem;
+  }
+  /* Form Css */
+  .form-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    position: sticky !important;
+    top: 0;
+  }
+  
+  .form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    margin: 0 15px;
+  }
+  .form-heading {
+    color: black;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .form-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #9e2328;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+
+  /* Tabs Css */
+  /* App.css */
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tab {
+  cursor: pointer;
+  padding: 2px 12px 2px;
+  font-size: 16px;
+  line-height: 24px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 5px;
+  border: 1px solid #CBCBCA !important;
+  border-radius: 100px;
+}
+
+.tab.active {
+  border: 1px solid #a3daff;
+  color: #091e42;
+  font-weight: 600;
+  background: #f0f9ff;
+  width: auto;
+  max-width: unset;
+}
+
+.slider {
+  display: flex;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+}
+
+.slider-content {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 30%;
+  text-align: center;
+  padding: 10px 10px 20px 10px;
+  margin: 0 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.img-gallery {
+  padding: 20px 0;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.card p {
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.card button {
+  padding: 6px 14px;
+  background-color: #9e2328;
+  color: #fff;
+  border: none;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.card button:hover {
+  background-color: #0056b3;
+}
+.form label{
+  text-align: start;
+  margin: 0;
+}
+.property-address svg {
+  width: 20px;
+  margin-right: 20px;
+  fill: #9e2328;
+}
+.property-address p {
+  display: flex;
+  margin: 15px 0;
+}

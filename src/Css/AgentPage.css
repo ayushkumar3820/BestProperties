@@ -1,0 +1,240 @@
+/* Agent Properties css */
+.property-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 20px 0;
+  }
+  
+  .property-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 23%;
+    margin: 0 10px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+    position: relative;
+    padding-bottom: 40px;
+  }
+  .property-image-div{
+    position: relative;
+  }
+  
+  .property-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .property-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .property-label {
+    position: absolute;
+    /* top: 10px; */
+    /* left: 10px; */
+    bottom: 0;
+    padding: 5px 10px;
+    border-radius: 0;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .Rent {
+    background-color: #166534;
+  }
+  
+  .Buy {
+    background-color: #a12129;
+  }
+  
+  .property-name {
+    font-size: 18px;
+    color: #166534;
+    margin: 10px 0 5px 0;
+    padding-left: 15px;
+  }
+  .proerty-addres {
+    padding-left: 10px;
+    margin-bottom: 8px;
+}
+  
+  .property-price {
+    font-size: 18px;
+    color: #a12129;
+    padding-left: 15px;
+    align-items: center;
+  }
+  
+  .property-type,
+  .property-description {
+    font-size: 16px;
+    color: #666;
+    padding-left: 15px;
+    margin: 5px 0;
+  }
+  
+  .property-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 15px;
+    font-size: 14px;
+    color: black;
+    border-top: 1px solid #d7d7d7;
+    margin-top: 10px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  .property-image-div img {
+    object-fit: cover;
+}
+
+  
+
+/* Agent Properties css */
+
+
+
+
+
+
+
+
+
+
+.contact-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .contact-info {
+    width: 40%;
+  }
+  
+  .contact-info h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  
+  .contact-info p {
+    margin: 10px 0;
+    color: #333;
+  }
+  
+  .contact-details p {
+    margin: 5px 0;
+    color: #4c66a4;
+    font-size: 14px;
+  }
+  
+  .contact-form {
+    width: 55%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    background-color: #f5f7fb;
+    font-size: 16px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+  }
+  
+  .textarea {
+    width: 100%;
+    padding: 15px;
+    height: 150px;
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    background-color: #f5f7fb;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .submit-btn {
+    background: linear-gradient(to right, #3b82f6, #10b981);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  
+  .submit-btn:hover {
+    opacity: 0.9;
+  }
+  
+  /* Media Queries for Responsiveness */
+
+/* For tablets and small screens */
+@media (max-width: 768px) {
+    .contact-info,
+    .contact-form {
+      width: 100%;
+    }
+    .property-card {
+        width: 48%;
+      }
+  
+    .input-group {
+      flex-direction: column;
+    }
+  
+    .input {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  }
+  
+  /* For mobile screens */
+  @media (max-width: 575px) {
+    .contact-container {
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+  
+    .contact-info h2 {
+      font-size: 24px;
+    }
+  
+    .contact-info p {
+      font-size: 14px;
+    }
+  
+    .input,
+    .textarea {
+      font-size: 14px;
+      padding: 10px;
+    }
+  
+    .submit-btn {
+      padding: 12px 18px;
+      font-size: 14px;
+    }
+    .property-card {
+        width: 100%;
+      }
+  }

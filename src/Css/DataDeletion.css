@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+.policy-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.policy-title {
+    text-align: center;
+    color: #004d40;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.policy-section {
+    margin-top: 20px;
+}
+
+.section-title {
+    color: #000;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.section-text {
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.option-title {
+    font-size: 18px;
+    color: #004d40;
+    font-weight: 600;
+    margin-top: 15px;
+}
+
+.option-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.option-list li {
+    /* background: #e0f2f1; */
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+.contact-link {
+    color: #d32f2f;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+
+.policy-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.policy-list li {
+    padding: 8px;
+    border-left: 4px solid #00796b;
+    background: #e3f2fd54;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .policy-container {
+        padding: 15px;
+    }
+    .policy-title {
+        font-size: 24px;
+    }
+    .section-title {
+        font-size: 20px;
+    }
+    .section-text, .option-list li, .policy-list li {
+        font-size: 14px;
+    }
+}
