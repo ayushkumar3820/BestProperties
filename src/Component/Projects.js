@@ -209,39 +209,39 @@ const Projects = () => {
                         </div>
                     </>
                 ) : <>
-                    <div className="project-container">
-                        {visibleProjects.map((data) => (
-                            <div className="project-card" key={data.id}>
-                                <div onClick={() => handleProjectClick(data.id)}>
-                                    <div className="project-image-container">
-                                        {data.Image_URLs ? (
-                                            <img src={data.Image_URLs} alt={data.title} className="project-image" />
-                                        ) : (
-                                            <img src={noImage} alt={data.title} className="project-image" />
-                                        )}
-                                    </div>
-                                </div>
+                            <div className="project-container">
+                                {visibleProjects.map((data) => (
+                                    <div className="project-card" key={data.id}>
+                                        <div onClick={() => handleProjectClick(data.id)}>
+                                            <div className="project-image-container">
+                                                {data.Image_URLs ? (
+                                                    <img src={data.Image_URLs} alt={data.title} className="project-image" />
+                                                ) : (
+                                                    <img src={noImage} alt={data.title} className="project-image" />
+                                                )}
+                                            </div>
+                                        </div>
 
-                                <div className="project-details">
-                                    <div onClick={() => handleProjectClick(data.id)}>
-                                        <h5 className="project-title">{data.Project_Name}</h5>
+                                        <div className="project-details">
+                                            <div onClick={() => handleProjectClick(data.id)}>
+                                                <h5 className="project-title">{data.Project_Name}</h5>
+                                            </div>
+                                            <p className="project-location">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                                                    <path d="..." />
+                                                </svg>
+                                                {data.Address}
+                                            </p>
+                                            <p className="project-price text-green-800 font-bold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                                                    <path d="..." />
+                                                </svg>
+                                                {data.Min_Budget ? <>From</> : null} {formatBudget(data.Min_Budget)} | {formatBudget(data.Max_Budget)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="project-location">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                                            <path d="..." />
-                                        </svg>
-                                        {data.Address}
-                                    </p>
-                                    <p className="project-price text-green-800 font-bold">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-                                            <path d="..." />
-                                        </svg>
-                                        {data.Min_Budget ? <>From</> : null} {formatBudget(data.Min_Budget)} | {formatBudget(data.Max_Budget)}
-                                    </p>
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
 
                     {visibleCount < listProjectData.length && (
                         <div className="text-center mb-4">

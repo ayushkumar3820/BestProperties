@@ -338,7 +338,7 @@ export default function GalleryComponent() {
                                     <div className="text-md text-sm font-bold ml-2">
                                       {panel.name}
                                     </div>
-                                  </div>-294.2A48
+                                  </div>
                                   
                                 </>
                               ) : null}

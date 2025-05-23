@@ -8,11 +8,7 @@ import Searching from "./searching";
 export default function Property() {
   return (
     <div>
-      <Navbar />
-     
-      <div className="font-bold mb-4 mt-4 text-xl uppercase text-center  text-green-800">
-        <AnimatedText text="Property Listing" />
-      </div>
+    <Navbar />
       <div className="container mx-auto">
         <GalleryComponentTwo />
       </div>
