@@ -121,7 +121,7 @@ export default function Home() {
             </div>
             <div className="">
               <section className="">
-            <GalleryComponent properties={[]} />
+                <GalleryComponent properties={[]} selectedPropertyType={searchParams.propertyType} />
               </section>
             </div>
           </div>

@@ -12,7 +12,7 @@ import '../../App.css';
 // Set Modal appElement for accessibility
 Modal.setAppElement('#root');
 
-export default function GalleryComponentTwo() {
+export default function GalleryComponentTwo({ initialPropertyType }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [newData, setNewData] = useState([]);
@@ -261,7 +261,12 @@ export default function GalleryComponentTwo() {
     navigate('/property');
   };
 
-  const dynamicHeading = "Properties";
+  // Updated dynamicHeading to prioritize initialPropertyType from Home, then URL param
+  const queryParams = new URLSearchParams(location.search);
+  const propertyTypeParam = queryParams.get("propertyType") || "";
+  const dynamicHeading = initialPropertyType ? `Property ${initialPropertyType}` : 
+                        propertyTypeParam ? `Property ${propertyTypeParam}` : 
+                        "Properties";
 
   return (
     <>
@@ -373,12 +378,12 @@ export default function GalleryComponentTwo() {
             <div className="flex gap-10" style={{ alignItems: "flex-start" }}>
               <div className="lg:block hidden shadow-lg p-2">
                 <div className="flex w-full gap-4 items-center">
-                  <div
+                  {/* <div
                     onClick={() => navigate("/for-rent")}
                     className="border w-full the bg-red-600 text-white uppercase cursor-pointer text-center border-red-600 p-2 rounded-md"
                   >
                     Rent
-                  </div>
+                  </div> */}
                 </div>
                 <div className="font-bold text-lg mt-3 text-green-800">
                   Select Property
