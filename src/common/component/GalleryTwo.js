@@ -34,70 +34,24 @@ export default function GalleryComponentTwo() {
     max: 20000000,
   });
   const [locationFilter, setLocationFilter] = useState('');
-  const [rentFilter, setRentFilter] = useState(false);
 
-  // Reset all filters
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSelectedPropertType([]);
-    setSelectedAmenities([]);
-    setSortBy('');
-    setRangeValues({ min: 0, max: 20000000 });
-    setLocationFilter('');
-    setRentFilter(false);
-    navigate('/property?category=All&propertyType=buy');
-  };
-
-  // Extract query parameters from URL and pre-select property types
+  // Extract query parameters and preselect property type
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const keyword = queryParams.get("keyword") || "";
-    const category = queryParams.get("category") || "All";
-    const propertyTypeParam = queryParams.get("propertyType") || "buy";
+    const propertyTypeParam = queryParams.get("propertyType") || "";
 
     setSearchQuery(keyword);
 
-    // Set pre-selected property types based on category
-    if (category !== "All" && propertyType.length > 0) {
-      const preSelectedTypes = propertyType.filter((type) => {
-        const typeLower = type.toLowerCase();
-        if (category.toLowerCase() === "residential") {
-          // For Residential, include types that contain "residential"
-          return typeLower.includes("residential");
-        } else if (category.toLowerCase() === "commercial") {
-          // For Commercial, include types that contain "commercial"
-          return typeLower.includes("commercial");
-        } else if (category.toLowerCase() === "others") {
-          // For Others, exclude residential and commercial types
-          return (
-            !typeLower.includes("residential") && !typeLower.includes("commercial")
-          );
-        }
-        return false;
-      });
-
-      // Only update selectedPropertyType if it's different to avoid infinite loops
-      if (JSON.stringify(preSelectedTypes) !== JSON.stringify(selectedPropertyType)) {
-        setSelectedPropertType(preSelectedTypes);
-      }
-
-      // Set rent filter based on propertyType parameter
-      if (propertyTypeParam === "rent") {
-        setRentFilter(true);
-      } else {
-        setRentFilter(false);
-      }
-
-      // Keep all property types available in the dropdown
-      setFilteredPropertyType(propertyType);
+    // Preselect property type from URL
+    if (propertyTypeParam && propertyType.includes(propertyTypeParam)) {
+      setSelectedPropertType([propertyTypeParam]);
     } else {
-      // If category is "All", show all property types and clear pre-selection
-      setFilteredPropertyType(propertyType);
-      setRentFilter(false);
-      if (selectedPropertyType.length > 0) {
-        setSelectedPropertType([]);
-      }
+      setSelectedPropertType([]);
     }
+
+    // Show all property types without category filtering
+    setFilteredPropertyType(propertyType);
   }, [location.search, propertyType]);
 
   const visibleData = showMore ? filteredPropertyType : filteredPropertyType.slice(0, 6);
@@ -176,8 +130,6 @@ export default function GalleryComponentTwo() {
     const panelAmenities = panel.amenities ? panel.amenities.split('~-~') : [];
     const propertyCheck = panel.property_type;
     const searchLower = searchQuery.toLowerCase().trim();
-    const queryParams = new URLSearchParams(location.search);
-    const category = queryParams.get("category") || "All";
 
     // Budget filter
     let isBudgetInRange = true;
@@ -197,12 +149,6 @@ export default function GalleryComponentTwo() {
       (panel.sqft && panel.sqft.toString().includes(searchLower)) ||
       (formatBudget(panelBudget).toLowerCase().includes(searchLower));
 
-    // Category filter
-    let matchesCategory = true;
-    if (category && category !== "All") {
-      matchesCategory = propertyCheck.toLowerCase().includes(category.toLowerCase());
-    }
-
     // Location filter
     const matchesLocation = !locationFilter || panel.address.toLowerCase().includes(locationFilter.toLowerCase());
 
@@ -214,16 +160,11 @@ export default function GalleryComponentTwo() {
     const hasSelectedPropertyType = selectedPropertyType.length === 0 || 
       selectedPropertyType.some((property_type) => propertyCheck.includes(property_type));
 
-    // Rent filter - only apply if rentFilter is true
-    const matchesRentFilter = !rentFilter || (panel.property_type && panel.property_type.toLowerCase().includes("rent"));
-
     return isBudgetInRange && 
            matchesSearch && 
-           matchesCategory && 
            matchesLocation && 
            hasSelectedAmenities && 
-           hasSelectedPropertyType && 
-           matchesRentFilter;
+           hasSelectedPropertyType;
   };
 
   const filteredData = newData.filter(filterPanelsByBudget);
@@ -310,10 +251,17 @@ export default function GalleryComponentTwo() {
     },
   };
 
-  // Get category and propertyType from URL for dynamic heading and clear button visibility
-  const queryParams = new URLSearchParams(location.search);
-  const category = queryParams.get("category") || "All";
-  const dynamicHeading = `Property ${category}`;
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedPropertType([]);
+    setSelectedAmenities([]);
+    setSortBy('');
+    setRangeValues({ min: 0, max: 20000000 });
+    setLocationFilter('');
+    navigate('/property');
+  };
+
+  const dynamicHeading = "Properties";
 
   return (
     <>
@@ -334,7 +282,6 @@ export default function GalleryComponentTwo() {
           </>
         ) : (
           <>
-            {/* Property Listing and Properties Found on the same line */}
             <div className="flex justify-center items-center my-4 gap-4">
               <div className="font-bold text-xl uppercase text-center text-green-800">
                 <AnimatedText text={dynamicHeading} />
@@ -413,7 +360,7 @@ export default function GalleryComponentTwo() {
                   <option value="Kharar">Kharar</option>
                   <option value="Chandigarh">Chandigarh</option>
                 </select>
-                {(searchQuery || selectedPropertyType.length > 0 || selectedAmenities.length > 0 || sortBy || locationFilter || (rangeValues.min !== 0 || rangeValues.max !== 20000000) || rentFilter) && (
+                {(searchQuery || selectedPropertyType.length > 0 || selectedAmenities.length > 0 || sortBy || locationFilter || (rangeValues.min !== 0 || rangeValues.max !== 20000000)) && (
                   <button
                     className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
                     onClick={handleClearFilters}
