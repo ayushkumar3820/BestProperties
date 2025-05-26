@@ -12,7 +12,7 @@ import "../../App.css";
 // Set Modal appElement for accessibility
 Modal.setAppElement("#root");
 
-export default function GalleryComponentTwo() {
+export default function GalleryComponentTwo({ initialPropertyType }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [newData, setNewData] = useState([]);
