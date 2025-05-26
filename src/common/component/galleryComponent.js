@@ -132,7 +132,7 @@ export default function GalleryComponent() {
         (value / 10000000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }) + " Crore"
+        }) + " Cr"
       );
     } else if (value >= 100000) {
       return (

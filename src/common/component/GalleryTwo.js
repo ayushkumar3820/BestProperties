@@ -7,10 +7,10 @@ import Modal from "react-modal";
 import NoImage from "../../assets/img/image-not.jpg";
 import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
-import '../../App.css';
+import "../../App.css";
 
 // Set Modal appElement for accessibility
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 
 export default function GalleryComponentTwo() {
   const navigate = useNavigate();
@@ -26,35 +26,87 @@ export default function GalleryComponentTwo() {
   const [filteredPropertyType, setFilteredPropertyType] = useState([]);
   const [showMoreData, setShowMoreData] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [sortBy, setSortBy] = useState('');
+  const [sortBy, setSortBy] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [rangeValues, setRangeValues] = useState({
     min: 0,
     max: 20000000,
   });
-  const [locationFilter, setLocationFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState("");
+  const [rentFilter, setRentFilter] = useState(false);
 
-  // Extract query parameters and preselect property type
+  // Reset all filters
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedPropertType([]);
+    setSelectedAmenities([]);
+    setSortBy("");
+    setRangeValues({ min: 0, max: 20000000 });
+    setLocationFilter("");
+    setRentFilter(false);
+    navigate("/property?category=All&propertyType=buy");
+  };
+
+  // Extract query parameters from URL and pre-select property types
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const keyword = queryParams.get("keyword") || "";
-    const propertyTypeParam = queryParams.get("propertyType") || "";
+    const category = queryParams.get("category") || "All";
+    const propertyTypeParam = queryParams.get("propertyType") || "buy";
 
     setSearchQuery(keyword);
 
-    // Preselect property type from URL
-    if (propertyTypeParam && propertyType.includes(propertyTypeParam)) {
-      setSelectedPropertType([propertyTypeParam]);
-    } else {
-      setSelectedPropertType([]);
-    }
+    // Set pre-selected property types based on category
+    if (category !== "All" && propertyType.length > 0) {
+      const preSelectedTypes = propertyType.filter((type) => {
+        const typeLower = type.toLowerCase();
+        if (category.toLowerCase() === "residential") {
+          // For Residential, include types that contain "residential"
+          return typeLower.includes("residential");
+        } else if (category.toLowerCase() === "commercial") {
+          // For Commercial, include types that contain "commercial"
+          return typeLower.includes("commercial");
+        } else if (category.toLowerCase() === "others") {
+          // For Others, exclude residential and commercial types
+          return (
+            !typeLower.includes("residential") &&
+            !typeLower.includes("commercial")
+          );
+        }
+        return false;
+      });
 
-    // Show all property types without category filtering
-    setFilteredPropertyType(propertyType);
+      // Only update selectedPropertyType if it's different to avoid infinite loops
+      if (
+        JSON.stringify(preSelectedTypes) !==
+        JSON.stringify(selectedPropertyType)
+      ) {
+        setSelectedPropertType(preSelectedTypes);
+      }
+
+      // Set rent filter based on propertyType parameter
+      if (propertyTypeParam === "rent") {
+        setRentFilter(true);
+      } else {
+        setRentFilter(false);
+      }
+
+      // Keep all property types available in the dropdown
+      setFilteredPropertyType(propertyType);
+    } else {
+      // If category is "All", show all property types and clear pre-selection
+      setFilteredPropertyType(propertyType);
+      setRentFilter(false);
+      if (selectedPropertyType.length > 0) {
+        setSelectedPropertType([]);
+      }
+    }
   }, [location.search, propertyType]);
 
-  const visibleData = showMore ? filteredPropertyType : filteredPropertyType.slice(0, 6);
+  const visibleData = showMore
+    ? filteredPropertyType
+    : filteredPropertyType.slice(0, 6);
   const AmenitiesData = showMoreData ? amnties : amnties.slice(0, 6);
 
   const handleRangeChange = (event) => {
@@ -90,7 +142,9 @@ export default function GalleryComponentTwo() {
 
   const handleChange = (main) => {
     if (selectedPropertyType.includes(main)) {
-      setSelectedPropertType(selectedPropertyType.filter((item) => item !== main));
+      setSelectedPropertType(
+        selectedPropertyType.filter((item) => item !== main)
+      );
     } else {
       setSelectedPropertType([...selectedPropertyType, main]);
     }
@@ -106,7 +160,7 @@ export default function GalleryComponentTwo() {
         (value / 10000000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }) + " Crore"
+        }) + " Cr"
       );
     } else if (value >= 100000) {
       return (
@@ -127,44 +181,76 @@ export default function GalleryComponentTwo() {
 
   const filterPanelsByBudget = (panel) => {
     const panelBudget = parseInt(panel.budget);
-    const panelAmenities = panel.amenities ? panel.amenities.split('~-~') : [];
+    const panelAmenities = panel.amenities ? panel.amenities.split("~-~") : [];
     const propertyCheck = panel.property_type;
     const searchLower = searchQuery.toLowerCase().trim();
+    const queryParams = new URLSearchParams(location.search);
+    const category = queryParams.get("category") || "All";
 
     // Budget filter
     let isBudgetInRange = true;
     if (rangeValues.min !== null && rangeValues.max !== null) {
-      isBudgetInRange = panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
+      isBudgetInRange =
+        panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
     }
 
     // Search filter
-    const matchesSearch = !searchQuery || 
+    const matchesSearch =
+      !searchQuery ||
       (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
-      (panel.property_name && panel.property_name.toLowerCase().includes(searchLower)) ||
+      (panel.property_name &&
+        panel.property_name.toLowerCase().includes(searchLower)) ||
       (panel.address && panel.address.toLowerCase().includes(searchLower)) ||
-      (panel.property_type && panel.property_type.toLowerCase().includes(searchLower)) ||
-      (panelAmenities.some(amenity => amenity.toLowerCase().includes(searchLower))) ||
+      (panel.property_type &&
+        panel.property_type.toLowerCase().includes(searchLower)) ||
+      panelAmenities.some((amenity) =>
+        amenity.toLowerCase().includes(searchLower)
+      ) ||
       (panel.bedrooms && panel.bedrooms.toString().includes(searchLower)) ||
       (panel.bathrooms && panel.bathrooms.toString().includes(searchLower)) ||
       (panel.sqft && panel.sqft.toString().includes(searchLower)) ||
-      (formatBudget(panelBudget).toLowerCase().includes(searchLower));
+      formatBudget(panelBudget).toLowerCase().includes(searchLower);
+
+    // Category filter
+    let matchesCategory = true;
+    if (category && category !== "All") {
+      matchesCategory = propertyCheck
+        .toLowerCase()
+        .includes(category.toLowerCase());
+    }
 
     // Location filter
-    const matchesLocation = !locationFilter || panel.address.toLowerCase().includes(locationFilter.toLowerCase());
+    const matchesLocation =
+      !locationFilter ||
+      panel.address.toLowerCase().includes(locationFilter.toLowerCase());
 
     // Amenities filter
-    const hasSelectedAmenities = selectedAmenities.length === 0 || 
+    const hasSelectedAmenities =
+      selectedAmenities.length === 0 ||
       selectedAmenities.some((amenity) => panelAmenities.includes(amenity));
 
     // Property type filter
-    const hasSelectedPropertyType = selectedPropertyType.length === 0 || 
-      selectedPropertyType.some((property_type) => propertyCheck.includes(property_type));
+    const hasSelectedPropertyType =
+      selectedPropertyType.length === 0 ||
+      selectedPropertyType.some((property_type) =>
+        propertyCheck.includes(property_type)
+      );
 
-    return isBudgetInRange && 
-           matchesSearch && 
-           matchesLocation && 
-           hasSelectedAmenities && 
-           hasSelectedPropertyType;
+    // Rent filter - only apply if rentFilter is true
+    const matchesRentFilter =
+      !rentFilter ||
+      (panel.property_type &&
+        panel.property_type.toLowerCase().includes("rent"));
+
+    return (
+      isBudgetInRange &&
+      matchesSearch &&
+      matchesCategory &&
+      matchesLocation &&
+      hasSelectedAmenities &&
+      hasSelectedPropertyType &&
+      matchesRentFilter
+    );
   };
 
   const filteredData = newData.filter(filterPanelsByBudget);
@@ -251,17 +337,10 @@ export default function GalleryComponentTwo() {
     },
   };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSelectedPropertType([]);
-    setSelectedAmenities([]);
-    setSortBy('');
-    setRangeValues({ min: 0, max: 20000000 });
-    setLocationFilter('');
-    navigate('/property');
-  };
-
-  const dynamicHeading = "Properties";
+  // Get category and propertyType from URL for dynamic heading and clear button visibility
+  const queryParams = new URLSearchParams(location.search);
+  const category = queryParams.get("category") || "All";
+  const dynamicHeading = `Property ${category}`;
 
   return (
     <>
@@ -282,31 +361,43 @@ export default function GalleryComponentTwo() {
           </>
         ) : (
           <>
+            {/* Property Listing and Properties Found on the same line */}
             <div className="flex justify-center items-center my-4 gap-4">
               <div className="font-bold text-xl uppercase text-center text-green-800">
                 <AnimatedText text={dynamicHeading} />
               </div>
               <div className="inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 rounded-md">
-                {filteredData.length} {filteredData.length === 1 ? "Property" : "Properties"} Found
+                {filteredData.length}{" "}
+                {filteredData.length === 1 ? "Property" : "Properties"} Found
               </div>
             </div>
-            <div className="lg:flex mb-4 sticky top-0 bg-white p-2 w-full shadow-md justify-start items-center gap-2" style={{ alignItems: 'center', zIndex: '999999' }}>
-              <div>
+            <div className="w-full  bg-white shadow-md p-4 mb-4 flex flex-wrap justify-start items-center gap-4">
+              <div className="max-w-[400px] w-full relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  🔍
+                </span>
                 <input
                   placeholder="Search by name, address, type, amenities, bedrooms, etc."
-                  className="border border-green-600 p-2"
+                  className="w-full border border-green-600 p-2 pl-10 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   value={searchQuery}
                   onChange={handleSearchChange}
                 />
               </div>
-              <div className="checkbox-dropdown bg-white border p-2 border-green-600 check-box-div">
-                <button onClick={handleToggleDropdown} className="w-full text-left">
+
+              <div className="relative bg-white border border-green-600 p-2 rounded-md min-w-[200px] max-w-[200px]">
+                <button
+                  onClick={handleToggleDropdown}
+                  className="w-full text-left flex justify-between items-center"
+                >
                   {selectedPropertyType.length > 0 ? (
-                    <div className="selected-property-text" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }} title={selectedPropertyType.join(", ")}>
+                    <div
+                      className="truncate max-w-[160px]"
+                      title={selectedPropertyType.join(", ")}
+                    >
                       {selectedPropertyType.join(", ")}
                     </div>
                   ) : (
-                    <div className="flex gap-2 justify-center items-center">
+                    <div className="flex gap-2 justify-between items-center w-full">
                       <div>Select Property</div>
                       <svg
                         fill="black"
@@ -323,24 +414,27 @@ export default function GalleryComponentTwo() {
                   <div
                     onMouseEnter={() => setIsOpen(true)}
                     onMouseLeave={() => setIsOpen(false)}
-                    className="dropdown-content-div"
+                    className="absolute bg-white border border-green-600 mt-2 p-2 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto min-w-[200px]"
                   >
                     {visibleData.map((main) => (
-                      <div className="flex gap-4" key={main}>
+                      <div className="flex gap-2 items-center py-1" key={main}>
                         <input
                           type="checkbox"
                           id={main}
                           checked={selectedPropertyType.includes(main)}
                           onChange={() => handleChange(main)}
+                          className="h-4 w-4 text-green-600 focus:ring-green-600"
                         />
-                        <label htmlFor={main}>{main}</label>
+                        <label htmlFor={main} className="text-sm">
+                          {main}
+                        </label>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
               <select
-                className="bg-white border p-2 border-green-600"
+                className="bg-white border border-green-600 p-2 rounded-md min-w-[150px] focus:outline-none focus:ring-2 focus:ring-green-600"
                 value={sortBy}
                 onChange={handleSortChange}
               >
@@ -348,44 +442,41 @@ export default function GalleryComponentTwo() {
                 <option value="lowToHigh">Low to High</option>
                 <option value="highToLow">High to Low</option>
               </select>
-              <div className="flex items-center gap-2">
-                <select
-                  className="bg-white border p-2 border-green-600"
-                  value={locationFilter}
-                  onChange={handleLocationChange}
+              <select
+                className="bg-white border border-green-600 p-2 rounded-md min-w-[150px] focus:outline-none focus:ring-2 focus:ring-green-600"
+                value={locationFilter}
+                onChange={handleLocationChange}
+              >
+                <option value="">All Locations</option>
+                <option value="Mohali">Mohali</option>
+                <option value="Zirakpur">Zirakpur</option>
+                <option value="Kharar">Kharar</option>
+                <option value="Chandigarh">Chandigarh</option>
+              </select>
+              {(searchQuery ||
+                selectedPropertyType.length > 0 ||
+                selectedAmenities.length > 0 ||
+                sortBy ||
+                locationFilter ||
+                rangeValues.min !== 0 ||
+                rangeValues.max !== 20000000 ||
+                rentFilter) && (
+                <button
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 min-w-[100px]"
+                  onClick={handleClearFilters}
                 >
-                  <option value="">All Locations</option>
-                  <option value="Mohali">Mohali</option>
-                  <option value="Zirakpur">Zirakpur</option>
-                  <option value="Kharar">Kharar</option>
-                  <option value="Chandigarh">Chandigarh</option>
-                </select>
-                {(searchQuery || selectedPropertyType.length > 0 || selectedAmenities.length > 0 || sortBy || locationFilter || (rangeValues.min !== 0 || rangeValues.max !== 20000000)) && (
-                  <button
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
-                    onClick={handleClearFilters}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+                  Clear
+                </button>
+              )}
             </div>
             <div className="flex gap-10" style={{ alignItems: "flex-start" }}>
-              <div className="lg:block hidden shadow-lg p-2">
-                <div className="flex w-full gap-4 items-center">
-                  <div
-                    onClick={() => navigate("/for-rent")}
-                    className="border w-full the bg-red-600 text-white uppercase cursor-pointer text-center border-red-600 p-2 rounded-md"
-                  >
-                    Rent
-                  </div>
-                </div>
-                <div className="font-bold text-lg mt-3 text-green-800">
+              <div className="lg:block hidden shadow-lg p-2 min-w-[250px]">
+                <div className="font-bold text-xl mt-3 text-green-800">
                   Select Property
                 </div>
-                <div className="border mt-4 border-green-800 p-2 bg-white">
+                <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px]">
                   <div>
-                    <div className="flex gap-2 justify-between">
+                    <div className="flex gap-2 mt-2 justify-between">
                       <p>Budget: {formatBudget(rangeValues.max)}</p>
                     </div>
                     <input
@@ -401,7 +492,7 @@ export default function GalleryComponentTwo() {
                 <div>
                   <div className="font-bold mb-2 mt-2">Property Type</div>
                   {visibleData.map((main) => (
-                    <div key={main} className="flex gap-2">
+                    <div key={main} className="flex gap-2 mt-1">
                       <input
                         checked={selectedPropertyType.includes(main)}
                         onChange={() => handleChange(main)}
@@ -422,7 +513,7 @@ export default function GalleryComponentTwo() {
                 </div>
                 <div className="font-bold text-lg mt-2">Amenities</div>
                 {AmenitiesData.map((panel) => (
-                  <div className="flex gap-2 mt-2" key={panel}>
+                  <div className="flex gap-2 mt-1" key={panel}>
                     <div className="text-md leading-2 text-black font-leading">
                       <div className="grid grid-cols-1">
                         <div className="flex items-center leading-6">
@@ -470,12 +561,18 @@ export default function GalleryComponentTwo() {
                                 .replace(/\s/g, "-")
                                 .replace(/[^\w\s]/g, "-")
                                 .toLowerCase();
-                              navigate(`/property/-${panel.id}-${modifiedPanelName}`);
+                              navigate(
+                                `/property/-${panel.id}-${modifiedPanelName}`
+                              );
                             }}
                             className="rounded-md cursor-pointer hover:scale-105 shadow-lg transition duration-300 ease-in-out"
                           >
-                            {panel.image && typeof panel.image === "string" &&
-                              (panel.image.endsWith(".jpg") || panel.image.endsWith(".jpeg") || panel.image.endsWith(".png") || panel.image.endsWith(".svg")) ? (
+                            {panel.image &&
+                            typeof panel.image === "string" &&
+                            (panel.image.endsWith(".jpg") ||
+                              panel.image.endsWith(".jpeg") ||
+                              panel.image.endsWith(".png") ||
+                              panel.image.endsWith(".svg")) ? (
                               <img
                                 className="rounded-t-md cursor-pointer h-52 w-full"
                                 src={panel.image}
@@ -494,7 +591,10 @@ export default function GalleryComponentTwo() {
                                   <div className="text-sm font-extralight">
                                     {panel.property_name}
                                   </div>
-                                  <div className="flex items-center text-green-800 font-bold" style={{ flexWrap: 'wrap' }}>
+                                  <div
+                                    className="flex items-center text-green-800 font-bold"
+                                    style={{ flexWrap: "wrap" }}
+                                  >
                                     <svg
                                       fill="#14532D"
                                       className="w-5 h-5"
@@ -506,7 +606,9 @@ export default function GalleryComponentTwo() {
                                     {formatBudget(panel.budget)}
                                     <div className="text-md text-sm ml-2">
                                       {panel.sqft > 0 ? (
-                                        <>| {panel.sqft} {panel.measureUnit}</>
+                                        <>
+                                          | {panel.sqft} {panel.measureUnit}
+                                        </>
                                       ) : null}
                                     </div>
                                     {panel.type ? (
@@ -544,7 +646,10 @@ export default function GalleryComponentTwo() {
                                       <div>{panel.bathrooms}</div>
                                     </div>
                                     <div className="flex gap-2 items-center">
-                                      <img className="w-5" src={panel.varifed} />
+                                      <img
+                                        className="w-5"
+                                        src={panel.varifed}
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -569,7 +674,7 @@ export default function GalleryComponentTwo() {
                 >
                   Show More
                 </button>
-                )}
+              )}
             </div>
           </>
         )}

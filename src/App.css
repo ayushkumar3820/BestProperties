@@ -519,6 +519,14 @@ header {
 .sale-address{
   margin-top: 0 !important;
 }
+.clear-button{
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+.seach-label {
+    font-size: 15px;
+}
 
 /*  ----------- Start Media Query --------------------- */
 @media (max-width:768px){
@@ -545,3 +553,5 @@ header {
 }
 
 }
+
+
