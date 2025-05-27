@@ -6,24 +6,19 @@ import { liveUrl } from "./url";
 import AnimatedText from "./HeadingAnimation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 export default function AboutProperty() {
   const navigate = useNavigate();
   const [loader, setLoader] = useState(false);
-  const [active, setActive] = useState("");
-  const [activeButton, setActiveButton] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const [measure, setMeasure] = useState("sq.ft");
-  const [measureUnit, setMeasureUnit] = useState("ft");
   const [sale, setSale] = useState("Buy");
-  const [property_type, SetProperty_type] = useState("");
-  const [button, setButton] = useState("");
-  const [runButton, setRunButton] = useState("");
-  const [click, setClick] = useState(false);
+  const [propertyType, setPropertyType] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [store, setStore] = useState({
+  const [formData, setFormData] = useState({
     plot_area: "",
     carpet_area: "",
     title: "",
-    shop_front_details: "",
     price: "",
     bedrooms: "",
     bathroom: "",
@@ -31,17 +26,9 @@ export default function AboutProperty() {
     property_name: "",
     address: "",
     property_description: "",
-    address: "",
-  });
-  const [storeData, setStoreData] = useState({
-    title: "",
     areaSqft: "",
     sector: "",
     rentpermonth: "",
-    bathroom: "",
-    bedrooms: "",
-    property_description: "",
-    address: "",
     bookedby: "",
     bookingamount: "",
     agreement: "",
@@ -49,563 +36,556 @@ export default function AboutProperty() {
     security: "",
     police_verification: "",
   });
-  console.log(storeData, "this is storedata");
+
+  const storedData = localStorage.getItem("responseData");
+
   const handleChangeDate = (date) => {
     setSelectedDate(date);
+    setFormErrors((prev) => ({ ...prev, available_from: "" }));
   };
-  const storedData = localStorage.getItem("responseData");
-  function handleSelect(event) {
+
+  const handleSelectMeasure = (event) => {
     setMeasure(event.target.value);
-  }
-  function handleSelectMeasure(event) {
-    setMeasureUnit(event.target.value);
-  }
-  function handlePurpose(event) {
+    setFormErrors((prev) => ({ ...prev, measure: "" }));
+  };
+
+  const handlePurpose = (event) => {
     setSale(event.target.value);
-  }
-  function handleproperty(event) {
-    SetProperty_type(event.target.value);
-  }
+    setFormErrors((prev) => ({ ...prev, sale: "" }));
+  };
+
+  const handlePropertyType = (event) => {
+    setPropertyType(event.target.value);
+    setFormErrors((prev) => ({ ...prev, property_type: "" }));
+  };
+
   const handleChange = (e) => {
-    setStore({ ...store, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
-  const handleChangeData = (e) => {
-    setStoreData({ ...storeData, [e.target.name]: e.target.value });
+
+  const validateForm = () => {
+    const errors = {};
+    if (storedData === '"Rent/Lease"') {
+      if (!formData.title) errors.title = "Title is required";
+      if (!propertyType) errors.property_type = "Property type is required";
+      if (!formData.sector) errors.sector = "Sector is required";
+      if (!formData.rentpermonth) errors.rentpermonth = "Rent per month is required";
+      if (!formData.address) errors.address = "Address is required";
+      if (!selectedDate) errors.available_from = "Available date is required";
+    } else {
+      if (!formData.carpet_area) errors.carpet_area = "Carpet area is required";
+      if (!formData.plot_area) errors.plot_area = "Plot area is required";
+      if (!formData.property_name) errors.property_name = "Property name is required";
+      if (!formData.price) errors.price = "Price is required";
+      if (!formData.address) errors.address = "Address is required";
+      if (!formData.property_description) errors.property_description = "Description is required";
+      if (!sale) errors.sale = "Purpose is required";
+    }
+    return errors;
   };
+
   const token = localStorage.getItem("token");
-  function HandleApi() {
-    setClick(true);
-    setLoader(false);
-    fetch(`${liveUrl}api/PropertyDetail/propertyDetails`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Add any other headers you need
-      },
-      body: JSON.stringify({
-        ...store,
-        ...measure,
-        ...storeData,
-        located_near: activeButton,
-        washroom_details: active,
-        age_of_property: runButton,
-        availability_status: button,
-        measure_unit: measure,
-        measure: measureUnit,
-        token,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "done") {
-          setLoader(true);
-          setClick(false);
-          navigate("/success");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
+
+  const handleSubmit = async () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setLoader(true);
+    const url =
+      storedData === '"Rent/Lease"'
+        ? `${liveUrl}add-rent-property`
+        : `${liveUrl}api/PropertyDetail/propertyDetails`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          measure_unit: measure,
+          property_type: propertyType,
+          available_from: selectedDate,
+          token,
+        }),
       });
-  }
-  function HandleRent() {
-    setClick(true);
-    setLoader(false);
-    fetch(`${liveUrl}add-rent-property`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Add any other headers you need
-      },
-      body: JSON.stringify({
-        // ...store,
-        // ...measure,
-        ...storeData,
-        located_near: activeButton,
-        washroom_details: active,
-        age_of_property: runButton,
-        availability_status: button,
-        measure_unit: measure,
-        measure: measureUnit,
-        property_type: property_type,
-        available_from: selectedDate,
-        token,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "done") {
-          setLoader(true);
-          setClick(false);
-          navigate("/success");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
+      const data = await response.json();
+      if (data.status === "done") {
+        navigate("/success");
+      } else {
+        console.error("API error:", data.message);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoader(false);
+    }
+  };
+
   return (
-    <div className="">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="border border-green-800"></div>
-      <div className="container lg:w-6/12 shadow-lg mt-5 mb-4  mx-auto  ">
-        <div className="border border-grey-600 mt-5 px-4 py-4">
-          <div className="mt-5 uppercase mb-10 text-green-600 text-center font-bold text-2xl">
-            <AnimatedText text="Tell Us about Your Property" />
-          </div>
-          {storedData == '"Rent/Lease"' ? (
-            <>
-              <div className="lg:flex sm:flex items-center w-full gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Title</div>
+      <div className="border border-green-800" />
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h1 className="text-2xl font-extrabold   text-green-600 text-center uppercase mb-8">
+            <AnimatedText text="Tell Us about Your Property"  />
+          </h1>
+          {storedData === '"Rent/Lease"' ? (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Title</label>
                   <input
-                    onChange={handleChangeData}
-                    value={storeData.title}
+                    onChange={handleChange}
+                    value={formData.title}
                     name="title"
-                    className="border p-2 w-full border-black rounded "
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter title"
                   />
+                  {formErrors.title && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.title}</p>
+                  )}
                 </div>
-                <div className="mt-4 w-1/2">
-                  <div className="mb-1">Property Type*</div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Property Type*</label>
                   <select
-                    onChange={handleproperty}
+                    onChange={handlePropertyType}
                     name="property_type"
-                    value={property_type}
-                    className="border bg-white  h-11  border-black rounded p-2 "
+                    value={propertyType}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
-                    <option value="kothi">1 BHK</option>
-                    <option value="2bhk">2 BHK</option>
-                    <option value="3bhk">3 BHK</option>
+                    <option value="">Select Property Type</option>
+                    <option value="1 BHK">1 BHK</option>
+                    <option value="2 BHK">2 BHK</option>
+                    <option value="3 BHK">3 BHK</option>
                     <option value="Room Only">Room Only</option>
                     <option value="Room With Kitchen">Room With Kitchen</option>
-                    <option value="kothi">Rooms Only</option>
-                    <option value="Rooms With Kitchen">
-                      Rooms With Kitchen
-                    </option>
+                    <option value="Rooms Only">Rooms Only</option>
+                    <option value="Rooms With Kitchen">Rooms With Kitchen</option>
                     <option value="Boys PG">Boys PG</option>
                     <option value="Girls PG">Girls PG</option>
                     <option value="Shop">Shop</option>
-                    <option value="annex House">Annex House</option>
-                    <option value="annex House">Other</option>
+                    <option value="Annex House">Annex House</option>
+                    <option value="Other">Other</option>
                   </select>
-                  {click && property_type == "" ? (
-                    <div className="text-red-600">Select any one option</div>
-                  ) : null}
+                  {formErrors.property_type && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.property_type}</p>
+                  )}
                 </div>
               </div>
-              <div className="flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Add Rent</div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Add Rent</label>
                   <input
                     type="number"
-                    onChange={handleChangeData}
-                    value={storeData.addrent}
-                    name="addrent"
-                    className="border p-2 w-full border-black rounded "
+                    onChange={handleChange}
+                    value={formData.rentpermonth}
+                    name="rentpermonth"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter rent amount"
                   />
+                  {formErrors.rentpermonth && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.rentpermonth}</p>
+                  )}
                 </div>
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Owner Name</div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Owner Name</label>
                   <input
-                    onChange={handleChangeData}
-                    value={storeData.ownername}
-                    name="ownername"
-                    className="border p-2 w-full border-black rounded "
+                    onChange={handleChange}
+                    value={formData.bookedby}
+                    name="bookedby"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter owner name"
                   />
                 </div>
               </div>
-              <div className=" mt-5">
-                <div className="text-lg ">Area In Square Feet</div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Area (Square Feet)</label>
                 <input
                   type="number"
-                  onChange={handleChangeData}
-                  value={storeData.areaSqft}
+                  onChange={handleChange}
+                  value={formData.areaSqft}
                   name="areaSqft"
-                  className="border  border-black rounded-md w-full p-2"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Enter area"
                 />
               </div>
-              <div className="lg:flex sm:flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Sector*</div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Sector*</label>
                   <input
                     type="number"
-                    onChange={handleChangeData}
-                    value={storeData.sector}
+                    onChange={handleChange}
+                    value={formData.sector}
                     name="sector"
-                    className="border p-2 w-full border-black rounded "
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter sector"
                   />
+                  {formErrors.sector && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.sector}</p>
+                  )}
                 </div>
-                {click && storeData.sector == "" ? (
-                  <div className="text-red-600">Required to fill</div>
-                ) : null}
-                <div className="w-1/2">
-                  <div className="mt-4">Rent per month *</div>
-                  <input
-                    type="number"
-                    className="border w-full border-black rounded p-2 "
-                    onChange={handleChangeData}
-                    value={storeData.rentpermonth}
-                    name="rentpermonth"
-                  />
-                  {click && store.price == "" ? (
-                    <div className="text-red-600">set price</div>
-                  ) : null}
-                </div>
-              </div>
-              <div className="lg:flex sm:flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Booking Amount</div>
-                  <input
-                    type="number"
-                    onChange={handleChangeData}
-                    value={storeData.bookingamount}
-                    name="bookingamount"
-                    className="border p-2 w-full border-black rounded "
-                  />
-                </div>
-                <div className="w-1/2">
-                  <div className="mt-4">Booked By</div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Available From*</label>
                   <DatePicker
                     selected={selectedDate}
                     onChange={handleChangeDate}
-                    className="border w-full border-black rounded p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    dateFormat="MM/dd/yyyy"
                   />
-                  {click && selectedDate == "" ? (
-                    <div className="text-red-600">set Data</div>
-                  ) : null}
+                  {formErrors.available_from && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.available_from}</p>
+                  )}
                 </div>
               </div>
-              <div className="lg:flex sm:flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Bathrooms</div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Bathrooms</label>
                   <input
-                    onChange={handleChangeData}
-                    value={storeData.bathroom}
+                    type="number"
+                    onChange={handleChange}
+                    value={formData.bathroom}
                     name="bathroom"
-                    type="number"
-                    className="border w-full p-2 border-black rounded "
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter number of bathrooms"
                   />
                 </div>
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Bedrooms</div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Bedrooms</label>
                   <input
-                    onChange={handleChangeData}
-                    value={storeData.bedrooms}
-                    name="bedrooms"
                     type="number"
-                    className="border w-full  p-2 border-black rounded "
+                    onChange={handleChange}
+                    value={formData.bedrooms}
+                    name="bedrooms"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter number of bedrooms"
                   />
                 </div>
               </div>
-              <div className="flex gap-10">
+              <div className="flex flex-wrap gap-6">
                 <div>
-                  <div className="mt-4 text-lg mb-2">Agreement</div>
+                  <label className="block text-gray-700 font-medium mb-1">Agreement</label>
                   <div className="flex gap-4">
-                    <div className="flex gap-2 items-center">
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border h-6 w-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="agreement"
                         value="yes"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>Yes</div>
-                    </div>
-                    <div className="flex gap-2 items-center">
+                      Yes
+                    </label>
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border w-6 h-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="agreement"
                         value="no"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>No</div>
-                    </div>
+                      No
+                    </label>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <div className="text-lg mb-2">Police Verification</div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Police Verification</label>
                   <div className="flex gap-4">
-                    <div className="flex gap-2 items-center">
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border h-6 w-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="police_verification"
                         value="yes"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>Yes</div>
-                    </div>
-                    <div className="flex gap-2 items-center">
+                      Yes
+                    </label>
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border w-6 h-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="police_verification"
                         value="no"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>No</div>
-                    </div>
+                      No
+                    </label>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <div className="text-lg mb-2">Security</div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Security</label>
                   <div className="flex gap-4">
-                    <div className="flex gap-2 items-center">
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border h-6 w-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="security"
                         value="yes"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>Yes</div>
-                    </div>
-                    <div className="flex gap-2 items-center">
+                      Yes
+                    </label>
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border w-6 h-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="security"
                         value="no"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>No</div>
-                    </div>
+                      No
+                    </label>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <div className="text-lg mb-2">Commission</div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Commission</label>
                   <div className="flex gap-4">
-                    <div className="flex gap-2 items-center">
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border h-6 w-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="commission"
                         value="paid"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>Paid</div>
-                    </div>
-                    <div className="flex gap-2 items-center">
+                      Paid
+                    </label>
+                    <label className="flex items-center gap-2">
                       <input
                         type="radio"
-                        className="border w-6 h-6  border-black rounded p-2 "
-                        onChange={handleChangeData}
                         name="commission"
                         value="not"
+                        onChange={handleChange}
+                        className="h-5 w-5"
                       />
-                      <div>Not</div>
-                    </div>
+                      Not
+                    </label>
                   </div>
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="mt-2 mb-2">Property Description</div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Property Description</label>
                 <textarea
-                  onChange={handleChangeData}
-                  value={storeData.property_description}
+                  onChange={handleChange}
+                  value={formData.property_description}
                   name="property_description"
-                  className="border h-24 w-full p-2 border-black rounded "
+                  className="w-full p-2 border border-gray-300 rounded-md h-24 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Describe your property"
                 />
               </div>
-              <div className="mt-4">
-                <div className="mt-2 mb-2">Address*</div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Address*</label>
                 <textarea
-                  onChange={handleChangeData}
-                  value={storeData.address}
+                  onChange={handleChange}
+                  value={formData.address}
                   name="address"
-                  className="border h-24 w-full p-2 border-black rounded "
+                  className="w-full p-2 border border-gray-300 rounded-md h-24 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Enter address"
                 />
+                {formErrors.address && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>
+                )}
               </div>
-              {click && storeData.address == "" ? (
-                <div className="text-red-600">Required to fill address</div>
-              ) : null}
-              <div className="flex items-center gap-2">
-                <input name="checkbox" className="h-4 w-4" type="checkbox" />
-                <div className="text-sm">
-                  By submitting this form, you hereby agree that we may collect,
-                  store and process your data that you provided.
-                </div>
-              </div>
-              <div className="flex justify-center mb-10 mt-10  items-center">
-                <div
-                  onClick={() => {
-                    HandleRent();
-                  }}
-                  className="bg-red-600 text-white lg:w-[400px]  cursor-pointer w-full   mt-4 rounded-md  p-2 text-center"
-                >
-                  Continue
-                </div>
-              </div>
-            </>
+            </div>
           ) : (
-            <>
-              <div className="text-xl">Carpet Area </div>
-              <div className="flex  items-center ">
-                <input
-                  type="number"
-                  onChange={handleChange}
-                  value={store.carpet_area}
-                  name="carpet_area"
-                  className=" p-2  border-l rounded-l-md border-black border-t border-b "
-                  placeholder="Carpet Area"
-                />
-                <select
-                  onChange={handleSelect}
-                  name="measure_unit"
-                  value={measure}
-                  className="bg-white h-[42px] p-2 border-l rounded-r-md  border-r border-t border-b border-black
-          "
-                >
-                  <option value="sq.ft">sq.ft</option>
-                  <option value="sq.yards">sq.yards</option>
-                  <option value="sq.m">sq.m</option>
-                  <option value="acres">acres</option>
-                  <option value="marla">marla</option>
-                  <option value="cents">cents</option>
-                </select>
-              </div>
-              {click && store.carpet_area == "" ? (
-                <div className="text-red-600"> carpet area is blank </div>
-              ) : null}
-              <div className=" mt-5 w-1/1 ">
-                <div className="text-lg ">+ Add Plot Area</div>
-                <input
-                  type="number"
-                  onChange={handleChange}
-                  value={store.plot_area}
-                  name="plot_area"
-                  className="border w-full border-black rounded-md  p-2"
-                />
-              </div>
-              {click && store.plot_area == "" ? (
-                <div className="text-red-600"> plot area is blank </div>
-              ) : null}
-              <div className="items-center gap-14 mt-4 w-100">
-                <div className="mt-6 w-100">
-                  <div>Property for *</div>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Carpet Area</label>
+                <div className="flex">
+                  <input
+                    type="number"
+                    onChange={handleChange}
+                    value={formData.carpet_area}
+                    name="carpet_area"
+                    className="w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter carpet area"
+                  />
                   <select
-                    onChange={handlePurpose}
-                    name="purpose"
-                    value={sale}
-                    className="border bg-white w-full h-11  border-black rounded p-2 "
+                    onChange={handleSelectMeasure}
+                    name="measure_unit"
+                    value={measure}
+                    className="w-32 p-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
-                    <option value="buy">Buy</option>
-                    <option value="sell">Sell</option>
-                    <option value="rent">Rent</option>
-                    <option value="other">Other</option>
+                    <option value="sq.ft">sq.ft</option>
+                    <option value="sq.yards">sq.yards</option>
+                    <option value="sq.m">sq.m</option>
+                    <option value="acres">acres</option>
+                    <option value="marla">marla</option>
+                    <option value="cents">cents</option>
                   </select>
                 </div>
+                {formErrors.carpet_area && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.carpet_area}</p>
+                )}
               </div>
-              {click && sale == "" ? (
-                <div className="text-red-600">Select any one option</div>
-              ) : null}
-              <div className="lg:flex  sm:flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Property Name*</div>
-                  <input
-                    onChange={handleChange}
-                    value={store.property_name}
-                    name="property_name"
-                    className="border p-2  w-full  border-black rounded "
-                  />
-                </div>
-                <div className="w-1/2">
-                  <div className="mt-4">Price *</div>
-                  <input
-                    type="number"
-                    className="border w-full  border-black rounded p-2 "
-                    onChange={handleChange}
-                    value={store.price}
-                    name="price"
-                  />
-                  {click && store.price == "" ? (
-                    <div className="text-red-600">set price</div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="lg:flex sm:flex gap-14 mt-4">
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Bathrooms</div>
-                  <input
-                    onChange={handleChange}
-                    value={store.bathroom}
-                    name="bathroom"
-                    type="number"
-                    className="border w-full p-2 border-black rounded "
-                  />
-                </div>
-                {click && store.bathroom == "" ? (
-                  <>
-                    <div className="text-red-600">fill betroom details</div>
-                  </>
-                ) : null}
-                <div className="w-1/2">
-                  <div className="mt-2 mb-2">Bedrooms</div>
-                  <input
-                    onChange={handleChange}
-                    value={store.bedrooms}
-                    name="bedrooms"
-                    type="number"
-                    className="border w-full  p-2 border-black rounded "
-                  />
-                </div>
-                {click && store.bedrooms == "" ? (
-                  <>
-                    <div className="text-red-600">fill betroom details</div>
-                  </>
-                ) : null}
-              </div>
-
-              <div className="mt-4">
-                <div className="mt-2 mb-2">Property Description</div>
-                <textarea
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Plot Area</label>
+                <input
+                  type="number"
                   onChange={handleChange}
-                  value={store.property_description}
-                  name="property_description"
-                  className="border h-24 w-full p-2 border-black rounded "
+                  value={formData.plot_area}
+                  name="plot_area"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Enter plot area"
                 />
+                {formErrors.plot_area && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.plot_area}</p>
+                )}
               </div>
-              {click && store.property_description == "" ? (
-                <>
-                  <div className="text-red-600">
-                    required to fill description
-                  </div>
-                </>
-              ) : null}
-              <div className="mt-4">
-                <div className="mt-2 mb-2">Address*</div>
-                <textarea
-                  onChange={handleChange}
-                  value={store.address}
-                  name="address"
-                  className="border h-24 w-full p-2 border-black rounded "
-                />
-              </div>
-              {click && store.address == "" ? (
-                <>
-                  <div className="text-red-600">required to fill address</div>
-                </>
-              ) : null}
-              <div className="flex items-center gap-2">
-                <input name="checkbox" className="h-4 w-4" type="checkbox" />
-                <div className="text-sm">
-                  By submitting this form, you hereby agree that we may collect,
-                  store and process your data that you provided.
-                </div>
-              </div>
-              <div className="flex justify-center mb-10 mt-10  items-center">
-                <div
-                  onClick={() => {
-                    HandleApi();
-                  }}
-                  className="bg-red-600 text-white lg:w-[400px]  cursor-pointer w-full   mt-4 rounded-md  p-2 text-center"
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Property For*</label>
+                <select
+                  onChange={handlePurpose}
+                  name="purpose"
+                  value={sale}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                 >
-                  Continue
+                  <option value="Buy">Buy</option>
+                  <option value="Sell">Sell</option>
+                  <option value="Rent">Rent</option>
+                  <option value="Other">Other</option>
+                </select>
+                {formErrors.sale && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.sale}</p>
+                )}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Property Name*</label>
+                  <input
+                    onChange={handleChange}
+                    value={formData.property_name}
+                    name="property_name"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter property name"
+                  />
+                  {formErrors.property_name && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.property_name}</p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Price*</label>
+                  <input
+                    type="number"
+                    onChange={handleChange}
+                    value={formData.price}
+                    name="price"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter price"
+                  />
+                  {formErrors.price && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.price}</p>
+                  )}
                 </div>
               </div>
-            </>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Bathrooms</label>
+                  <input
+                    type="number"
+                    onChange={handleChange}
+                    value={formData.bathroom}
+                    name="bathroom"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter number of bathrooms"
+                  />
+                  {formErrors.bathroom && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.bathroom}</p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-medium mb-1">Bedrooms</label>
+                  <input
+                    type="number"
+                    onChange={handleChange}
+                    value={formData.bedrooms}
+                    name="bedrooms"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    placeholder="Enter number of bedrooms"
+                  />
+                  {formErrors.bedrooms && (
+                    <p className="text-red-600 text-sm mt-1">{formErrors.bedrooms}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Property Description</label>
+                <textarea
+                  onChange={handleChange}
+                  value={formData.property_description}
+                  name="property_description"
+                  className="w-full p-2 border border-gray-300 rounded-md h-24 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Describe your property"
+                />
+                {formErrors.property_description && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.property_description}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Address*</label>
+                <textarea
+                  onChange={handleChange}
+                  value={formData.address}
+                  name="address"
+                  className="w-full p-2 border border-gray-300 rounded-md h-24 focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Enter address"
+                />
+                {formErrors.address && (
+                  <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>
+                )}
+              </div>
+            </div>
           )}
+          <div className="flex items-center gap-2 mt-6">
+            <input
+              name="checkbox"
+              className="h-4 w-4"
+              type="checkbox"
+              onChange={handleChange}
+            />
+            <p className="text-sm text-gray-600">
+              By submitting this form, you hereby agree that we may collect, store, and process your data that you provided.
+            </p>
+          </div>
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleSubmit}
+              disabled={loader}
+              className="w-full max-w-sm bg-red-600 text-white p-2 rounded-md font-semibold hover:bg-red-700 transition flex justify-center items-center"
+            >
+              {loader ? (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                  ></path>
+                </svg>
+              ) : (
+                "Continue"
+              )}
+            </button>
+          </div>
         </div>
       </div>
       <BottomBar />

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import '../common/component/ModalPage.css';
 import { useNavigate, useParams } from "react-router-dom";
@@ -13,6 +14,7 @@ import Kitchen from "../assets/img/kitchen.png";
 import { liveUrl, token } from "../common/component/url";
 import Navbar from "../common/component/navbar";
 import BottomBar from "../common/component/bottomBar";
+
 
 export default function RentDetails() {
   const Navigate = useNavigate();
@@ -36,6 +38,7 @@ export default function RentDetails() {
     firstname: "",
     phone: "",
   });
+  window.scroll(0,0);
   const handleShowMore = () => {
     setShow(!show);
   };
@@ -200,6 +203,8 @@ export default function RentDetails() {
                           }}
                           className="image_slider max-h-[600px]  bg-cover bg-no-repeat border border-green-800 cursor-pointer"
                           src={mainUrl + panel.image_one}
+                          alt=""
+
                         />
                       </>
                     ) : (
@@ -211,6 +216,8 @@ export default function RentDetails() {
                           }}
                           className="image_slider  border border-green-800  cursor-pointer"
                           src={ImageOne}
+                          alt=""
+
                         />
                       </>
                     )}
@@ -228,6 +235,8 @@ export default function RentDetails() {
                               }}
                               className="image_slider bg-no-repeat max-h-[600px]  bg-cover border border-green-800 cursor-pointer"
                               src={mainUrl + panel.image_two}
+                              alt=""
+
                             />
                           </>
                         ) : null}
@@ -244,6 +253,8 @@ export default function RentDetails() {
                               }}
                               className="image_slider bg-no-repeat max-h-[600px] bg-cover  border border-green-800 cursor-pointer"
                               src={mainUrl + panel.image_three}
+                              alt=""
+
                             />
                           </>
                         ) : null}
@@ -260,6 +271,8 @@ export default function RentDetails() {
                               }}
                               className="image_slider bg-no-repeat max-h-[600px] bg-cover  cursor-pointer"
                               src={mainUrl + panel.image_four}
+                              alt=""
+
                             />
                           </>
                         ) : null}
@@ -299,7 +312,7 @@ export default function RentDetails() {
           </div>
           <div className="w-full mt-4 ">
             <label className="block tracking-wide  text-lg font-bold mb-2">
-              Your Name
+              Your Name*
             </label>
             <input
               className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -324,7 +337,7 @@ export default function RentDetails() {
         <div className="flex flex-wrap -mx-3 mb-2">
           <div className="w-full px-3">
             <label className="block  tracking-wide  text-lg font-bold mb-2">
-              Phone
+              Phone*  
             </label>
             <input
               type="number"
@@ -447,8 +460,10 @@ export default function RentDetails() {
                                                 cursor: "pointer",
                                                 gap: "10px",
                                               }}
-                                              className="image_slider w-1/1 border border-green-800 cursor-pointer h-[350px] min-w-[350px]"
+                                              className="image_slider w-1/1 border border-green-800 cursor-pointer h-[350px] min-w-[30px] sm:min-w-[350px]"
                                               src={mainUrl + panel.image_one}
+                                              alt=""
+
                                             />
                                           </>
                                         ) : (
@@ -460,6 +475,8 @@ export default function RentDetails() {
                                               }}
                                               className="image_slider w-1/1 border border-green-800  cursor-pointer"
                                               src={ImageOne}
+                                              alt=""
+
                                             />
                                           </>
                                         )}
@@ -481,7 +498,10 @@ export default function RentDetails() {
                                                   className="image_slider w-1/1 border border-green-800 cursor-pointer"
                                                   src={
                                                     mainUrl + panel.image_two
+                                                    
                                                   }
+                                                  alt=""
+
                                                 />
                                               </>
                                             ) : null}
@@ -503,6 +523,8 @@ export default function RentDetails() {
                                                   src={
                                                     mainUrl + panel.image_three
                                                   }
+                                                  alt=""
+
                                                 />
                                               </>
                                             ) : null}
@@ -526,6 +548,8 @@ export default function RentDetails() {
                                                   src={
                                                     mainUrl + panel.image_four
                                                   }
+                                                  alt=""
+
                                                 />
                                               </>
                                             ) : null}
@@ -554,6 +578,8 @@ export default function RentDetails() {
                                           }}
                                           className="w-24 cursor-pointer"
                                           src={mainUrl + panel.image_two}
+                                          alt=""
+
                                         />
                                       </>
                                     ) : null}
@@ -569,6 +595,8 @@ export default function RentDetails() {
                                           }}
                                           className="w-24 cursor-pointer"
                                           src={mainUrl + panel.image_three}
+                                          alt=""
+
                                         />
                                       </>
                                     ) : null}
@@ -584,6 +612,8 @@ export default function RentDetails() {
                                           }}
                                           className="w-24 cursor-pointer"
                                           src={mainUrl + panel.image_four}
+                                          alt=""
+
                                         />
                                       </>
                                     ) : null}
@@ -614,6 +644,8 @@ export default function RentDetails() {
                                           <img
                                             className="w-10 h-10"
                                             src={Bath}
+                                            alt=""
+
                                           />
                                           <div className="font-bold">
                                             {panel.bathrooms} Baths
@@ -624,7 +656,8 @@ export default function RentDetails() {
                                         <>
                                           <div className="flex items-center gap-2 bg-slate-200 p-2">
                                             {panel.bathrooms < 1 ? null : (
-                                              <img className="w-6" src={Bed} />
+                                              <img className="w-6" src={Bed} alt=""
+/>
                                             )}
                                             <div className="font-bold">
                                               {panel.bedrooms} Beds
@@ -639,6 +672,8 @@ export default function RentDetails() {
                                               <img
                                                 className="w-6"
                                                 src={Kitchen}
+                                                alt=""
+
                                               />
                                             )}
                                             <div className="font-bold">
@@ -651,6 +686,8 @@ export default function RentDetails() {
                                         <img
                                           className="w-5"
                                           src={panel.varifed}
+                                          alt=""
+
                                         />
                                       </div>
                                     </div>
@@ -805,11 +842,14 @@ export default function RentDetails() {
                       <img
                         className=" h-52 w-full"
                         src={mainUrl + check.image_one}
+                        alt=""
+
                       />
                     </>
                   ) : (
                     <>
-                      <img className=" h-52 w-full" src={ImageOne} />
+                      <img className=" h-52 w-full" src={ImageOne} alt=""
+ />
                     </>
                   )}
                   <div className="font-bold text-lg ">{check.name}</div>
@@ -842,18 +882,21 @@ export default function RentDetails() {
                   <div className="flex items-center  lg:gap-3 gap-3 mt-4">
                     <div className="flex items-center gap-2">
                       {check.bedrooms < 1 ? null : (
-                        <img className="w-6" src={Bath} />
+                        <img className="w-6" src={Bath} alt=""
+/>
                       )}
                       <div>{check.bathrooms} </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {check.bathrooms < 1 ? null : (
-                        <img className="w-6" src={Bed} />
+                        <img className="w-6" src={Bed} alt=""
+/>
                       )}
                       <div>{check.bedrooms} </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <img className="w-5" src={check.varifed} />
+                      <img className="w-5" src={check.varifed} alt=""
+/>
                     </div>
                   </div>
                 </div>

@@ -43,6 +43,7 @@ export default function Rent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
 
+  window.scroll(0, 0);
   const handleToggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -52,6 +53,7 @@ export default function Rent() {
   };
 
   const handleLocationChange = (event) => {
+    console.log("Location dropdown changed to:", event.target.value);
     setSelectedLocation(event.target.value);
   };
 
@@ -274,7 +276,8 @@ export default function Rent() {
   const filterPanelsByBudget = (panel) => {
     const panelBudget = panel.budget;
     const panelAmenities = panel.amenities;
-    const panelLocation = panel.sector || panel.address || "";
+    const panelSector = (panel.sector || "").trim();
+    const panelAddress = (panel.address || "").trim();
     const propertyCheck = panel.property_type;
     let isBudgetInRange = true;
     if (rangeValues.min !== null && rangeValues.max !== null) {
@@ -289,9 +292,30 @@ export default function Rent() {
       (panel.sector && panel.sector.toLowerCase().includes(searchLower)) ||
       (panel.property_type &&
         panel.property_type.toLowerCase().includes(searchLower));
+
+    // Detailed debugging
+    console.log("Selected Location:", selectedLocation);
+    console.log("Panel Sector:", panelSector);
+    console.log("Panel Address:", panelAddress);
+
     const matchesLocation =
       selectedLocation === "" ||
-      panelLocation.toLowerCase().includes(selectedLocation.toLowerCase());
+      (panelSector &&
+        (panelSector
+          .toLowerCase()
+          .includes(selectedLocation.toLowerCase().trim()) ||
+          panelSector
+            .toLowerCase()
+            .split(/[\s,-]+/)
+            .some((part) => part === selectedLocation.toLowerCase().trim()))) ||
+      (panelAddress &&
+        (panelAddress
+          .toLowerCase()
+          .includes(selectedLocation.toLowerCase().trim()) ||
+          panelAddress
+            .toLowerCase()
+            .split(/[\s,-]+/)
+            .some((part) => part === selectedLocation.toLowerCase().trim())));
 
     if (
       selectedAmenities.length === 0 &&
@@ -417,12 +441,16 @@ export default function Rent() {
         </div>
       ) : (
         <>
-          <div className="text-green-800 uppercase font-bold text-2xl text-center py-4">
+          <div className="text-green-800 uppercase font-bold text-2xl text-center py-4 flex flex-wrap justify-center items-center gap-2">
             <AnimatedText text="Properties for Rent" />
+            <div className="gap-3 inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 text-xl rounded-md">
+              {newData.filter(filterPanelsByBudget).length} Property Found
+            </div>
           </div>
+
           <div className="container mx-auto">
-            <div className="bg-white p-2 lg:shadow-md flex items-center gap-2 flex-wrap lg:flex-nowrap">
-              <div className="flex items-center gap-2 w-full lg:w-auto">
+            <div className="bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap lg:flex-nowrap">
+              <div className="flex flex-col lg:flex-row items-center gap-2 min-n-[200px]">
                 <div className="relative w-full min-w-[150px]">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                     🔍
@@ -471,7 +499,9 @@ export default function Rent() {
                             checked={selectedPropertyType.includes(main)}
                             onChange={() => handleChange(main)}
                           />
-                          <label className="seach-label" htmlFor={main}>{main}</label>
+                          <label className="seach-label" htmlFor={main}>
+                            {main}
+                          </label>
                         </div>
                       ))}
                     </div>
@@ -500,13 +530,13 @@ export default function Rent() {
                 {areFiltersApplied && (
                   <button
                     onClick={clearFilters}
-                    className="clear-button bg-red-600 d-flex justify-center align-middle text-white p-3 text-lg rounded-md h-11 w-full lg:w-auto  min-w-[100px] px-4"
+                    className="clear-button bg-red-600 d-flex justify-center align-middle text-white p-3 text-lg rounded-md h-11 w-full lg:w-auto min-w-[100px] px-4"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <div className="w-14 flex justify-center ml-auto">
+              <div className="w-14 flex justify-center lg:ml-auto">
                 <div
                   className={`${
                     activeView === "grid"
@@ -539,12 +569,13 @@ export default function Rent() {
                 </div>
               </div>
             </div>
+
             <div className="flex w-full justify-center gap-4 mb-10 p-2 items-start">
               <div className="w-1/4 lg:block hidden">
                 <div className="shadow-lg p-2">
                   <div className="flex w-full gap-4 items-center">
                     <div
-                      onClick={() => Navigate("/property")}
+                      onClick={handlePropertyType}
                       className="border text-white bg-red-600 w-full cursor-pointer text-center uppercase p-2 rounded-md"
                     >
                       Buy

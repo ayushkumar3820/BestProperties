@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useEffect, useRef, useState } from "react";
 import "../../App.css";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,9 @@ import AnimatedText from "./HeadingAnimation";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import PlotImage from "../../assets/img/Plot.jpg";
+import RectangleImage from "../../assets/img/kothi-image2.jpg";
+
 export default function GalleryComponent() {
   const Navigate = useNavigate();
   const [newData, setNewData] = useState([]);
@@ -23,19 +27,23 @@ export default function GalleryComponent() {
   const [showData, setShowData] = useState("");
   const [properties, setProperties] = useState([]);
   const navigate = useNavigate();
+
   const handleShowMore = () => {
     setShowCount(showCount + 8);
   };
+
   const ref = useRef(null);
+
   const handleClick = (event) => {
     setId(event.currentTarget.id);
   };
+
   const handleSubmit = () => {
     setLoader(true);
     fetch(`${liveUrl}property-hot-deals`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Add any other headers you need
+        "Content-Type": "application/json",
       },
     })
       .then((response) => response.json())
@@ -49,6 +57,7 @@ export default function GalleryComponent() {
         console.error("Error:", error);
       });
   };
+
   const handleRent = () => {
     setLoader(true);
     fetch(`${liveUrl}rent-hot-deals`, {
@@ -75,7 +84,7 @@ export default function GalleryComponent() {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      }
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -85,22 +94,18 @@ export default function GalleryComponent() {
       })
       .then((data) => {
         setlistProjectData(data.result);
-        // console.log(data.result )
-        setLoader(false)
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Error:", error);
       });
-
-
-
 
     fetch(`${liveUrl}only-single-properties`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      }
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -110,18 +115,21 @@ export default function GalleryComponent() {
       })
       .then((data) => {
         setProperties(data.result);
-        console.log(data.result, "dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj")
-        setLoader(false)
+        console.log(
+          data.result,
+          "dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj"
+        );
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        console.log("dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj")
+        console.log("dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj");
       });
-
 
     handleSubmit();
     handleRent();
   }, []);
+
   const formatBudget = (value) => {
     const formattedValue = value.toLocaleString(undefined, {
       minimumFractionDigits: 2,
@@ -150,9 +158,11 @@ export default function GalleryComponent() {
       return formattedValue;
     }
   };
+
   const handleProjectClick = (projectId) => {
     navigate(`/single-property/${projectId}`);
   };
+
   // Css
   const customStyles = {
     content: {
@@ -165,6 +175,7 @@ export default function GalleryComponent() {
       borderRadius: "10px",
     },
   };
+
   // heading Css
   const headingStyle = {
     content: {
@@ -173,27 +184,28 @@ export default function GalleryComponent() {
       fontWeight: "bold !important",
     },
   };
+
   const settings = {
     infinite: true,
     speed: 1000,
-    slidesToShow: 1, // Default for larger screens
+    slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3500,
-    arrows: true, // Keep navigation arrows if needed
-    dots: true, // Enable dots for navigation
+    arrows: true,
+    dots: true,
     responsive: [
       {
-        breakpoint: 1024, // For tablet devices
+        breakpoint: 1024,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 575, // For mobile devices (portrait mode)
+        breakpoint: 575,
         settings: {
-          slidesToShow: 1, // 1 slide per view on mobile
+          slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
@@ -203,7 +215,7 @@ export default function GalleryComponent() {
   const oneSlider = {
     infinite: true,
     speed: 1000,
-    slidesToShow: 3, // Default for larger screens
+    slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
@@ -211,16 +223,16 @@ export default function GalleryComponent() {
     dots: true,
     responsive: [
       {
-        breakpoint: 1024, // For tablet devices
+        breakpoint: 1024,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 575, // For mobile devices (portrait mode)
+        breakpoint: 575,
         settings: {
-          slidesToShow: 1, // 1 slide per view on mobile
+          slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
@@ -230,7 +242,7 @@ export default function GalleryComponent() {
   const PropertySlider = {
     infinite: true,
     speed: 1500,
-    slidesToShow: 3, // Default for larger screens
+    slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 2000,
@@ -238,16 +250,16 @@ export default function GalleryComponent() {
     dots: true,
     responsive: [
       {
-        breakpoint: 1024, // For tablet devices
+        breakpoint: 1024,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 575, // For mobile devices (portrait mode)
+        breakpoint: 575,
         settings: {
-          slidesToShow: 1, // 1 slide per view on mobile
+          slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
@@ -257,7 +269,7 @@ export default function GalleryComponent() {
   const ProjectSlider = {
     infinite: true,
     speed: 1500,
-    slidesToShow: 2, // Default for larger screens
+    slidesToShow: 2,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
@@ -265,33 +277,80 @@ export default function GalleryComponent() {
     dots: false,
     responsive: [
       {
-        breakpoint: 1024, // For tablet devices
+        breakpoint: 1024,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 575, // For mobile devices (portrait mode)
+        breakpoint: 575,
         settings: {
-          slidesToShow: 1, // 1 slide per view on mobile
+          slidesToShow: 1,
           slidesToScroll: 1,
         },
       },
     ],
   };
 
+  // Add this function to your GalleryComponent before the return statement
 
+  // Function to get the appropriate image URL for properties
+  const getPropertyImageUrl = (item) => {
+    // Check if Image_URLs exists and has valid data
+    if (item.Image_URLs) {
+      // If Image_URLs is a string and not empty
+      if (
+        typeof item.Image_URLs === "string" &&
+        item.Image_URLs.trim() !== ""
+      ) {
+        return item.Image_URLs;
+      }
+      // If Image_URLs is an array and has items
+      if (Array.isArray(item.Image_URLs) && item.Image_URLs.length > 0) {
+        return item.Image_URLs[0];
+      }
+    }
 
+    // Return fallback image based on property type
+    if (item.type === "Flat") {
+      return NoImage;
+    } else if (item.type === "Plot") {
+      return PlotImage;
+    } else if (item.type === "Kothi" || item.type === "House") {
+      return RectangleImage;
+    } else {
+      return NoImage; // Default fallback
+    }
+  };
+
+  // Function to handle image error for properties
+  const handlePropertyImageError = (e, item) => {
+    console.log(
+      `Image failed to load for Property ID: ${item.id}, Type: ${item.type}`
+    );
+
+    // Set fallback image based on property type
+    if (item.type === "Flat") {
+      e.target.src = NoImage;
+    } else if (item.type === "Plot") {
+      e.target.src = PlotImage;
+    } else if (item.type === "Kothi" || item.type === "House") {
+      e.target.src = RectangleImage;
+    } else {
+      e.target.src = NoImage;
+    }
+  };
+
+  // Then replace the image rendering logic in your properties section with:
 
   return (
     <div>
       {loader ? (
         <>
-       
-          <div className="flex justify-center  align-items-center p-2  ">
+          <div className="flex justify-center align-items-center p-2">
             <svg
-              className=" animate-spin h-10 w-10  "
+              className=" animate-spin h-10 w-10"
               fill="#014108"
               xmlns="http://www.w3.org/2000/svg"
               height="1em"
@@ -309,8 +368,8 @@ export default function GalleryComponent() {
             </>
           ) : (
             <>
-              <div className="slider-main-div mt-8 gap-6 items-start ">
-                <div className="slider-inner-div ">
+              <div className="slider-main-div mt-8 gap-6 items-start">
+                <div className="slider-inner-div">
                   <h2 className="deal-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="HOT DEALS" />
                   </h2>
@@ -328,32 +387,31 @@ export default function GalleryComponent() {
                                 `/property/-${panel.id}-${modifiedPanelName}`
                               );
                             }}
-                            className="main-sale-div border rounded-md  cursor-pointer     shadow-lg   transition duration-300 ease-in-out "
+                            className="main-sale-div border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
                           >
-                            <div className="relative  ">
-                              <div className=" absolute left-0  "></div>
+                            <div className="relative">
+                              <div className=" absolute left-0"></div>
                               {panel.type ? (
                                 <>
-                                  <div className=" flex items-center bg-green-900 text-white  px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl  text-sm ">
+                                  <div className=" flex items-center bg-green-900 text-white px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl text-sm">
                                     <div className="text-md text-sm font-bold ml-2">
                                       {panel.name}
                                     </div>
                                   </div>
-                                  
                                 </>
                               ) : null}
                               <div className="sale-image-div">
                                 {panel.image_one ? (
                                   <>
                                     <img
-                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
+                                      className=" rounded-t-md cursor-pointer h-52 w-full"
                                       src={showData + panel.image_one}
                                     />
                                   </>
                                 ) : (
                                   <>
                                     <img
-                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
+                                      className=" rounded-t-md cursor-pointer h-52 w-full"
                                       src={NoImage}
                                     />
                                   </>
@@ -362,16 +420,15 @@ export default function GalleryComponent() {
                               <div className="for-sale-div">For Sale</div>
                             </div>
                             <div className="text-left bg-white border border-t leading-4 p-2">
-                              <div className=" mr-2 ">
+                              <div className=" mr-2">
                                 <div className="">
-                                  <div className="text-sm font-extralight ">
+                                  <div className="text-sm font-extralight">
                                     {panel.property_name}
                                   </div>
-
                                   <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
                                     <svg
                                       fill="#14532d"
-                                      className="w-5 h-5 "
+                                      className="w-5 h-5"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 320 512"
                                     >
@@ -392,7 +449,7 @@ export default function GalleryComponent() {
                                     </div>
                                   </div>
                                   <div
-                                    className="flex  items-start mt-3"
+                                    className="flex items-start mt-3"
                                     style={{
                                       alignItems: "flex-start !important;",
                                     }}
@@ -412,7 +469,7 @@ export default function GalleryComponent() {
                                     </div>
                                   </div>
                                   <div className="flex items-center lg:gap-3 gap-3 mt-1">
-                                    <div className="flex items-center gap-2 ">
+                                    <div className="flex items-center gap-2">
                                       {panel.bedrooms ? (
                                         <img className="w-6" src={Bed} />
                                       ) : null}
@@ -445,61 +502,62 @@ export default function GalleryComponent() {
                   </Slider>
                 </div>
 
-
-                <div className="slider-inner-div ">
+                <div className="slider-inner-div">
                   <h2 className="property-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="PROPERTIES" />
                   </h2>
-                  <div class="home-single">
+                  <div className="home-single">
                     <Slider {...PropertySlider}>
                       {properties.map((item) => {
-                        return <>
-                          <div key={item.id} onClick={() => handleProjectClick(item.id)} className="rent-detail-div p-2">
-                            <div className="border rounded-md cursor-pointer  shadow-lg transition duration-300 ease-in-out"
-                            >
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleProjectClick(item.id)}
+                            className="rent-detail-div p-2"
+                          >
+                            <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
                               <div className="felx justify-center gap-6 rent-image-div">
                                 <div className="sale-image-div">
-                                  {item.Image_URLs.length > 0 ? <>
-                                    <img
-                                      className="rounded-t-md cursor-pointer h-52 w-full"
-                                      src={item.Image_URLs}
-                                      alt="No Image"
-                                    />
-                                  </>
-                                    : <>
-                                      <img
-                                        className=" rounded-t-md cursor-pointer  h-52 w-full"
-                                        src={NoImage}
-                                      />
-                                    </>
-                                  }
-
-
-
+                                  <img
+                                    className="rounded-t-md cursor-pointer h-52 w-full"
+                                    src={getPropertyImageUrl(item)}
+                                    alt={`${item.type} Property Image`}
+                                    onError={(e) =>
+                                      handlePropertyImageError(e, item)
+                                    }
+                                  />
                                 </div>
                               </div>
                               <div className="border p-2 rent-inner-div">
-                                <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">{item.name}</div>
+                                <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">
+                                  {item.name}
+                                </div>
                                 <div
                                   className="property-address mb-3 mt-0 items-center flex"
-                                  style={{ justifyContent: "space-between", marginTop: '0' }}
+                                  style={{
+                                    justifyContent: "space-between",
+                                    marginTop: "0",
+                                  }}
                                 >
-                                  <div className="headingStyle flex items-center text-green-800 font-bold ">
+                                  <div className="headingStyle flex items-center text-green-800 font-bold">
                                     <svg
                                       fill="#14532d"
-                                      className="w-5 h-5 "
+                                      className="w-5 h-5"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 320 512"
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-
                                     <div
                                       className=" lg:text-lg ml-2 text-sm headingStyle"
                                       style={headingStyle}
-                                    >{formatBudget(item.budget)}
-                                      {item.sqft.length > 0 ? <>| {item.sqft} Sqft</> : <>{null}</>}
-
+                                    >
+                                      {formatBudget(item.budget)}
+                                      {item.sqft.length > 0 ? (
+                                        <> | {item.sqft} </>
+                                      ) : (
+                                        <>{null}</>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -519,15 +577,14 @@ export default function GalleryComponent() {
                               </div>
                             </div>
                           </div>
-                        </>;
+                        );
                       })}
                     </Slider>
-
                   </div>
                 </div>
               </div>
 
-              <div class="project-rent-div">
+              <div className="project-rent-div">
                 <div className="home-rent-div min-h-[350px] w-full">
                   <h2 className="rent-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="RENT" />
@@ -546,7 +603,7 @@ export default function GalleryComponent() {
                             );
                             window.scrollTo(0, 0);
                           }}
-                          className="border rounded-md cursor-pointer  shadow-lg transition duration-300 ease-in-out"
+                          className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
                         >
                           <div className="felx justify-center gap-6 rent-image-div">
                             <div className="sale-image-div">
@@ -604,7 +661,9 @@ export default function GalleryComponent() {
                                 >
                                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                 </svg>
-                                <div>{formatBudget(rent.budget)} Per Month Rent</div>
+                                <div>
+                                  {formatBudget(rent.budget)} Per Month Rent
+                                </div>
                               </div>
                               <div style={{ textTransform: "capitalize" }}>
                                 {rent.floor}
@@ -631,41 +690,68 @@ export default function GalleryComponent() {
                   </Slider>
                 </div>
 
-                <div class="project-home-div">
-                  <h2 className="rent-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
+                <div className="project-home-div">
+                  <h2 className="rent-title lw-text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="PROJECTS" />
                   </h2>
                   <Slider {...ProjectSlider}>
-                  {listProjectData.map((data) => (
-                    <div className="project-card" key={data.id}>
-                      <div key={data.id} onClick={() => handleProjectClick(data.id)}>
-                        <div className="project-image-container">
-                          {data.Image_URLs ? (
-                            <img src={data.Image_URLs} alt={data.title} className="project-image" />
-                          ) : (
-                            <img src={NoImage} alt={data.title} className="project-image" />
-                          )}
+                    {listProjectData.map((data) => (
+                      <div className="project-card" key={data.id}>
+                        <div
+                          key={data.id}
+                          onClick={() => handleProjectClick(data.id)}
+                        >
+                          <div className="project-image-container">
+                            {data.Image_URLs ? (
+                              <img
+                                src={data.Image_URLs}
+                                alt={data.title}
+                                className="project-image"
+                              />
+                            ) : (
+                              <img
+                                src={NoImage}
+                                alt={data.title}
+                                className="project-image"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="project-details">
+                          <div
+                            key={data.id}
+                            onClick={() => handleProjectClick(data.id)}
+                          >
+                            <h5 className="project-title">
+                              {data.Project_Name}
+                            </h5>
+                          </div>
+                          <p className="project-location">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 384 512"
+                            >
+                              <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                            </svg>{" "}
+                            {data.Address}
+                          </p>
+                          <p className="project-price text-green-800 font-bold">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 320 512"
+                            >
+                              <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
+                            </svg>
+                            {data.Min_Budget ? <>From</> : <></>}{" "}
+                            {formatBudget(data.Min_Budget)} |{" "}
+                            {formatBudget(data.Max_Budget)}
+                          </p>
                         </div>
                       </div>
-
-
-                      <div className="project-details">
-                        <div key={data.id} onClick={() => handleProjectClick(data.id)}><h5 className="project-title">{data.Project_Name}</h5></div>
-                        <p className="project-location">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" /></svg> {data.Address}
-                        </p>
-                        <p className="project-price text-green-800 font-bold">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" /></svg>
-                          {data.Min_Budget ? <>From</> : (<></>)} {formatBudget(data.Min_Budget)} | {formatBudget(data.Max_Budget)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                   </Slider>
                 </div>
               </div>
-
-
 
               <div className="flex justify-center mt-10 mb-14">
                 {showCount < newData.length && (

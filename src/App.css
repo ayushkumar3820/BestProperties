@@ -157,6 +157,8 @@ button.property-div {
   top: 12px;
   right: 10px;
 } */
+
+
 .headingStyle{
   font-family: "Poppins", Sans-serif !important;
   font-size: 20px !important;
@@ -551,6 +553,16 @@ header {
     flex-wrap: wrap;
     gap: 10px;
 }
+.project-rent-div {
+    flex-wrap: wrap;
+}
+.home-rent-div {
+    width: 100%;
+}
+.project-home-div {
+    width: 100%;
+}
+
 
 }
 

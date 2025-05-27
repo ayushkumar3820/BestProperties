@@ -242,7 +242,7 @@
     margin: 0 0 10px;
     display: flex;
     align-items: center;
-    justify-content: start;        
+    justify-content: flex-start;        
 }
 .project-details svg{
     width: 20px;

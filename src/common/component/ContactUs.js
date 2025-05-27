@@ -21,6 +21,7 @@ export default function Contact() {
     checkbox: true, // Pre-filled checkbox
   });
 
+  window.scroll(0,0);
   const handleText = (e) => {
     setStore({ ...store, [e.target.name]: e.target.value });
     // Clear error for the field being edited
@@ -40,11 +41,13 @@ export default function Contact() {
     const newErrors = {};
     // Name validation: only letters and spaces, min 2 characters
     if (!store.firstname || !/^[A-Za-z\s]{2,}$/.test(store.firstname)) {
-      newErrors.firstname = "Name is required and must contain only letters and spaces (min 2 characters).";
+      newErrors.firstname =
+        "Name is required and must contain only letters and spaces (min 2 characters).";
     }
     // Phone validation: exactly 10 digits
     if (!store.phone || !/^\d{10}$/.test(store.phone)) {
-      newErrors.phone = "Phone number is required and must be exactly 10 digits.";
+      newErrors.phone =
+        "Phone number is required and must be exactly 10 digits.";
     }
     // Email validation: optional, but must be valid if provided
     if (store.email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email)) {
@@ -80,7 +83,9 @@ export default function Contact() {
       .then((data) => {
         if (data.status === "done") {
           setMessage(data.status);
-          toast.success("Thank you for getting in touch! We will contact you soon.");
+          toast.success(
+            "Thank you for getting in touch! We will contact you soon."
+          );
           setTimeout(() => {
             setLoader(false);
             navigate("/");
@@ -137,9 +142,7 @@ export default function Contact() {
               id="email"
               placeholder="Please enter your email "
             />
-            {errors.email && (
-              <div className="text-red-600">{errors.email}</div>
-            )}
+            {errors.email && <div className="text-red-600">{errors.email}</div>}
           </div>
         </div>
         <div className="flex flex-wrap -mx-3 mb-2">
@@ -173,10 +176,10 @@ export default function Contact() {
           <option value="Buy">Buy</option>
           <option value="Sell">Sell</option>
           <option value="Rent">Rent</option>
-          <option value="Rent">Home Loan</option>
-          <option value="Rent">Investment</option>
-           <option value="Rent">Partner</option>
-          <option value="Rent">Others</option>
+          <option value="Home Loan">Home Loan</option>
+          <option value="Investment">Investment</option>
+          <option value="Partner">Partner</option>
+          <option value="Others">Others</option>
         </select>
         <div className="flex flex-wrap -mx-3 mb-2">
           <div className="w-full px-3">
