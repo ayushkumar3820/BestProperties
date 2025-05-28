@@ -34,14 +34,15 @@ export default function Login() {
     password: "",
     confirmPassword: "",
   });
+
   const handleForgot = (e) => {
     setForgot({ ...forgot, [e.target.name]: e.target.value });
   };
-  // fire Forgot Password
-  // console.log(forgot)
+
   const fireForgot = () => {
     console.log(forgot, "$$$$$$$$$");
   };
+
   const handleEnterKeyPress = (event) => {
     if (event.key === "Enter") {
       const button = document.getElementById("submitButton");
@@ -50,18 +51,23 @@ export default function Login() {
       }
     }
   };
+
   const handleButtonClick = () => {
     handleLogin();
   };
+
   const handleClick = (span) => {
     setActiveButton(span);
   };
+
   const handleChangeText = (e) => {
     setNewData({ ...newData, [e.target.name]: e.target.value });
   };
+
   const handleChange = (e) => {
     setStore({ ...store, [e.target.name]: e.target.value });
   };
+
   const ValidateEmail = () => {
     if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email)) {
       setClick("email is not valid");
@@ -69,14 +75,27 @@ export default function Login() {
       setClick("");
     }
   };
+
+  const validatePhone = (phone) => {
+    // Allow empty input during typing, but validate length on submit
+    if (phone === "") return true;
+    // Check if phone is exactly 10 digits and doesn't start with 0
+    return /^[1-9][0-9]{9}$/.test(phone);
+  };
+
   const HandleApi = () => {
     setLoader(true);
     ValidateEmail();
+    if (store.phone && !validatePhone(store.phone)) {
+      setMessages("Please enter a valid 10-digit phone number");
+      setLoader(false);
+      return;
+    }
     fetch(`${liveUrl}api/User/userRegister`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Add any other headers you need
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         ...store,
@@ -103,9 +122,24 @@ export default function Login() {
         setLoader(false);
       });
   };
+
   const handleLogin = () => {
-    setLoader(true);
     setClick(true);
+    setLoader(true);
+    
+    // Validate inputs
+    if (!newData.phone || !newData.password) {
+      setLoginMessage("Please enter Correct both phone number and password");
+      setLoader(false);
+      return;
+    }
+    
+    if (!validatePhone(newData.phone)) {
+      setLoginMessage("Please enter a valid 10-digit phone number");
+      setLoader(false);
+      return;
+    }
+
     fetch(`${liveUrl}api/User/loginUser`, {
       method: "POST",
       headers: {
@@ -119,15 +153,15 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         setLoginMessage(data.message);
-        localStorage.setItem("token", data.token);
         if (data.status === "done") {
-          toast.success("Login Successfully ");
+          localStorage.setItem("token", data.token);
+          toast.success("Login Successfully");
           setTimeout(() => {
             setLoader(false);
             Navigate("/contact");
           }, 1000);
         } else {
-          toast.error("Api Call Faild");
+          toast.error("Api Call Failed");
         }
       })
       .catch((error) => {
@@ -137,7 +171,7 @@ export default function Login() {
         setLoader(false);
       });
   };
-  // Css
+
   const customStyles = {
     content: {
       top: "50%",
@@ -149,9 +183,9 @@ export default function Login() {
       borderRadius: "10px",
     },
   };
+
   return (
     <>
-      {/* Forgot Password Modal */}
       <Modal
         isOpen={modals}
         onRequestClose={() => setModals(false)}
@@ -159,7 +193,7 @@ export default function Login() {
       >
         <div className="lg:w-[400px] w-full">
           <div className="flex justify-center items-center">
-            <div className="font-bold mb-6 text-2xl text-green-800 ">
+            <div className="font-bold mb-6 text-2xl text-green-800">
               Forget Password
             </div>
             <button
@@ -180,12 +214,12 @@ export default function Login() {
             </button>
           </div>
           <div className="py-6 flex justify-center items-center">
-            <img className="w-28" src={Logo} />
+            <img className="w-28" src={Logo} alt="password" />
           </div>
           <div className="text-sm text-slate-400">
             Enter your email and we'll send you a link to reset your password
           </div>
-          <div className="w-full mt-4 ">
+          <div className="w-full mt-4">
             <input
               placeholder="test@gmail.com"
               onChange={handleForgot}
@@ -193,10 +227,9 @@ export default function Login() {
               name="password"
               className="border w-full p-2 border-green-600 h-10 rounded-md"
             />
-            {click && forgot.password == "" ? (
+            {click && forgot.password === "" ? (
               <div className="text-red-600">Required to fill Email</div>
             ) : null}
-
             <button
               id="forgotPassword"
               className="mt-3 text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
@@ -211,10 +244,10 @@ export default function Login() {
       <Navbar />
       <div className="border border-green-800"></div>
       <div className="container mx-auto flex mt-14 mb-14 justify-center items-center">
-        <div className="flex justify-center items-center mt-5  lg:w-8/12 w-full ">
-          <div className=" mt-5  lg:w-6/12 min-h-[300px] w-full px-4 py-4 ">
+        <div className="flex justify-center items-center mt-5 lg:w-8/12 w-full">
+          <div className="mt-5 lg:w-6/12 min-h-[300px] w-full px-4 py-4">
             <div className="border shadow-lg px-4 py-6 mb-14 rounded-md">
-              <div className="flex justify-center mt-4 items-center ">
+              <div className="flex justify-center mt-4 items-center">
                 <button
                   style={{
                     border: "2px solid #D3D3D3",
@@ -224,7 +257,7 @@ export default function Login() {
                   onClick={() => handleClick("option1")}
                   className={
                     activeButton === "option1"
-                      ? "activess btn btn-solid  w-full "
+                      ? "activess btn btn-solid w-full"
                       : "btn btn-solid w-full"
                   }
                 >
@@ -235,13 +268,12 @@ export default function Login() {
                     border: "2px solid #D3D3D3",
                     backgroundColor: "white",
                     height: "45px",
-
                     cursor: "pointer",
                   }}
                   onClick={() => handleClick("option2")}
                   className={
                     activeButton === "option2"
-                      ? "activess btn btn-solid w-full "
+                      ? "activess btn btn-solid w-full"
                       : "btn btn-solid w-full"
                   }
                 >
@@ -252,21 +284,18 @@ export default function Login() {
                 {activeButton === "option1" ? (
                   <>
                     <div className="">
-                      {loginMessage == "User login successfully." ? (
-                        <>
-                          <div className="text-center text-green-600 p-2">
-                            {loginMessage}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-center text-red-600 p-2">
-                            {loginMessage}
-                          </div>
-                        </>
+                      {loginMessage && (
+                        <div
+                          className={`text-center p-2 ${
+                            loginMessage === "User login successfully."
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {loginMessage}
+                        </div>
                       )}
-
-                      <div className="text-lg mt-4 text-black ">Phone</div>
+                      <div className="text-lg mt-4 text-black">Phone</div>
                       <input
                         className="border w-full p-2 border-green-600 h-10 rounded-md"
                         type="number"
@@ -275,13 +304,18 @@ export default function Login() {
                         value={newData.phone}
                         onChange={handleChangeText}
                         onKeyDown={handleEnterKeyPress}
+                        maxLength="10"
                       />
-                      {click && newData.phone == "" ? (
-                        <div className="text-red-900">
+                      {click && newData.phone === "" ? (
+                        <div className="text-red-600">
                           Required to fill phone number
                         </div>
+                      ) : click && !validatePhone(newData.phone) ? (
+                        <div className="text-red-600">
+                          Please enter a valid 10-digit phone number
+                        </div>
                       ) : null}
-                      <div className="text-lg mt-4 text-black ">Password</div>
+                      <div className="text-lg mt-4 text-black">Password</div>
                       <input
                         className="border w-full p-2 border-green-600 h-10 rounded-md"
                         type="password"
@@ -291,8 +325,8 @@ export default function Login() {
                         onChange={handleChangeText}
                         onKeyDown={handleEnterKeyPress}
                       />
-                      {click && newData.password == "" ? (
-                        <div className="text-red-900">
+                      {click && newData.password === "" ? (
+                        <div className="text-red-600">
                           Required to fill password
                         </div>
                       ) : null}
@@ -306,133 +340,137 @@ export default function Login() {
                           fontWeight: "500",
                           textDecoration: "underline",
                         }}
-                        onClick={() => {
-                          setModals(true);
-                        }}
+                        onClick={() => setModals(true)}
                       >
                         Forgot Password?
                       </button>
                     </div>
                     <div
                       onClick={handleLogin}
-                      className="flex cursor-pointer  rounded-md  p-2 w-full  justify-center items-center mt-5"
+                      className="flex cursor-pointer rounded-md p-2 w-full justify-center items-center mt-5"
                     >
                       {loader ? (
-                        <>
-                          <svg
-                            fill="red"
-                            className="animate-spin h-5 w-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 512 512"
-                          >
-                            <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-                          </svg>
-                        </>
+                        <svg
+                          fill="red"
+                          className="animate-spin h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                        >
+                          <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
+                        </svg>
                       ) : (
-                        <>
-                          <button
-                            id="submitButton"
-                            className="text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
-                            type="submit"
-                          >
-                            Login
-                          </button>
-                        </>
+                        <button
+                          id="submitButton"
+                          className="text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
+                          type="submit"
+                        >
+                          Login
+                        </button>
                       )}
                     </div>
                   </>
-                ) : null}
+                ) : (
+                  <>
+                    <div className="font-bold text-2xl text-white text-center">
+                      Register
+                    </div>
+                    <div className="text-red-600 mb-4 text-center">
+                      {messages}
+                    </div>
+                    <div>
+                      <div className="text-lg text-black">Name</div>
+                      <input
+                        onChange={handleChange}
+                        value={store.name}
+                        name="name"
+                        className="border w-full p-2 h-10 rounded-md"
+                        type="text"
+                      />
+                      {click && store.name === "" ? (
+                        <div className="text-red-600 capitalize mt-1">
+                          Required to fill Name
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="mt-3">
+                      <div className="text-lg text-black">Email</div>
+                      <input
+                        onChange={handleChange}
+                        value={store.email}
+                        name="email"
+                        className="border w-full p-2 h-10 rounded-md"
+                        type="email"
+                      />
+                      {click && store.email === "" ? (
+                        <div className="text-red-600 capitalize">
+                          Required to fill Email
+                        </div>
+                      ) : click && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email) ? (
+                        <div className="text-red-600 capitalize">
+                          Email is not valid
+                        </div>
+                      ) : null}
+                    </div>
+                    <div>
+                      <div className="mt-2 text-lg text-black">Password</div>
+                      <input
+                        type="password"
+                        onChange={handleChange}
+                        name="password"
+                        value={store.password}
+                        className="w-full p-2 border h-10 rounded-md"
+                      />
+                      {click && store.password === "" ? (
+                        <div className="text-red-600 capitalize">
+                          Required to fill password
+                        </div>
+                      ) : null}
+                    </div>
+                    <div>
+                      <div className="mt-2 text-lg text-black">Mobile</div>
+                      <input
+                        type="number"
+                        onChange={handleChange}
+                        name="phone"
+                        value={store.phone}
+                        className="w-full p-2 border h-10 rounded-md"
+                        maxLength="10"
+                      />
+                      {click && store.phone === "" ? (
+                        <div className="text-red-600 capitalize">
+                          Required to fill phone number
+                        </div>
+                      ) : click && !validatePhone(store.phone) ? (
+                        <div className="text-red-600 capitalize">
+                          Please enter a valid 10-digit phone number
+                        </div>
+                      ) : null}
+                    </div>
+                    <div
+                      onClick={HandleApi}
+                      className="bg-white cursor-pointer flex justify-center items-center p-2 w-full mt-2 rounded-md mb-2"
+                    >
+                      {loader ? (
+                        <svg
+                          fill="red"
+                          className="animate-spin h-5 w-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                        >
+                          <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
+                        </svg>
+                      ) : (
+                        <button
+                          className="text-white w-full bg-red-600 p-2 rounded-md font-bold text-xl"
+                          type="submit"
+                        >
+                          Register
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-              {activeButton === "option2" ? (
-                <>
-                  <div className="font-bold text-2xl text-white  text-center ">
-                    Register
-                  </div>
-                  <div className="text-red-600  mb-4  text-center">
-                    {messages}
-                  </div>
-                  <div>
-                    <div className="text-lg text-black">Name</div>
-                    <input
-                      onChange={handleChange}
-                      value={store.name}
-                      name="name"
-                      className="border w-full p-2 h-10 rounded-md"
-                      type="name"
-                    />
-                    {click && store.name == "" ? (
-                      <div className="text-red-600 capitalize mt-1 ">
-                        Required to fill Name
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-lg text-black">Email</div>
-                    <input
-                      onChange={handleChange}
-                      value={store.email}
-                      name="email"
-                      className="border w-full p-2 h-10 rounded-md"
-                      type="email"
-                    />
-                    {click && (
-                      <div className="text-red-600 capitalize">{click}</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="mt-2 text-lg text-black">Password</div>
-                    <input
-                      type="password"
-                      onChange={handleChange}
-                      name="password"
-                      value={store.password}
-                      className="w-full p-2  border h-10 rounded-md"
-                    />
-                    {click && store.password == "" ? (
-                      <div className="text-red-600 capitalize">
-                        Required to fill password
-                      </div>
-                    ) : null}
-                  </div>
-                  <div>
-                    <div className="mt-2 text-lg text-black">Mobile</div>
-                    <input
-                      type="number"
-                      onChange={handleChange}
-                      name="phone"
-                      value={store.phone}
-                      className="w-full p-2  border h-10 rounded-md"
-                    />
-                    {click && store.phone.length < 10 ? (
-                      <div className="text-red-600 capitalize ">
-                        Phone Number is not Valid
-                      </div>
-                    ) : null}
-                  </div>
-                  <div
-                    onClick={HandleApi}
-                    className="bg-white cursor-pointer flex justify-center items-center p-2 w-full mt-2 rounded-md mb-2"
-                  >
-                    {loader ? (
-                      <svg
-                        fill="red"
-                        className="animate-spin h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                      >
-                        <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-                      </svg>
-                    ) : (
-                      <button
-                        className=" text-white w-full bg-red-600 p-2 rounded-md font-bold text-xl  "
-                        type="submit"
-                      >
-                        Register
-                      </button>
-                    )}
-                  </div>
-                </>
-              ) : null}
             </div>
           </div>
         </div>

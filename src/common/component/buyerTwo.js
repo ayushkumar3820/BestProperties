@@ -16,7 +16,7 @@ export default function BuyerTwo() {
     mobile: "",
   });
   const ValidateEmail = () => {
-    if (!/^\d{10}$/.test(store.mobile)) {
+    if (/^(?:\d{3}|\(\d{3}\))([-/.])\d{3}\1\d{4}$/.test(store.mobile)) {
       setClick("Mobile number should be 10 digits long.");
     } else {
       setClick("");
@@ -166,7 +166,7 @@ export default function BuyerTwo() {
                 <button
                   onClick={handleApi}
                   className="p-2 bg-red-600 mt-5 mb-10 w-full rounded-md text-white flex justify-center items-center text-2xl"
-                >
+                  >
                   <div>Next</div>
                 </button>
               </fieldset>
