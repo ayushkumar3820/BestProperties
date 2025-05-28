@@ -163,6 +163,13 @@ export default function GalleryComponent() {
     navigate(`/single-property/${projectId}`, { state: { imageUrl } });
   };
 
+   const handleProjectClicks = (projectId, imageUrl) => {
+    navigate(`/project-details/${projectId}`, { state: { imageUrl } });
+  };
+  
+
+  
+
   const customStyles = {
     content: {
       top: "50%",
@@ -347,113 +354,137 @@ export default function GalleryComponent() {
             <Rent />
           ) : (
             <div>
-              <div className="slider-main-div mt-8 gap-6 items-start">
-                <div className="slider-inner-div">
+<div className="slider-main-div mt-8 gap-6 items-start ">
+                <div className="slider-inner-div ">
                   <h2 className="deal-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="HOT DEALS" />
                   </h2>
                   <Slider {...oneSlider}>
-                    {newData.slice(0, showCount).map((panel) => (
-                      <div
-                        key={panel.id}
-                        onClick={() => {
-                          const modifiedPanelName = panel.name
-                            .replace(/\s/g, "-")
-                            .replace(/[^\w\s]/g, "")
-                            .toLowerCase();
+                    {newData.slice(0, showCount).map((panel) => {
+                      return (
+                        <>
+                          <div
+                            onClick={() => {
+                              const modifiedPanelName = panel.name
+                                .replace(/\s/g, "-")
+                                .replace(/[^\w\s]/g, "")
+                                .toLowerCase();
                           navigate(`/property/-${panel.id}-${modifiedPanelName}`);
-                        }}
-                        className="main-sale-div border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
-                      >
-                        <div className="relative">
-                          {panel.type && (
-                            <div className="flex items-center bg-green-900 text-white px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl text-sm">
-                              <div className="text-md text-sm font-bold ml-2">
-                                {panel.name}
+                            }}
+                            className="main-sale-div border rounded-md  cursor-pointer     shadow-lg   transition duration-300 ease-in-out "
+                          >
+                            <div className="relative  ">
+                              <div className=" absolute left-0  "></div>
+                              {panel.type ? (
+                                <>
+                                  <div className=" flex items-center bg-green-900 text-white  px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl  text-sm ">
+                                    <div className="text-md text-sm font-bold ml-2">
+                                      {panel.name}
+                                    </div>
+                                  </div>
+                                  
+                                </>
+                              ) : null}
+                              <div className="sale-image-div">
+                                {panel.image_one ? (
+                                  <>
+                                    <img
+                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
+                                      src={showData + panel.image_one}
+                                    />
+                                  </>
+                                ) : (
+                                  <>
+                                    <img
+                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
+                                      src={NoImage}
+                                    />
+                                  </>
+                                )}
                               </div>
+                              <div className="for-sale-div">For Sale</div>
                             </div>
-                          )}
-                          <div className="sale-image-div">
-                            {panel.image_one ? (
-                              <img
-                                className="rounded-t-md cursor-pointer h-52 w-full"
-                                src={showData + panel.image_one}
-                                alt={`${panel.name} Image`}
-                              />
-                            ) : (
-                              <img
-                                className="rounded-t-md cursor-pointer h-52 w-full"
-                                src={NoImage}
-                                alt="No Image"
-                              />
-                            )}
-                          </div>
-                          <div className="for-sale-div">For Sale</div>
-                        </div>
-                        <div className="text-left bg-white border border-t leading-4 p-2">
-                          <div className="mr-2">
-                            <div className="text-sm font-extralight">
-                              {panel.property_name}
-                            </div>
-                            <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
-                              <svg
-                                fill="#14532d"
-                                className="w-5 h-5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 320 512"
-                              >
-                                <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                              </svg>
-                              {formatBudget(panel.budget)}
-                              {panel.sqft > 0 && (
-                                <div className="lg:text-lg ml-2 text-sm headingStyle">
-                                  | {panel.sqft} {panel.measureUnit}
-                                </div>
-                              )}
-                            </div>
-                            <div
-                              className="flex items-start mt-3"
-                              style={{ alignItems: "flex-start !important" }}
-                            >
-                              <svg
-                                className="h-5 w-5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 384 512"
-                                fill="#14532d"
-                              >
-                                <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                              </svg>
-                              <div className="property-address sale-address m-0">
-                                {panel.address}
-                              </div>
-                            </div>
-                            <div className="flex items-center lg:gap-3 gap-3 mt-1">
-                              {panel.bedrooms && (
-                                <div className="flex items-center gap-2">
-                                  <img className="w-6" src={Bed} alt="Bed" />
-                                  <div className="font-semibold text-green-800 inner-rooms-heading">
-                                    {panel.bedrooms}
+                            <div className="text-left bg-white border border-t leading-4 p-2">
+                              <div className=" mr-2 ">
+                                <div className="">
+                                  <div className="text-sm font-extralight ">
+                                    {panel.property_name}
+                                  </div>
+
+                                  <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
+                                    <svg
+                                      fill="#14532d"
+                                      className="w-5 h-5 "
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 320 512"
+                                    >
+                                      <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                                    </svg>
+                                    {formatBudget(panel.budget)}
+                                    <div
+                                      className=" lg:text-lg ml-2 text-sm headingStyle"
+                                      style={headingStyle}
+                                    >
+                                      {panel.sqft > 0 ? (
+                                        <>
+                                          | {panel.sqft} {panel.measureUnit}
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div
+                                    className="flex  items-start mt-3"
+                                    style={{
+                                      alignItems: "flex-start !important;",
+                                    }}
+                                  >
+                                    <div>
+                                      <svg
+                                        className="h-5 w-5"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 384 512"
+                                        fill="#14532d"
+                                      >
+                                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                      </svg>
+                                    </div>
+                                    <div className="property-address sale-address m-0">
+                                      {panel.address}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center lg:gap-3 gap-3 mt-1">
+                                    <div className="flex items-center gap-2 ">
+                                      {panel.bedrooms ? (
+                                        <img className="w-6" src={Bed} />
+                                      ) : null}
+                                      <div className="font-semibold text-green-800 inner-rooms-heading">
+                                        {panel.bedrooms}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {panel.bathrooms ? (
+                                        <img className="w-6" src={Bath} />
+                                      ) : null}
+                                      <div className="font-semibold text-green-800 inner-rooms-heading">
+                                        {panel.bathrooms}
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                      <img
+                                        className="w-5"
+                                        src={panel.varifed}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
-                              )}
-                              {panel.bathrooms && (
-                                <div className="flex items-center gap-2">
-                                  <img className="w-6" src={Bath} alt="Bath" />
-                                  <div className="font-semibold text-green-800 inner-rooms-heading">
-                                    {panel.bathrooms}
-                                  </div>
-                                </div>
-                              )}
-                              {panel.varifed && (
-                                <div className="flex gap-2 items-center">
-                                  <img className="w-5" src={panel.varifed} alt="Verified" />
-                                </div>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+ </div>
+                        </>
+                      );
+                    })}
                   </Slider>
                 </div>
 
@@ -637,7 +668,7 @@ export default function GalleryComponent() {
                   <Slider {...ProjectSlider}>
                     {listProjectData.map((data) => (
                       <div className="project-card" key={data.id}>
-                        <div onClick={() => handleProjectClick(data.id, data.Image_URLs || NoImage)}>
+                        <div onClick={() => handleProjectClicks(data.id, data.Image_URLs || NoImage)}>
                           <div className="project-image-container">
                             {data.Image_URLs ? (
                               <img
@@ -655,7 +686,7 @@ export default function GalleryComponent() {
                           </div>
                         </div>
                         <div className="project-details">
-                          <div onClick={() => handleProjectClick(data.id, data.Image_URLs || NoImage)}>
+                          <div onClick={() => handleProjectClicks(data.id, data.Image_URLs || NoImage)}>
                             <h5 className="project-title">{data.Project_Name}</h5>
                           </div>
                           <p className="project-location">
