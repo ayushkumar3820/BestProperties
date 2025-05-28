@@ -15,7 +15,7 @@ import PlotImage from "../../assets/img/Plot.jpg";
 import RectangleImage from "../../assets/img/kothi-image2.jpg";
 
 export default function GalleryComponent() {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const [newData, setNewData] = useState([]);
   const [newRent, setNewRent] = useState([]);
   const [imageshow, setImageShow] = useState("");
@@ -26,7 +26,6 @@ export default function GalleryComponent() {
   const [showRent, setShowRent] = useState(false);
   const [showData, setShowData] = useState("");
   const [properties, setProperties] = useState([]);
-  const navigate = useNavigate();
 
   const handleShowMore = () => {
     setShowCount(showCount + 8);
@@ -48,13 +47,14 @@ export default function GalleryComponent() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.result, "this is response");
+        console.log("property-hot-deals response:", data.result);
         setNewData(data.result);
         setShowData(data.image_url);
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching hot deals:", error);
+        setLoader(false);
       });
   };
 
@@ -68,17 +68,18 @@ export default function GalleryComponent() {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log("rent-hot-deals response:", data.result);
         setNewRent(data.result);
         setImageShow(data.image_url);
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching rent deals:", error);
+        setLoader(false);
       });
   };
 
   useEffect(() => {
-    // Get Project Data Here
     fetch(`${liveUrl}all-projects`, {
       method: "POST",
       headers: {
@@ -93,11 +94,13 @@ export default function GalleryComponent() {
         return response.json();
       })
       .then((data) => {
+        console.log("all-projects response:", data.result);
         setlistProjectData(data.result);
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching projects:", error);
+        setLoader(false);
       });
 
     fetch(`${liveUrl}only-single-properties`, {
@@ -114,16 +117,13 @@ export default function GalleryComponent() {
         return response.json();
       })
       .then((data) => {
+        console.log("only-single-properties response:", data.result);
         setProperties(data.result);
-        console.log(
-          data.result,
-          "dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj"
-        );
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
-        console.log("dskjkljdfkl dklfjklad jfkjsdklfjkladjfkljadkfkl;sadj");
+        console.error("Error fetching properties:", error);
+        setLoader(false);
       });
 
     handleSubmit();
@@ -159,11 +159,10 @@ export default function GalleryComponent() {
     }
   };
 
-  const handleProjectClick = (projectId) => {
-    navigate(`/single-property/${projectId}`);
+  const handleProjectClick = (projectId, imageUrl) => {
+    navigate(`/single-property/${projectId}`, { state: { imageUrl } });
   };
 
-  // Css
   const customStyles = {
     content: {
       top: "50%",
@@ -176,7 +175,6 @@ export default function GalleryComponent() {
     },
   };
 
-  // heading Css
   const headingStyle = {
     content: {
       fontFamily: '"Poppins", Sans-serif !important',
@@ -293,212 +291,169 @@ export default function GalleryComponent() {
     ],
   };
 
-  // Add this function to your GalleryComponent before the return statement
-
-  // Function to get the appropriate image URL for properties
   const getPropertyImageUrl = (item) => {
-    // Check if Image_URLs exists and has valid data
+    console.log(`GalleryComponent - Property ID: ${item.id}, Type: ${item.type}, Image_URLs:`, item.Image_URLs);
     if (item.Image_URLs) {
-      // If Image_URLs is a string and not empty
-      if (
-        typeof item.Image_URLs === "string" &&
-        item.Image_URLs.trim() !== ""
-      ) {
+      if (typeof item.Image_URLs === "string" && item.Image_URLs.trim() !== "") {
         return item.Image_URLs;
       }
-      // If Image_URLs is an array and has items
       if (Array.isArray(item.Image_URLs) && item.Image_URLs.length > 0) {
         return item.Image_URLs[0];
       }
     }
 
-    // Return fallback image based on property type
-    if (item.type === "Flat") {
+    if (item.type?.toLowerCase() === "flat") {
       return NoImage;
-    } else if (item.type === "Plot") {
+    } else if (item.type?.toLowerCase() === "plot") {
       return PlotImage;
-    } else if (item.type === "Kothi" || item.type === "House") {
+    } else if (item.type?.toLowerCase() === "kothi" || item.type?.toLowerCase() === "house") {
       return RectangleImage;
     } else {
-      return NoImage; // Default fallback
+      return NoImage;
     }
   };
 
-  // Function to handle image error for properties
   const handlePropertyImageError = (e, item) => {
-    console.log(
-      `Image failed to load for Property ID: ${item.id}, Type: ${item.type}`
-    );
-
-    // Set fallback image based on property type
-    if (item.type === "Flat") {
+    console.log(`GalleryComponent - Image failed to load for Property ID: ${item.id}, Type: ${item.type}`);
+    if (item.type?.toLowerCase() === "flat") {
       e.target.src = NoImage;
-    } else if (item.type === "Plot") {
+    } else if (item.type?.toLowerCase() === "plot") {
       e.target.src = PlotImage;
-    } else if (item.type === "Kothi" || item.type === "House") {
+    } else if (item.type?.toLowerCase() === "kothi" || item.type?.toLowerCase() === "house") {
       e.target.src = RectangleImage;
     } else {
       e.target.src = NoImage;
     }
+    e.target.onerror = null;
   };
-
-  // Then replace the image rendering logic in your properties section with:
 
   return (
     <div>
       {loader ? (
-        <>
-          <div className="flex justify-center align-items-center p-2">
-            <svg
-              className=" animate-spin h-10 w-10"
-              fill="#014108"
-              xmlns="http://www.w3.org/2000/svg"
-              height="1em"
-              viewBox="0 0 512 512"
-            >
-              <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-            </svg>
-          </div>
-        </>
+        <div className="flex justify-center align-items-center p-2">
+          <svg
+            className=" animate-spin h-10 w-10"
+            fill="#014108"
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            viewBox="0 0 512 512"
+          >
+            <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
+          </svg>
+        </div>
       ) : (
         <>
           {showRent ? (
-            <>
-              <Rent />
-            </>
+            <Rent />
           ) : (
-            <>
+            <div>
               <div className="slider-main-div mt-8 gap-6 items-start">
                 <div className="slider-inner-div">
                   <h2 className="deal-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="HOT DEALS" />
                   </h2>
                   <Slider {...oneSlider}>
-                    {newData.slice(0, showCount).map((panel) => {
-                      return (
-                        <>
-                          <div
-                            onClick={() => {
-                              const modifiedPanelName = panel.name
-                                .replace(/\s/g, "-")
-                                .replace(/[^\w\s]/g, "")
-                                .toLowerCase();
-                              Navigate(
-                                `/property/-${panel.id}-${modifiedPanelName}`
-                              );
-                            }}
-                            className="main-sale-div border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
-                          >
-                            <div className="relative">
-                              <div className=" absolute left-0"></div>
-                              {panel.type ? (
-                                <>
-                                  <div className=" flex items-center bg-green-900 text-white px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl text-sm">
-                                    <div className="text-md text-sm font-bold ml-2">
-                                      {panel.name}
-                                    </div>
-                                  </div>
-                                </>
-                              ) : null}
-                              <div className="sale-image-div">
-                                {panel.image_one ? (
-                                  <>
-                                    <img
-                                      className=" rounded-t-md cursor-pointer h-52 w-full"
-                                      src={showData + panel.image_one}
-                                    />
-                                  </>
-                                ) : (
-                                  <>
-                                    <img
-                                      className=" rounded-t-md cursor-pointer h-52 w-full"
-                                      src={NoImage}
-                                    />
-                                  </>
-                                )}
+                    {newData.slice(0, showCount).map((panel) => (
+                      <div
+                        key={panel.id}
+                        onClick={() => {
+                          const modifiedPanelName = panel.name
+                            .replace(/\s/g, "-")
+                            .replace(/[^\w\s]/g, "")
+                            .toLowerCase();
+                          navigate(`/property/-${panel.id}-${modifiedPanelName}`);
+                        }}
+                        className="main-sale-div border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
+                      >
+                        <div className="relative">
+                          {panel.type && (
+                            <div className="flex items-center bg-green-900 text-white px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl text-sm">
+                              <div className="text-md text-sm font-bold ml-2">
+                                {panel.name}
                               </div>
-                              <div className="for-sale-div">For Sale</div>
                             </div>
-                            <div className="text-left bg-white border border-t leading-4 p-2">
-                              <div className=" mr-2">
-                                <div className="">
-                                  <div className="text-sm font-extralight">
-                                    {panel.property_name}
-                                  </div>
-                                  <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
-                                    <svg
-                                      fill="#14532d"
-                                      className="w-5 h-5"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 320 512"
-                                    >
-                                      <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                                    </svg>
-                                    {formatBudget(panel.budget)}
-                                    <div
-                                      className=" lg:text-lg ml-2 text-sm headingStyle"
-                                      style={headingStyle}
-                                    >
-                                      {panel.sqft > 0 ? (
-                                        <>
-                                          | {panel.sqft} {panel.measureUnit}
-                                        </>
-                                      ) : (
-                                        <></>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div
-                                    className="flex items-start mt-3"
-                                    style={{
-                                      alignItems: "flex-start !important;",
-                                    }}
-                                  >
-                                    <div>
-                                      <svg
-                                        className="h-5 w-5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 384 512"
-                                        fill="#14532d"
-                                      >
-                                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                      </svg>
-                                    </div>
-                                    <div className="property-address sale-address m-0">
-                                      {panel.address}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center lg:gap-3 gap-3 mt-1">
-                                    <div className="flex items-center gap-2">
-                                      {panel.bedrooms ? (
-                                        <img className="w-6" src={Bed} />
-                                      ) : null}
-                                      <div className="font-semibold text-green-800 inner-rooms-heading">
-                                        {panel.bedrooms}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {panel.bathrooms ? (
-                                        <img className="w-6" src={Bath} />
-                                      ) : null}
-                                      <div className="font-semibold text-green-800 inner-rooms-heading">
-                                        {panel.bathrooms}
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                      <img
-                                        className="w-5"
-                                        src={panel.varifed}
-                                      />
-                                    </div>
+                          )}
+                          <div className="sale-image-div">
+                            {panel.image_one ? (
+                              <img
+                                className="rounded-t-md cursor-pointer h-52 w-full"
+                                src={showData + panel.image_one}
+                                alt={`${panel.name} Image`}
+                              />
+                            ) : (
+                              <img
+                                className="rounded-t-md cursor-pointer h-52 w-full"
+                                src={NoImage}
+                                alt="No Image"
+                              />
+                            )}
+                          </div>
+                          <div className="for-sale-div">For Sale</div>
+                        </div>
+                        <div className="text-left bg-white border border-t leading-4 p-2">
+                          <div className="mr-2">
+                            <div className="text-sm font-extralight">
+                              {panel.property_name}
+                            </div>
+                            <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
+                              <svg
+                                fill="#14532d"
+                                className="w-5 h-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 320 512"
+                              >
+                                <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                              </svg>
+                              {formatBudget(panel.budget)}
+                              {panel.sqft > 0 && (
+                                <div className="lg:text-lg ml-2 text-sm headingStyle">
+                                  | {panel.sqft} {panel.measureUnit}
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className="flex items-start mt-3"
+                              style={{ alignItems: "flex-start !important" }}
+                            >
+                              <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 384 512"
+                                fill="#14532d"
+                              >
+                                <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                              </svg>
+                              <div className="property-address sale-address m-0">
+                                {panel.address}
+                              </div>
+                            </div>
+                            <div className="flex items-center lg:gap-3 gap-3 mt-1">
+                              {panel.bedrooms && (
+                                <div className="flex items-center gap-2">
+                                  <img className="w-6" src={Bed} alt="Bed" />
+                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                    {panel.bedrooms}
                                   </div>
                                 </div>
-                              </div>
+                              )}
+                              {panel.bathrooms && (
+                                <div className="flex items-center gap-2">
+                                  <img className="w-6" src={Bath} alt="Bath" />
+                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                    {panel.bathrooms}
+                                  </div>
+                                </div>
+                              )}
+                              {panel.varifed && (
+                                <div className="flex gap-2 items-center">
+                                  <img className="w-5" src={panel.varifed} alt="Verified" />
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </>
-                      );
-                    })}
+                        </div>
+                      </div>
+                    ))}
                   </Slider>
                 </div>
 
@@ -509,10 +464,11 @@ export default function GalleryComponent() {
                   <div className="home-single">
                     <Slider {...PropertySlider}>
                       {properties.map((item) => {
+                        const imageUrl = getPropertyImageUrl(item); // Get the image URL to pass to SingleProperty
                         return (
                           <div
                             key={item.id}
-                            onClick={() => handleProjectClick(item.id)}
+                            onClick={() => handleProjectClick(item.id, imageUrl)}
                             className="rent-detail-div p-2"
                           >
                             <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
@@ -520,11 +476,9 @@ export default function GalleryComponent() {
                                 <div className="sale-image-div">
                                   <img
                                     className="rounded-t-md cursor-pointer h-52 w-full"
-                                    src={getPropertyImageUrl(item)}
-                                    alt={`${item.type} Property Image`}
-                                    onError={(e) =>
-                                      handlePropertyImageError(e, item)
-                                    }
+                                    src={imageUrl}
+                                    alt={`${item.type || 'Property'} Image`}
+                                    onError={(e) => handlePropertyImageError(e, item)}
                                   />
                                 </div>
                               </div>
@@ -534,10 +488,7 @@ export default function GalleryComponent() {
                                 </div>
                                 <div
                                   className="property-address mb-3 mt-0 items-center flex"
-                                  style={{
-                                    justifyContent: "space-between",
-                                    marginTop: "0",
-                                  }}
+                                  style={{ justifyContent: "space-between", marginTop: "0" }}
                                 >
                                   <div className="headingStyle flex items-center text-green-800 font-bold">
                                     <svg
@@ -548,16 +499,9 @@ export default function GalleryComponent() {
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-                                    <div
-                                      className=" lg:text-lg ml-2 text-sm headingStyle"
-                                      style={headingStyle}
-                                    >
+                                    <div className="lg:text-lg ml-2 text-sm headingStyle">
                                       {formatBudget(item.budget)}
-                                      {item.sqft.length > 0 ? (
-                                        <> | {item.sqft} </>
-                                      ) : (
-                                        <>{null}</>
-                                      )}
+                                      {item.sqft?.length > 0 ? ` | ${item.sqft}` : null}
                                     </div>
                                   </div>
                                 </div>
@@ -598,9 +542,7 @@ export default function GalleryComponent() {
                               .replace(/\s/g, "-")
                               .replace(/[^\w\s]/g, "-")
                               .toLowerCase();
-                            Navigate(
-                              `/rentDetails/-${rent.id}-${modifiedPanelName}`
-                            );
+                            navigate(`/rentDetails/-${rent.id}-${modifiedPanelName}`);
                             window.scrollTo(0, 0);
                           }}
                           className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
@@ -674,9 +616,7 @@ export default function GalleryComponent() {
                                 const modifiedPanelName = rent.name
                                   .replace(/\s/g, "")
                                   .toLowerCase();
-                                Navigate(
-                                  `/rentDetails/-${rent.id}-${modifiedPanelName}`
-                                );
+                                navigate(`/rentDetails/-${rent.id}-${modifiedPanelName}`);
                               }}
                               className="p-1 w-full text-black"
                               style={{ background: "#e2e2e2" }}
@@ -697,10 +637,7 @@ export default function GalleryComponent() {
                   <Slider {...ProjectSlider}>
                     {listProjectData.map((data) => (
                       <div className="project-card" key={data.id}>
-                        <div
-                          key={data.id}
-                          onClick={() => handleProjectClick(data.id)}
-                        >
+                        <div onClick={() => handleProjectClick(data.id, data.Image_URLs || NoImage)}>
                           <div className="project-image-container">
                             {data.Image_URLs ? (
                               <img
@@ -718,13 +655,8 @@ export default function GalleryComponent() {
                           </div>
                         </div>
                         <div className="project-details">
-                          <div
-                            key={data.id}
-                            onClick={() => handleProjectClick(data.id)}
-                          >
-                            <h5 className="project-title">
-                              {data.Project_Name}
-                            </h5>
+                          <div onClick={() => handleProjectClick(data.id, data.Image_URLs || NoImage)}>
+                            <h5 className="project-title">{data.Project_Name}</h5>
                           </div>
                           <p className="project-location">
                             <svg
@@ -742,9 +674,8 @@ export default function GalleryComponent() {
                             >
                               <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
                             </svg>
-                            {data.Min_Budget ? <>From</> : <></>}{" "}
-                            {formatBudget(data.Min_Budget)} |{" "}
-                            {formatBudget(data.Max_Budget)}
+                            {data.Min_Budget ? "From " : ""}
+                            {formatBudget(data.Min_Budget)} | {formatBudget(data.Max_Budget)}
                           </p>
                         </div>
                       </div>
@@ -753,17 +684,17 @@ export default function GalleryComponent() {
                 </div>
               </div>
 
-              <div className="flex justify-center mt-10 mb-14">
-                {showCount < newData.length && (
+              {showCount < newData.length && (
+                <div className="flex justify-center mt-10 mb-14">
                   <button
                     className="font-bold p-2 w-52 rounded-md text-white bg-red-600"
                     onClick={handleShowMore}
                   >
                     Show More
                   </button>
-                )}
-              </div>
-            </>
+                </div>
+              )}
+            </div>
           )}
         </>
       )}
