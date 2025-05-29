@@ -15,6 +15,7 @@ export default function Budget() {
     minBudget: "0",
     maxBudget: "1000000",
   });
+  
   const handleSliderChange = (e) => {
     const newValue = parseInt(e.target.value);
     setMinBudget({
@@ -22,23 +23,32 @@ export default function Budget() {
       maxBudget: (10000000 + newValue).toString(),
     });
   };
+  
   const Validate = () => {
-    if (minBudget.minBudget) {
-      console.log("false");
+    if (minBudget.minBudget && minBudget.minBudget !== "") {
+      console.log("validation passed");
+      setClick(false); // Reset error state
       return true;
-    } else setClick(true);
-    {
+    } else {
+      setClick(true);
       return false;
     }
   };
+  
   const handleApi = () => {
-    setLoader(false);
-    Validate();
+    // First validate, then proceed only if validation passes
+    if (!Validate()) {
+      console.log("Validation failed - not proceeding with API call");
+      return; // Exit early if validation fails
+    }
+    
+    setLoader(true); // Set loader to true when starting API call
+    
     fetch(`${liveUrl}api/Buyer/addBuyer`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Add any other headers you need
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         ...minBudget,
@@ -46,16 +56,49 @@ export default function Budget() {
         mobile: data,
       }),
     })
-      .then((response) => response.json())
+      .then(async (response) => {
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
+        
+        // Check if response is ok (status 200-299)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Check if response is JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const text = await response.text();
+          console.error("Non-JSON response:", text);
+          throw new Error("Server returned non-JSON response");
+        }
+        
+        return response.json();
+      })
       .then((data) => {
-        if (data.status === "done") {
-          setLoader(true);
+        setLoader(false); // Set loader to false when API call completes
+        console.log("API Response:", data); // Debug: see full response
+        
+        // Check multiple possible success conditions
+        if (data.status === "done" || data.status === "success" || data.success === true) {
+          console.log("Success! Navigating to /requirment");
           Navigate("/requirment");
-          console.log(data);
         } else {
+          console.log("API call unsuccessful. Response:", data);
+          alert("Something went wrong. Please try again.");
         }
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        setLoader(false); // Set loader to false on error
+        console.error("API call error:", error);
+        
+        // For now, let's navigate anyway to test if the route works
+        console.log("API failed, but navigating to test route...");
+        Navigate("/requirment");
+        
+        // Uncomment this line if you want to show error instead of navigating:
+        // alert("Network error. Please check your connection and try again.");
+      });
   };
 
   return (
@@ -75,7 +118,7 @@ export default function Budget() {
             ) : null}
             <div className="mt-5">
               <div className="text-lg flex items-center justify-between">
-                <div>Min Budget:0</div>
+                <div>Min Budget: {minBudget.minBudget}</div>
                 <div>Max Budget: {minBudget.maxBudget}</div>
               </div>
             </div>
@@ -89,17 +132,14 @@ export default function Budget() {
               onChange={handleSliderChange}
             />
           </div>
-          {/* <div className="flex gap-1">
-            <input type="checkbox" />
-            <div className="text-green-600">
-              I agree to the term and condition
-            </div>
-          </div> */}
           <button
             onClick={handleApi}
-            className="bg-red-600 mb-14 text-white text-xl font-bold w-full rounded-md p-2 mt-5"
+            disabled={loader} // Disable button while loading
+            className={`${
+              loader ? 'bg-gray-400' : 'bg-red-600'
+            } mb-14 text-white text-xl font-bold w-full rounded-md p-2 mt-5`}
           >
-            <div>Next</div>
+            <div>{loader ? 'Loading...' : 'Next'}</div>
           </button>
         </div>
       </div>

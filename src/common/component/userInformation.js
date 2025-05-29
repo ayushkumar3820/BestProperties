@@ -35,34 +35,82 @@ export default function UserInformation() {
     firstname: "",
     phone: "",
   });
+
   const handleShowMore = () => {
     setShow(!show);
   };
+
   const handleImageShow = () => {
     setImageShow(true);
     setImageShowTwo(false);
     setImageShowThree(false);
     setMain(false);
   };
+
   const handleImageShowTwo = () => {
     setImageShowTwo(true);
     setImageShowThree(false);
     setImageShow(false);
     setMain(false);
   };
+
   const handleImageShowThree = () => {
     setImageShowThree(true);
     setImageShowTwo(false);
     setImageShow(false);
     setMain(false);
   };
+
   function HandleApi() {
+    // Check if store exists and phone is defined
     if (!store || typeof store.phone === "undefined") {
       return;
     }
+
+    // Check if required fields are filled
+    if (!store.firstname.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    if (!store.phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+
+    // Validate name format (only letters and spaces allowed)
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(store.firstname.trim())) {
+      toast.error("Incorrect name format. Please enter a valid name with only letters.");
+      return;
+    }
+
+    // Validate phone number format (only numbers allowed)
+    const phoneRegex = /^\d+$/;
+    if (!phoneRegex.test(store.phone.trim())) {
+      toast.error("Incorrect phone number format. Please enter only numbers.");
+      return;
+    }
+
+    // Validate phone number length
+    if (store.phone.length < 10) {
+      toast.error("Incorrect phone number. Phone number must be 10 digits.");
+      return;
+    }
+
+    if (store.phone.length > 10) {
+      toast.error("Incorrect phone number. Phone number must be exactly 10 digits.");
+      return;
+    }
+
     setClick(true);
+    setIsLoading(true);
+
     fetch(`${liveUrl}api/Contact/contact`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         ...store,
       }),
@@ -75,23 +123,47 @@ export default function UserInformation() {
       })
       .then((data) => {
         setMessage(data.message);
+        
         if (data.status === "done") {
-          toast.success("We will Contact You Soon ");
+          toast.success("We will Contact You Soon");
           setModalIsOpen(false);
-          setStore({ phone: "" });
-          setIsLoading(true);
+          setStore({ firstname: "", phone: "" });
+          setIsLoading(false);
+          setClick(false);
+        } else if (data.status === "phone_exists" || data.message?.toLowerCase().includes("phone") || data.message?.toLowerCase().includes("exist")) {
+          // Handle phone number already exists case
+          toast.error("This phone number already exists. Please use a different phone number.");
+          setIsLoading(false);
+        } else if (data.status === "name_exists" || data.message?.toLowerCase().includes("name")) {
+          // Handle name already exists case  
+          toast.error("This name is already registered. Please use a different name.");
+          setIsLoading(false);
+        } else if (data.status === "invalid_name" || data.message?.toLowerCase().includes("invalid name")) {
+          // Handle incorrect name format
+          toast.error("Incorrect name format. Please enter a valid name.");
+          setIsLoading(false);
+        } else if (data.status === "invalid_phone" || data.message?.toLowerCase().includes("invalid phone")) {
+          // Handle incorrect phone format
+          toast.error("Incorrect phone number format. Please enter a valid phone number.");
+          setIsLoading(false);
+        } else if (data.status === "both_wrong" || (data.message?.toLowerCase().includes("both") && data.message?.toLowerCase().includes("wrong"))) {
+          // Handle both name and phone are wrong
+          toast.error("Both name and phone number are incorrect. Please check and enter valid details.");
+          setIsLoading(false);
         } else {
-          toast.error("Something Went Wrong");
-          setStore({ phone: "" });
+          // Handle other error cases
+          toast.error(data.message || "Something went wrong. Please try again.");
           setIsLoading(false);
         }
       })
       .catch((error) => {
         console.error("Error in API call:", error);
-        toast.error("Error in API call. Please try again later.");
+        toast.error("Network error. Please check your connection and try again.");
         setIsLoading(false);
+        setClick(false);
       });
   }
+
   const handleSubmit = () => {
     setLoader(true);
     fetch(`${liveUrl}api/PropertyDetail/propertyAllDetails`, {
@@ -118,13 +190,16 @@ export default function UserInformation() {
         console.error("Error:", error);
       });
   };
+
   useEffect(() => {
     handleSubmit();
     window.scrollTo(0, 0);
   }, []);
+
   const handleText = (e) => {
     setStore({ ...store, [e.target.name]: e.target.value });
   };
+
   const custom = {
     content: {
       top: "50%",
@@ -137,6 +212,7 @@ export default function UserInformation() {
       backgroundColor:"white",
     },
   };
+
   const formatBudget = (value) => {
     const formattedValue = value.toLocaleString(undefined, {
       minimumFractionDigits: 2,
@@ -165,6 +241,7 @@ export default function UserInformation() {
       return formattedValue;
     }
   };
+
   return (
     <div>
       <Modal 

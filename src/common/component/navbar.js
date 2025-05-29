@@ -210,7 +210,7 @@ export default function Navbar() {
           <div className="text-red-600 text-center">{message}</div>
           <div className="flex justify-between">
             <h6 className="text-start text-2xl font-semibold text-green-600">
-              Posting your property is free, so get started.
+              Positing your property is free, so get started.
             </h6>
             <div
               onClick={() => setModals(false)}

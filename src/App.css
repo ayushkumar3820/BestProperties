@@ -537,6 +537,7 @@ header {
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
+      
 }
 .nav-items-div {
   gap: 10px;

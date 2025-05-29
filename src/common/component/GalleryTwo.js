@@ -16,22 +16,21 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [newData, setNewData] = useState([]);
-  const [showCount, setShowCount] = useState(16);
+  const [showCount, setShowCount] = useState(12);
   const [modals, setModals] = useState(false);
   const [loader, setLoader] = useState(false);
   const [amnties, setAmnties] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedPropertyType, setSelectedPropertType] = useState([]);
   const [propertyType, setPropertyType] = useState([]);
-  const [filteredPropertyType, setFilteredPropertyType] = useState([]);
   const [showMoreData, setShowMoreData] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [rangeValues, setRangeValues] = useState({
-    min: 0,
-    max: 20000000,
+    min: 500000,
+    max: 200000000,
   });
   const [locationFilter, setLocationFilter] = useState("");
   const [rentFilter, setRentFilter] = useState(false);
@@ -42,13 +41,13 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     setSelectedPropertType([]);
     setSelectedAmenities([]);
     setSortBy("");
-    setRangeValues({ min: 0, max: 20000000 });
+    setRangeValues({ min: 500000, max: 200000000 });
     setLocationFilter("");
     setRentFilter(false);
     navigate("/property?category=All&propertyType=buy");
   };
 
-  // Extract query parameters from URL and pre-select property types
+  // Extract query parameters and pre-select property types
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const keyword = queryParams.get("keyword") || "";
@@ -57,62 +56,27 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
     setSearchQuery(keyword);
 
-    // Set pre-selected property types based on category
     if (category !== "All" && propertyType.length > 0) {
-      const preSelectedTypes = propertyType.filter((type) => {
-        const typeLower = type.toLowerCase();
-        if (category.toLowerCase() === "residential") {
-          // For Residential, include types that contain "residential"
-          return typeLower.includes("residential");
-        } else if (category.toLowerCase() === "commercial") {
-          // For Commercial, include types that contain "commercial"
-          return typeLower.includes("commercial");
-        } else if (category.toLowerCase() === "others") {
-          // For Others, exclude residential and commercial types
-          return (
-            !typeLower.includes("residential") &&
-            !typeLower.includes("commercial")
-          );
-        }
-        return false;
-      });
-
-      // Only update selectedPropertyType if it's different to avoid infinite loops
-      if (
-        JSON.stringify(preSelectedTypes) !==
-        JSON.stringify(selectedPropertyType)
-      ) {
-        setSelectedPropertType(preSelectedTypes);
-      }
-
-      // Set rent filter based on propertyType parameter
-      if (propertyTypeParam === "rent") {
-        setRentFilter(true);
-      } else {
-        setRentFilter(false);
-      }
-
-      // Keep all property types available in the dropdown
-      setFilteredPropertyType(propertyType);
+      const preSelectedTypes = propertyType.filter((type) =>
+        type.toLowerCase().includes(category.toLowerCase())
+      );
+      setSelectedPropertType(preSelectedTypes);
+      setRentFilter(propertyTypeParam === "rent");
     } else {
-      // If category is "All", show all property types and clear pre-selection
-      setFilteredPropertyType(propertyType);
-      setRentFilter(false);
-      if (selectedPropertyType.length > 0) {
-        setSelectedPropertType([]);
-      }
+      setRentFilter(propertyTypeParam === "rent");
+      setSelectedPropertType([]);
     }
   }, [location.search, propertyType]);
 
-  const visibleData = showMore
-    ? filteredPropertyType
-    : filteredPropertyType.slice(0, 6);
-  const AmenitiesData = showMoreData ? amnties : amnties.slice(0, 6);
+  const visibleDataSidebar = showMore ? propertyType : propertyType.slice(0, 6);
+  const AmenitiesDataSidebar = showMoreData ? amnties : amnties.slice(0, 6);
+  const visibleData = propertyType;
+  const AmenitiesData = amnties;
 
   const handleRangeChange = (event) => {
     setRangeValues({
       min: parseInt(event.target.value),
-      max: 1000000 + parseInt(event.target.value),
+      max: 200000000,
     });
   };
 
@@ -133,28 +97,22 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   };
 
   const handleCheckboxChange = (panel) => {
-    if (selectedAmenities.includes(panel)) {
-      setSelectedAmenities(selectedAmenities.filter((item) => item !== panel));
-    } else {
-      setSelectedAmenities([...selectedAmenities, panel]);
-    }
+    setSelectedAmenities((prev) =>
+      prev.includes(panel)
+        ? prev.filter((item) => item !== panel)
+        : [...prev, panel]
+    );
   };
 
   const handleChange = (main) => {
-    if (selectedPropertyType.includes(main)) {
-      setSelectedPropertType(
-        selectedPropertyType.filter((item) => item !== main)
-      );
-    } else {
-      setSelectedPropertType([...selectedPropertyType, main]);
-    }
+    setSelectedPropertType((prev) =>
+      prev.includes(main)
+        ? prev.filter((item) => item !== main)
+        : [...prev, main]
+    );
   };
 
   const formatBudget = (value) => {
-    const formattedValue = value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
     if (value >= 10000000) {
       return (
         (value / 10000000).toLocaleString(undefined, {
@@ -169,32 +127,26 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
           maximumFractionDigits: 2,
         }) + " Lac"
       );
-    } else if (value >= 1000) {
-      return (
-        (value / 1000).toLocaleString(undefined, { minimumFractionDigits: 2 }) +
-        " Thousand"
-      );
     } else {
-      return formattedValue;
+      return (
+        (value / 1000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        }) + " Thousand"
+      );
     }
   };
 
   const filterPanelsByBudget = (panel) => {
-    const panelBudget = parseInt(panel.budget);
+    const panelBudget = parseInt(panel.budget) || 0;
     const panelAmenities = panel.amenities ? panel.amenities.split("~-~") : [];
-    const propertyCheck = panel.property_type;
+    const propertyCheck = (panel.property_type || "").toLowerCase().trim();
     const searchLower = searchQuery.toLowerCase().trim();
     const queryParams = new URLSearchParams(location.search);
     const category = queryParams.get("category") || "All";
 
-    // Budget filter
-    let isBudgetInRange = true;
-    if (rangeValues.min !== null && rangeValues.max !== null) {
-      isBudgetInRange =
-        panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
-    }
+    const isBudgetInRange =
+      panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
 
-    // Search filter
     const matchesSearch =
       !searchQuery ||
       (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
@@ -211,36 +163,28 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
       (panel.sqft && panel.sqft.toString().includes(searchLower)) ||
       formatBudget(panelBudget).toLowerCase().includes(searchLower);
 
-    // Category filter
-    let matchesCategory = true;
-    if (category && category !== "All") {
-      matchesCategory = propertyCheck
-        .toLowerCase()
-        .includes(category.toLowerCase());
-    }
+    const matchesCategory =
+      category === "All" ||
+      propertyCheck.includes(category.toLowerCase());
 
-    // Location filter
     const matchesLocation =
       !locationFilter ||
-      panel.address.toLowerCase().includes(locationFilter.toLowerCase());
+      (panel.address &&
+        panel.address.toLowerCase().includes(locationFilter.toLowerCase()));
 
-    // Amenities filter
     const hasSelectedAmenities =
       selectedAmenities.length === 0 ||
-      selectedAmenities.some((amenity) => panelAmenities.includes(amenity));
+      selectedAmenities.every((amenity) => panelAmenities.includes(amenity));
 
-    // Property type filter
     const hasSelectedPropertyType =
       selectedPropertyType.length === 0 ||
-      selectedPropertyType.some((property_type) =>
-        propertyCheck.includes(property_type)
+      selectedPropertyType.some((type) =>
+        propertyCheck.includes(type.toLowerCase())
       );
 
-    // Rent filter - only apply if rentFilter is true
     const matchesRentFilter =
       !rentFilter ||
-      (panel.property_type &&
-        panel.property_type.toLowerCase().includes("rent"));
+      propertyCheck.includes("rent");
 
     return (
       isBudgetInRange &&
@@ -256,7 +200,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const filteredData = newData.filter(filterPanelsByBudget);
 
   const handleShowMore = () => {
-    setShowCount(showCount + 8);
+    setShowCount((prev) => prev + 12);
   };
 
   const handleSubmit = () => {
@@ -269,8 +213,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.result, "this is response");
-        setNewData(data.result);
+        setNewData(data.result || []);
         setLoader(false);
       })
       .catch((error) => {
@@ -289,9 +232,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        setPropertyType(data.result);
-        setFilteredPropertyType(data.result);
-        console.log("Fetched Property Types:", data.result);
+        setPropertyType(data.result || []);
         setLoader(false);
       })
       .catch((error) => {
@@ -310,7 +251,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        setAmnties(data.result);
+        setAmnties(data.result || []);
         setLoader(false);
       })
       .catch((error) => {
@@ -337,31 +278,39 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     },
   };
 
-  // Get category and propertyType from URL for dynamic heading and clear button visibility
   const queryParams = new URLSearchParams(location.search);
   const category = queryParams.get("category") || "All";
   const dynamicHeading = `Property ${category}`;
+
+  const isAnyFilterActive = () => {
+    return (
+      searchQuery !== "" ||
+      selectedPropertyType.length > 0 ||
+      selectedAmenities.length > 0 ||
+      sortBy !== "" ||
+      locationFilter !== "" ||
+      rangeValues.min !== 500000 ||
+      rangeValues.max !== 200000000 ||
+      rentFilter
+    );
+  };
 
   return (
     <>
       <div className="">
         {loader ? (
-          <>
-            <div className="flex justify-center align-items-center p-2">
-              <svg
-                className="animate-spin h-10 w-10"
-                fill="#014108"
-                xmlns="http://www.w3.org/2000/svg"
-                height="1em"
-                viewBox="0 0 512 512"
-              >
-                <path d="M304 48a48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-              </svg>
-            </div>
-          </>
+          <div className="flex justify-center items-center p-2">
+            <svg
+              className="animate-spin h-10 w-10"
+              fill="#014108"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+            >
+              <path d="M304 48a48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
+            </svg>
+          </div>
         ) : (
           <>
-            {/* Property Listing and Properties Found on the same line */}
             <div className="flex justify-center items-center my-4 gap-4">
               <div className="font-bold text-xl uppercase text-center text-green-800">
                 <AnimatedText text={dynamicHeading} />
@@ -371,7 +320,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 {filteredData.length === 1 ? "Property" : "Properties"} Found
               </div>
             </div>
-            <div className="w-full  bg-white shadow-md p-4 mb-4 flex flex-wrap justify-start items-center gap-4">
+            <div className="w-full bg-white shadow-md p-4 mb-4 flex flex-wrap justify-start items-center gap-4">
               <div className="max-w-[400px] w-full relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                   🔍
@@ -383,7 +332,6 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                   onChange={handleSearchChange}
                 />
               </div>
-
               <div className="relative bg-white border border-green-600 p-2 rounded-md min-w-[200px] max-w-[200px]">
                 <button
                   onClick={handleToggleDropdown}
@@ -453,14 +401,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 <option value="Kharar">Kharar</option>
                 <option value="Chandigarh">Chandigarh</option>
               </select>
-              {(searchQuery ||
-                selectedPropertyType.length > 0 ||
-                selectedAmenities.length > 0 ||
-                sortBy ||
-                locationFilter ||
-                rangeValues.min !== 0 ||
-                rangeValues.max !== 20000000 ||
-                rentFilter) && (
+              {isAnyFilterActive() && (
                 <button
                   className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 min-w-[100px]"
                   onClick={handleClearFilters}
@@ -477,13 +418,13 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px]">
                   <div>
                     <div className="flex gap-2 mt-2 justify-between">
-                      <p>Budget: {formatBudget(rangeValues.max)}</p>
+                      <p>Budget: {formatBudget(rangeValues.min)}</p>
                     </div>
                     <input
                       type="range"
                       className="h-14 border border-black p-2 rounded"
-                      min="1"
-                      max="20000000"
+                      min="500000"
+                      max="200000000"
                       value={rangeValues.min}
                       onChange={handleRangeChange}
                     />
@@ -491,7 +432,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </div>
                 <div>
                   <div className="font-bold mb-2 mt-2">Property Type</div>
-                  {visibleData.map((main) => (
+                  {visibleDataSidebar.map((main) => (
                     <div key={main} className="flex gap-2 mt-1">
                       <input
                         checked={selectedPropertyType.includes(main)}
@@ -502,7 +443,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                       <div>{main}</div>
                     </div>
                   ))}
-                  {!showMore && filteredPropertyType.length > 6 && (
+                  {!showMore && propertyType.length > 6 && (
                     <button
                       className="text-blue-600"
                       onClick={() => setShowMore(true)}
@@ -512,7 +453,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                   )}
                 </div>
                 <div className="font-bold text-lg mt-2">Amenities</div>
-                {AmenitiesData.map((panel) => (
+                {AmenitiesDataSidebar.map((panel) => (
                   <div className="flex gap-2 mt-1" key={panel}>
                     <div className="text-md leading-2 text-black font-leading">
                       <div className="grid grid-cols-1">
@@ -540,21 +481,25 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                   </button>
                 )}
               </div>
-              <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-2 justify-items-center">
+              <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 justify-items-center">
                 {newData && Array.isArray(newData) && newData.length > 0 ? (
                   filteredData.length > 0 ? (
                     filteredData
                       .slice(0, showCount)
                       .sort((a, b) => {
-                        if (sortBy === "lowToHigh") {
-                          return a.budget - b.budget;
-                        } else if (sortBy === "highToLow") {
-                          return b.budget - a.budget;
-                        }
+                        if (sortBy === "lowToHigh") return a.budget - b.budget;
+                        if (sortBy === "highToLow") return b.budget - a.budget;
                         return 0;
                       })
                       .map((panel) => (
-                        <button className="property-div" key={panel.id}>
+                        <button
+                          className={`property-div w-full max-w-[350px] h-[350px] rounded-md shadow-lg transition duration-300 ease-in-out ${
+                            selectedPropertyType.includes(panel.property_type)
+                              ? "border-2 "
+                              : ""
+                          }`}
+                          key={panel.id}
+                        >
                           <div
                             onClick={() => {
                               const modifiedPanelName = panel.name
@@ -565,92 +510,116 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 `/property/-${panel.id}-${modifiedPanelName}`
                               );
                             }}
-                            className="rounded-md cursor-pointer hover:scale-105 shadow-lg transition duration-300 ease-in-out"
+                            className="flex flex-col h-full"
                           >
-                            {panel.image &&
-                            typeof panel.image === "string" &&
-                            (panel.image.endsWith(".jpg") ||
-                              panel.image.endsWith(".jpeg") ||
-                              panel.image.endsWith(".png") ||
-                              panel.image.endsWith(".svg")) ? (
-                              <img
-                                className="rounded-t-md cursor-pointer h-52 w-full"
-                                src={panel.image}
-                                alt="Panel"
-                              />
-                            ) : (
-                              <img
-                                className="rounded-t-md cursor-pointer h-52 w-full"
-                                src={NoImage}
-                                alt="No Image"
-                              />
-                            )}
-                            <div className="text-left min-h-[130px] bg-white border border-t leading-4 p-2">
+                            <div className="flex-shrink-0">
+                              {panel.image &&
+                              typeof panel.image === "string" &&
+                              (panel.image.endsWith(".jpg") ||
+                                panel.image.endsWith(".jpeg") ||
+                                panel.image.endsWith(".png") ||
+                                panel.image.endsWith(".svg")) ? (
+                                <img
+                                  className="rounded-t-md h-[200px] w-full object-cover"
+                                  src={panel.image}
+                                  alt="Panel"
+                                />
+                              ) : (
+                                <img
+                                  className="rounded-t-md h-[200px] w-full object-cover"
+                                  src={NoImage}
+                                  alt="No Image"
+                                />
+                              )}
+                            </div>
+                            <div className="flex-grow text-left bg-white border border-t leading-4 p-3">
                               <div className="mr-2">
-                                <div>
-                                  <div className="text-sm font-extralight">
-                                    {panel.property_name}
-                                  </div>
-                                  <div
-                                    className="flex items-center text-green-800 font-bold"
-                                    style={{ flexWrap: "wrap" }}
+                                <div className="text-sm font-extralight truncate">
+                                  {panel.property_name}
+                                </div>
+                                <div className="flex items-center text-green-800 font-bold flex-wrap">
+                                  <svg
+                                    fill="#14532D"
+                                    className="w-5 h-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 320 512"
                                   >
-                                    <svg
-                                      fill="#14532D"
-                                      className="w-5 h-5"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 320 512"
-                                    >
-                                      <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                                    </svg>
+                                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                                  </svg>
+                                  <span className="ml-1">
                                     {formatBudget(panel.budget)}
-                                    <div className="text-md text-sm ml-2">
-                                      {panel.sqft > 0 ? (
-                                        <>
-                                          | {panel.sqft} {panel.measureUnit}
-                                        </>
-                                      ) : null}
-                                    </div>
-                                    {panel.type ? (
-                                      <div className="text-md text-sm">
-                                        | {panel.name}
-                                      </div>
-                                    ) : null}
+                                  </span>
+                                  <div className="text-sm ml-2">
+                                    {panel.sqft > 0
+                                      ? `| ${panel.sqft} ${panel.measureUnit}`
+                                      : null}
                                   </div>
-                                  <div className="flex gap-2 mt-2 items-center">
+                                  {panel.type ? (
+                                    <div className="text-sm ml-2">
+                                      | {panel.name}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <div className="flex gap-2 mt-2 items-center text-green-800">
+                                  <div>
+                                    <svg
+                                      fill="#15803d"
+                                      className="h-5 w-5"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 384 512"
+                                    >
+                                      <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                    </svg>
+                                  </div>
+                                  <div className="leading-6 font-semibold text-sm truncate">
+                                    {panel.address}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 mt-4">
+                                  <div className="flex items-center gap-2">
+                                    {panel.bedrooms != null &&
+                                      panel.bedrooms > 0 && (
+                                        <img
+                                          className="w-6"
+                                          src={Bed}
+                                          alt="Bed"
+                                        />
+                                      )}
                                     <div>
-                                      <svg
-                                        fill="#808080"
-                                        className="h-5 w-5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 384 512"
-                                      >
-                                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                      </svg>
-                                    </div>
-                                    <div className="leading-6 font-semibold text-sm">
-                                      {panel.address}
+                                      {panel.bedrooms != null &&
+                                      panel.bedrooms > 0
+                                        ? panel.bedrooms
+                                        : null}
                                     </div>
                                   </div>
-                                  <div className="flex items-center lg:gap-3 gap-3 mt-4">
-                                    <div className="flex items-center gap-2">
-                                      {panel.bedrooms ? (
-                                        <img className="w-6" src={Bed} />
-                                      ) : null}
-                                      <div>{panel.bedrooms}</div>
+                                  <div className="flex items-center gap-2">
+                                    {panel.bathrooms != null &&
+                                      panel.bathrooms > 0 && (
+                                        <img
+                                          className="w-6"
+                                          src={Bath}
+                                          alt="Bath"
+                                        />
+                                      )}
+                                    <div>
+                                      {panel.bathrooms != null &&
+                                      panel.bathrooms > 0
+                                        ? panel.bathrooms
+                                        : null}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                      {panel.bathrooms ? (
-                                        <img className="w-6" src={Bath} />
-                                      ) : null}
-                                      <div>{panel.bathrooms}</div>
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                      <img
-                                        className="w-5"
-                                        src={panel.varifed}
-                                      />
-                                    </div>
+                                  </div>
+                                  <div className="flex gap-2 items-center">
+                                    {panel.verified &&
+                                      typeof panel.verified === "string" && (
+                                        <img
+                                          className="w-5"
+                                          src={panel.verified}
+                                          alt="Verified"
+                                          onError={(e) =>
+                                            (e.target.src = NoImage)
+                                          }
+                                        />
+                                      )}
                                   </div>
                                 </div>
                               </div>
@@ -663,7 +632,11 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                       No Data Match
                     </p>
                   )
-                ) : null}
+                ) : (
+                  <p className="text-center mt-24 mb-24 font-bold text-lg text-red-600">
+                    No Properties Available
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex justify-center mt-10 mb-14">

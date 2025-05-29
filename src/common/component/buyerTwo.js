@@ -1,146 +1,199 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BottomBar from "./bottomBar";
 import Navbar from "./navbar";
 import { liveUrl, token } from "./url";
 import Searching from "./searching";
 import OurServices from "./ourServices";
+
 export default function BuyerTwo() {
-  const Navigate = useNavigate();
-  const [click, setClick] = useState(false);
+  const navigate = useNavigate();
+  const [click, setClick] = useState("");
+  const [uname, setUname] = useState("");
   const [loader, setLoader] = useState(false);
-  const [uname, setUname] = useState(false);
   const [selectedOption, setSelectedOption] = useState("residential");
   const [store, setStore] = useState({
     uName: "",
     mobile: "",
   });
-  const ValidateEmail = () => {
-    if (/^(?:\d{3}|\(\d{3}\))([-/.])\d{3}\1\d{4}$/.test(store.mobile)) {
-      setClick("Mobile number should be 10 digits long.");
+  const [user, setUser] = useState("Individual Customer");
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem("buyerFormData");
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      setStore({
+        uName: parsedData.uName || "",
+        mobile: parsedData.mobile || "",
+      });
+      setUser(parsedData.userType || "Individual Customer");
+    }
+  }, []);
+
+  // Save data to localStorage whenever store or user changes
+  useEffect(() => {
+    localStorage.setItem(
+      "buyerFormData",
+      JSON.stringify({
+        uName: store.uName,
+        mobile: store.mobile,
+        userType: user,
+      })
+    );
+  }, [store, user]);
+
+  // Validate mobile number (exactly 10 digits)
+  const ValidateMobile = () => {
+    if (!/^\d{10}$/.test(store.mobile)) {
+      setClick("Mobile number must be exactly 10 digits long.");
+      return false;
     } else {
       setClick("");
+      return true;
     }
   };
+
+  // Validate name (at least 3 characters, only alphabetic and spaces)
   const ValidateName = () => {
-    if (store.uName.length < 3) {
-      setUname("Name Must Be 3 letter");
+    if (!store.uName || store.uName.length < 3) {
+      setUname("Name must be at least 3 characters long.");
+      return false;
+    } else if (!/^[a-zA-Z\s]+$/.test(store.uName)) {
+      setUname("Numbers are not allowed in the name.");
+      return false;
     } else {
-      setUname(true);
+      setUname("");
+      return true;
     }
   };
-  const [user, setUser] = useState("Individual Customer");
-  console.log(user, "this is user");
+
+  // Handle input changes and validate name immediately
   const handleData = (e) => {
-    setStore({ ...store, [e.target.name]: e.target.value });
-  };
-  const handleApi = () => {
-    ValidateEmail();
-    ValidateName();
-    setLoader(false);
-    fetch(
-      `${liveUrl}api/Buyer/addBuyer`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json", // Add any other headers you need
-        },
-        body: JSON.stringify({
-          ...store,
-          userType: user,
-          infotype: "personalInfo",
-        }),
+    const { name, value } = e.target;
+    setStore({ ...store, [name]: value });
+
+    if (name === "uName") {
+      if (value.length > 0 && !/^[a-zA-Z\s]+$/.test(value)) {
+        setUname("Numbers are not allowed in the name.");
+      } else if (value.length < 3 && value.length > 0) {
+        setUname("Name must be at least 3 characters long.");
+      } else {
+        setUname("");
       }
-    )
+    }
+  };
+
+  const handleApi = () => {
+    const isMobileValid = ValidateMobile();
+    const isNameValid = ValidateName();
+
+    if (!isMobileValid || !isNameValid) {
+      return; // Stop if validation fails
+    }
+
+    setLoader(true);
+    fetch(`${liveUrl}api/Buyer/addBuyer`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...store,
+        userType: user,
+        infotype: "personalInfo",
+      }),
+    })
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "done") {
-          setClick(true);
-          setUname(true);
-          setLoader(true);
-          Navigate("/budget");
-          setStore("");
+          setLoader(false);
+          // Clear localStorage on successful submission
+          localStorage.removeItem("buyerFormData");
+          navigate("/budget");
+          setStore({ uName: "", mobile: "" });
+          setUser("Individual Customer");
           console.log(data);
         } else {
+          setLoader(false);
+          setClick("Failed to submit. Please try again.");
         }
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        setLoader(false);
+        setClick("An error occurred. Please try again.");
+      });
   };
-  useEffect(() => {
-    localStorage.setItem("dataKey", JSON.stringify(store.mobile));
-  }, [store]);
+
   function handleSelectUser(event) {
     setUser(event.target.value);
   }
+
   return (
     <>
       <Navbar />
-      <div className="  flex justify-center items-center">
-        <div className="container mx-auto  lg:w-[800px]   border shadow-lg   w-full   flex justify-center items-center">
-          <div className="      ">
-            <div className="font-bold lg:text-3xl mt-5  text-center mb-4">
+      <div className="flex justify-center items-center">
+        <div className="container mx-auto lg:w-[800px] border shadow-lg w-full flex justify-center items-center">
+          <div className="p-4">
+            <div className="font-bold lg:text-3xl mt-5 text-center mb-4">
               Contact Us
             </div>
-            <div className="  w-full  flex justify-center  items-center  rounded-md">
+            <div className="w-full flex justify-center items-center rounded-md">
               <fieldset>
                 <div className="flex items-center gap-5">
-                  <label
-                    className=" lg:text-xl font-bold text-sm"
-                    for="option1"
-                  >
+                  <label className="lg:text-xl font-bold text-sm" htmlFor="option1">
                     I am
                   </label>
                   <input
                     className="w-5 h-5 outline-none"
                     type="radio"
                     id="option2"
-                    name="Individual Customer"
+                    name="userType"
                     value="Individual Customer"
                     onChange={handleSelectUser}
                     checked={user === "Individual Customer"}
                   />
-                  <label className=" lg:text-xl text-sm" for="option2 ">
+                  <label className="lg:text-xl text-sm" htmlFor="option2">
                     Individual
                   </label>
                   <input
                     className="w-5 h-5 outline-none"
                     type="radio"
                     id="option3"
-                    name="Invester"
-                    value="Invester"
-                    checked={user === "Invester"}
+                    name="userType"
+                    value="Investor"
+                    checked={user === "Investor"}
                     onChange={handleSelectUser}
                   />
-                  <label className=" lg:text-xl text-sm" for="option3">
+                  <label className="lg:text-xl text-sm" htmlFor="option3">
                     Investor
                   </label>
                   <input
                     className="w-5 h-5 outline-none"
                     type="radio"
                     id="option4"
-                    name="Dealer"
+                    name="userType"
                     value="Dealer"
                     checked={user === "Dealer"}
                     onChange={handleSelectUser}
                   />
-                  <label className=" lg:text-xl text-sm" for="option3">
+                  <label className="lg:text-xl text-sm" htmlFor="option4">
                     Dealer
                   </label>
                 </div>
-                <div className="mb-3  lg:p-1 mt-5 p-2">
+                <div className="mb-3 lg:p-1 mt-5 p-2">
                   <input
                     type="text"
-                    id="disabledTextInput"
-                    className="border border-black outline-none rounded-md  p-2 h-12 w-full"
+                    id="nameInput"
+                    className="border border-black outline-none rounded-md p-2 h-12 w-full"
                     placeholder="Name"
                     onChange={handleData}
                     value={store.uName}
                     name="uName"
                   />
-                  {click && store.uName.length < 3 ? (
-                    <div className="text-red-600">Name Must Be 3 letter</div>
-                  ) : null}
+                  {uname && <div className="text-red-600">{uname}</div>}
                 </div>
                 <div className="mb-3 lg:p-1 p-2">
                   <input
@@ -152,22 +205,14 @@ export default function BuyerTwo() {
                     value={store.mobile}
                     name="mobile"
                   />
-                  {click && store.mobile.length < 10 ? (
-                    <div className="text-red-600">
-                      Mobile number is not valid
-                    </div>
-                  ) : null}
-                  {click && store.mobile.length > 10 ? (
-                    <div className="text-red-600">
-                      Mobile number is not valid
-                    </div>
-                  ) : null}
+                  {click && <div className="text-red-600">{click}</div>}
                 </div>
                 <button
                   onClick={handleApi}
                   className="p-2 bg-red-600 mt-5 mb-10 w-full rounded-md text-white flex justify-center items-center text-2xl"
-                  >
-                  <div>Next</div>
+                  disabled={loader}
+                >
+                  {loader ? "Loading..." : "Next"}
                 </button>
               </fieldset>
             </div>

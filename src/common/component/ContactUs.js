@@ -21,11 +21,11 @@ export default function Contact() {
     checkbox: true, // Pre-filled checkbox
   });
 
-  window.scroll(0,0);
+  window.scroll(0, 0);
+
   const handleText = (e) => {
     setStore({ ...store, [e.target.name]: e.target.value });
-    // Clear error for the field being edited
-    setErrors({ ...errors, [e.target.name]: "" });
+    setErrors({ ...errors, [e.target.name]: "" }); // Clear error for the field being edited
   };
 
   const handleCheckbox = (e) => {
@@ -39,11 +39,12 @@ export default function Contact() {
 
   const validateForm = () => {
     const newErrors = {};
-    // Name validation: only letters and spaces, min 2 characters
-    if (!store.firstname || !/^[A-Za-z\s]{2,}$/.test(store.firstname)) {
+
+    if (!store.firstname || store.firstname.length <3) {
       newErrors.firstname =
-        "Name is required and must contain only letters and spaces (min 2 characters).";
+        "Name is required and must be at least 3 characters long.";
     }
+
     // Phone validation: exactly 10 digits
     if (!store.phone || !/^\d{10}$/.test(store.phone)) {
       newErrors.phone =
@@ -65,6 +66,9 @@ export default function Contact() {
     setLoader(true);
     if (!validateForm()) {
       setLoader(false);
+      toast.error(
+        "Your form has errors. Make sure Name, Phone, and all required fields are filled correctly."
+      );
       return;
     }
     fetch(`${liveUrl}api/Contact/contact`, {
@@ -79,7 +83,12 @@ export default function Contact() {
         selectedValue,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("API call failed.");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data.status === "done") {
           setMessage(data.status);
@@ -90,8 +99,23 @@ export default function Contact() {
             setLoader(false);
             navigate("/");
           }, 1000);
+        } else if (
+          data.status === "error" &&
+          data.message === "Phone number already exists"
+        ) {
+          setErrors({
+            ...errors,
+            phone:
+              "Phone number already exists in our system. Please try another number.",
+          });
+          toast.error(
+            "Phone number already exists in our system. Please try another number."
+          );
+          setLoader(false);
         } else {
-          toast.error("Error during API call.");
+          toast.error(
+            "Error during API call: " + (data.message || "Unknown error.")
+          );
           setLoader(false);
         }
       })
@@ -140,7 +164,7 @@ export default function Contact() {
               onChange={handleText}
               className="appearance-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="email"
-              placeholder="Please enter your email "
+              placeholder="Please enter your email"
             />
             {errors.email && <div className="text-red-600">{errors.email}</div>}
           </div>
@@ -155,7 +179,12 @@ export default function Contact() {
               type="text"
               name="phone"
               value={store.phone}
-              onChange={handleText}
+              onChange={(e) => {
+                // Allow only digits
+                if (/^\d*$/.test(e.target.value)) {
+                  handleText(e);
+                }
+              }}
               className="appearance-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="phone"
               placeholder="Please enter your phone number"
@@ -192,7 +221,7 @@ export default function Contact() {
               onChange={handleText}
               className="appearance-none block w-full h-40 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="subject"
-              placeholder="Message for me "
+              placeholder="Message for me"
             />
           </div>
         </div>
