@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import '../common/component/ModalPage.css';
 import { useNavigate, useParams } from "react-router-dom";
@@ -29,14 +30,10 @@ export default function RentDetails() {
   const [imageShowThree, setImageShowThree] = useState(false);
   const [show, setShow] = useState(false);
   const [main, setMain] = useState(true);
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [mainUrl, setMainUrl] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [store, setStore] = useState({
-    firstname: "",
-    phone: "",
-  });
+  const [formData, setFormData] = useState({ name: '', phone: '' });
+  const [errors, setErrors] = useState({ name: '', phone: '' });
 
   window.scroll(0, 0);
 
@@ -65,65 +62,80 @@ export default function RentDetails() {
     setMain(false);
   };
 
-  // API call to submit form data
-  function HandleApi() {
-    if (!store.firstname || !store.phone) {
-      setClick(true);
-      setErrorMessage("Please fill in all required fields.");
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setErrors({ ...errors, [name]: '' });
+  };
+
+  // Validate phone number (10 digits)
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // Validate form
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { name: '', phone: '' };
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Please enter your name';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Please enter your phone number';
+      isValid = false;
+    } else if (!validatePhoneNumber(formData.phone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (!validateForm()) {
+      setIsSubmitting(false);
       return;
     }
 
-    setClick(true);
-    setIsLoading(true);
-    setErrorMessage(""); // Clear previous error
-
-    fetch(`${liveUrl}api/Contact/contact`, {
-      method: "POST",
-      body: JSON.stringify({
-        ...store,
-      }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setMessage(data.message);
-        if (data.status === "done") {
-          toast.success(data.message || "We will contact you soon!");
-          setModalIsOpen(false);
-          setStore({ firstname: "", phone: "" }); // Reset both fields
-          setClick(false);
-        } else {
-          setErrorMessage(
-            data.message || "Something went wrong. Please try again."
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error in API call:", error);
-        if (error.message.includes("401")) {
-          setErrorMessage("Unauthorized. Please log in again.");
-        } else if (error.message.includes("network")) {
-          setErrorMessage("Network error. Please check your connection.");
-        } else {
-          setErrorMessage(
-            "An unexpected error occurred. Please try again later."
-          );
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
+    try {
+      const response = await fetch(`${liveUrl}api/Contact/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
       });
-  }
 
-  const handleSubmit = () => {
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success('Your information has been submitted successfully!');
+        setFormData({ name: '', phone: '' });
+        setModalIsOpen(false);
+        setClick(false);
+      } else {
+        toast.error(result.message || 'Failed to submit information. Please try again.');
+      }
+    } catch (error) {
+      toast.error('An error occurred. Please try again later.');
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFetch = () => {
     setLoader(true);
     fetch(`${liveUrl}rent-details`, {
       method: "POST",
@@ -147,13 +159,8 @@ export default function RentDetails() {
   };
 
   useEffect(() => {
-    handleSubmit();
+    handleFetch();
   }, []);
-
-  const handleText = (e) => {
-    const { name, value } = e.target;
-    setStore({ ...store, [name]: value });
-  };
 
   const custom = {
     content: {
@@ -278,17 +285,12 @@ export default function RentDetails() {
         style={custom}
       >
         <div className="lg:w-[400px] w-full">
-          {errorMessage && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
-              {errorMessage}
-            </div>
-          )}
           <div className="flex justify-center items-center relative">
             <div className="font-bold text-2xl text-green-800">Book Now!</div>
             <button
               onClick={() => {
                 setModalIsOpen(false);
-                setErrorMessage("");
+                setErrors({ name: '', phone: '' });
               }}
               className="bg-red-600 absolute top-0 right-0 w-8 h-8 flex justify-center items-center"
             >
@@ -302,49 +304,45 @@ export default function RentDetails() {
               </svg>
             </button>
           </div>
-          <div className="w-full mt-4">
-            <label className="block tracking-wide text-lg font-bold mb-2">
-              Your Name*
-            </label>
-            <input
-              disabled={isLoading}
-              className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-              id="firstname"
-              name="firstname"
-              value={store.firstname}
-              onChange={handleText}
-              placeholder="Please enter your firstname"
-            />
-            {click && store.firstname === "" && (
-              <div className="text-red-600">Required to fill firstName</div>
-            )}
-          </div>
-          <div className="flex flex-wrap -mx-3 mb-2">
-            <div className="w-full px-3">
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="w-full mt-4">
+              <label className="block tracking-wide text-lg font-bold mb-2">
+                Your Name*
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter Your Name"
+                className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                value={formData.name}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
+              />
+              {errors.name && <p className="text-red-600" style={{ fontSize: '18px' }}>{errors.name}</p>}
+            </div>
+            <div className="w-full mt-4">
               <label className="block tracking-wide text-lg font-bold mb-2">
                 Phone*
               </label>
               <input
-                disabled={isLoading}
-                type="tel"
+                type="text"
                 name="phone"
-                value={store.phone}
-                onChange={handleText}
+                placeholder="Enter your Number"
                 className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="phone"
-                placeholder="Please enter your phone number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
               />
+              {errors.phone && <p className="text-red-600" style={{ fontSize: '18px' ,color:'red'}}>{errors.phone}</p>}
             </div>
-          </div>
-          <button
-            onClick={HandleApi}
-            className={`bg-red-600 w-full text-white text-lg p-2 ${
-              isLoading ? "cursor-not-allowed opacity-50" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? "Submitting..." : "Submit"}
-          </button>
+            <button
+              type="submit"
+              className={`bg-red-600 w-full text-white text-lg p-2 ${isSubmitting ? "cursor-not-allowed opacity-50" : ""}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Your Information"}
+            </button>
+          </form>
         </div>
       </Modal>
 
@@ -736,7 +734,7 @@ export default function RentDetails() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 320 512"
                 >
-                  <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                  <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32  láp32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                 </svg>
                 <div className="flex">
                   <div className="font-bold lg:text-sm text-md">

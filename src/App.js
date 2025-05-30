@@ -34,6 +34,7 @@ import AgentPropertiesDetails from "./Component/AgentPropertiesDetails";
 import EMICalculator from "./Component/EMICalculator";
 import FAQ from "./Component/Faq";
 import DataDeletion from "./common/dataDeletion ";
+import Disclaimer from "./Component/Disclaimer";
 
 export default function App() {
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="search" element={<Search />} />
         <Route path="for-rent/" element={<Rent />} />
         <Route path="rentdetails/:id" element={<RentDetails />} />
+        <Route path="diclaimer" element={<Disclaimer/>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

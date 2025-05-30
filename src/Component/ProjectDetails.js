@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import Navbar from '../common/component/navbar';
 import { liveUrl, token } from '../common/component/url';
 import BottomBar from '../common/component/bottomBar';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Added for toast styling
 import Slider from "react-slick";
 import Searching from '../common/component/searching';
 import BgImage from '../Images/nirwana-heights03.jpg';
@@ -16,7 +17,10 @@ const ProjectDetails = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [activeTab, setActiveTab] = useState('2BHK');
   const [projectDetails, setProjectDetails] = useState([]);
-  
+  const [formData, setFormData] = useState({ name: '', phone: '' }); // Added for form inputs
+  const [errors, setErrors] = useState({ name: '', phone: '' }); // Added for error messages
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added to manage submit state
+
   // Extract the project ID from the URL (last part after the hyphen)
   const projectId = id.split('-').pop();
 
@@ -29,11 +33,11 @@ const ProjectDetails = () => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-            body: JSON.stringify({ pid: projectId }), // Use projectId here
+      body: JSON.stringify({ pid: projectId }),
     })
       .then(response => response.json())
       .then(data => {
-                setProjectDetails(data.result); // Assuming response has project details in `data.result`
+        setProjectDetails(data.result);
         console.log(data.result);
       })
       .catch(error => console.error('Error fetching project details:', error));
@@ -79,6 +83,77 @@ const ProjectDetails = () => {
       );
     } else {
       return formattedValue;
+    }
+  };
+
+  // Added: Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setErrors({ ...errors, [name]: '' });
+  };
+
+  // Added: Validate phone number (10 digits)
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // Added: Validate form
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { name: '', phone: '' };
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Please enter your name';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Please enter your phone number';
+      isValid = false;
+    } else if (!validatePhoneNumber(formData.phone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Added: Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${liveUrl}api/Contact/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success('Your information has been submitted successfully!');
+        setFormData({ name: '', phone: '' });
+      } else {
+        toast.error(result.message || 'Failed to submit information. Please try again.');
+      }
+    } catch (error) {
+      toast.error('An error occurred. Please try again later.');
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -135,9 +210,7 @@ const ProjectDetails = () => {
             </Slider>
           </div>
           <div className="video-section">
-            <div
-                            dangerouslySetInnerHTML={{ __html: data.Video_u }} // Render the iframe string as HTML
-            ></div>
+            <div dangerouslySetInnerHTML={{ __html: data.Video_u }}></div>
           </div>
         </div>
       ))}
@@ -154,7 +227,7 @@ const ProjectDetails = () => {
             )}
           </div>
 
-                    <div className="">
+          <div className="">
             {projectDetails.map((data) => (
               <div className='container' key={data.id}>
                 <div className="property-card-header">
@@ -204,10 +277,8 @@ const ProjectDetails = () => {
               </div>
             ))}
 
-
             {/* <div className="map-div">
               <div className="container">
-
                 <div className="company-inner">
                   <div className="content company-content-div">
                     <h2>More about Nirwana Heights</h2>
@@ -237,7 +308,6 @@ const ProjectDetails = () => {
                         4 BHK
                       </button>
                     </div>
-
                     <div className="slider">
                       {activeTab === '2BHK' && (
                         <div className="slider-content">
@@ -261,7 +331,6 @@ const ProjectDetails = () => {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div> */}
 
@@ -292,18 +361,34 @@ const ProjectDetails = () => {
         </div>
         <div className='right-side'>
           <div className="form-container">
-                        <form className="form">
+            <form className="form" onSubmit={handleSubmit}>
               <h2 className="form-heading">The Best Way To Design Your Awesome Home!</h2>
-                <label className="block tracking-wide text-lg font-bold mb-2">
-                  Your Name
-                </label>
-                            <input type="text" placeholder="Enter Your Name" className="form-input" />
-                <label className="block tracking-wide text-lg font-bold mb-2">
-                  Phone
-                </label>
-                            <input type="text" placeholder="Enter your Number" className="form-input" />
-              <button type="submit" className="form-button">
-                Submit Your Information
+              <label className="block tracking-wide text-lg font-bold mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter Your Name"
+                className="form-input"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+              {errors.name && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.name}</p>}
+              <label className="block tracking-wide text-lg font-bold mb-2">
+                Phone*
+              </label>
+              <input
+                type="text"
+                name="phone"
+                placeholder="Enter your Number"
+                className="form-input"
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
+              {errors.phone && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.phone}</p>}
+              <button type="submit" className="form-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Your Information'}
               </button>
             </form>
           </div>

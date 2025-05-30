@@ -494,3 +494,9 @@ p{
   display: flex;
   margin: 15px 0;
 }
+
+
+.error-message {
+  margin-top: 5px;
+  margin-bottom: 10px;
+}

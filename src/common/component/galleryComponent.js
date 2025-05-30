@@ -163,12 +163,9 @@ export default function GalleryComponent() {
     navigate(`/single-property/${projectId}`, { state: { imageUrl } });
   };
 
-   const handleProjectClicks = (projectId, imageUrl) => {
+  const handleProjectClicks = (projectId, imageUrl) => {
     navigate(`/project-details/${projectId}`, { state: { imageUrl } });
   };
-  
-
-  
 
   const customStyles = {
     content: {
@@ -299,9 +296,15 @@ export default function GalleryComponent() {
   };
 
   const getPropertyImageUrl = (item) => {
-    console.log(`GalleryComponent - Property ID: ${item.id}, Type: ${item.type}, Image_URLs:`, item.Image_URLs);
+    console.log(
+      `GalleryComponent - Property ID: ${item.id}, Type: ${item.type}, Image_URLs:`,
+      item.Image_URLs
+    );
     if (item.Image_URLs) {
-      if (typeof item.Image_URLs === "string" && item.Image_URLs.trim() !== "") {
+      if (
+        typeof item.Image_URLs === "string" &&
+        item.Image_URLs.trim() !== ""
+      ) {
         return item.Image_URLs;
       }
       if (Array.isArray(item.Image_URLs) && item.Image_URLs.length > 0) {
@@ -313,7 +316,10 @@ export default function GalleryComponent() {
       return NoImage;
     } else if (item.type?.toLowerCase() === "plot") {
       return PlotImage;
-    } else if (item.type?.toLowerCase() === "kothi" || item.type?.toLowerCase() === "house") {
+    } else if (
+      item.type?.toLowerCase() === "kothi" ||
+      item.type?.toLowerCase() === "house"
+    ) {
       return RectangleImage;
     } else {
       return NoImage;
@@ -321,12 +327,17 @@ export default function GalleryComponent() {
   };
 
   const handlePropertyImageError = (e, item) => {
-    console.log(`GalleryComponent - Image failed to load for Property ID: ${item.id}, Type: ${item.type}`);
+    console.log(
+      `GalleryComponent - Image failed to load for Property ID: ${item.id}, Type: ${item.type}`
+    );
     if (item.type?.toLowerCase() === "flat") {
       e.target.src = NoImage;
     } else if (item.type?.toLowerCase() === "plot") {
       e.target.src = PlotImage;
-    } else if (item.type?.toLowerCase() === "kothi" || item.type?.toLowerCase() === "house") {
+    } else if (
+      item.type?.toLowerCase() === "kothi" ||
+      item.type?.toLowerCase() === "house"
+    ) {
       e.target.src = RectangleImage;
     } else {
       e.target.src = NoImage;
@@ -354,7 +365,7 @@ export default function GalleryComponent() {
             <Rent />
           ) : (
             <div>
-<div className="slider-main-div mt-8 gap-6 items-start ">
+              <div className="slider-main-div mt-8 gap-6 items-start ">
                 <div className="slider-inner-div ">
                   <h2 className="deal-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="HOT DEALS" />
@@ -369,7 +380,9 @@ export default function GalleryComponent() {
                                 .replace(/\s/g, "-")
                                 .replace(/[^\w\s]/g, "")
                                 .toLowerCase();
-                          navigate(`/property/-${panel.id}-${modifiedPanelName}`);
+                              navigate(
+                                `/property/-${panel.id}-${modifiedPanelName}`
+                              );
                             }}
                             className="main-sale-div border rounded-md  cursor-pointer     shadow-lg   transition duration-300 ease-in-out "
                           >
@@ -382,7 +395,6 @@ export default function GalleryComponent() {
                                       {panel.name}
                                     </div>
                                   </div>
-                                  
                                 </>
                               ) : null}
                               <div className="sale-image-div">
@@ -481,7 +493,7 @@ export default function GalleryComponent() {
                                 </div>
                               </div>
                             </div>
- </div>
+                          </div>
                         </>
                       );
                     })}
@@ -499,7 +511,9 @@ export default function GalleryComponent() {
                         return (
                           <div
                             key={item.id}
-                            onClick={() => handleProjectClick(item.id, imageUrl)}
+                            onClick={() =>
+                              handleProjectClick(item.id, imageUrl)
+                            }
                             className="rent-detail-div p-2"
                           >
                             <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
@@ -508,8 +522,10 @@ export default function GalleryComponent() {
                                   <img
                                     className="rounded-t-md cursor-pointer h-52 w-full"
                                     src={imageUrl}
-                                    alt={`${item.type || 'Property'} Image`}
-                                    onError={(e) => handlePropertyImageError(e, item)}
+                                    alt={`${item.type || "Property"} Image`}
+                                    onError={(e) =>
+                                      handlePropertyImageError(e, item)
+                                    }
                                   />
                                 </div>
                               </div>
@@ -519,7 +535,10 @@ export default function GalleryComponent() {
                                 </div>
                                 <div
                                   className="property-address mb-3 mt-0 items-center flex"
-                                  style={{ justifyContent: "space-between", marginTop: "0" }}
+                                  style={{
+                                    justifyContent: "space-between",
+                                    marginTop: "0",
+                                  }}
                                 >
                                   <div className="headingStyle flex items-center text-green-800 font-bold">
                                     <svg
@@ -532,7 +551,9 @@ export default function GalleryComponent() {
                                     </svg>
                                     <div className="lg:text-lg ml-2 text-sm headingStyle">
                                       {formatBudget(item.budget)}
-                                      {item.sqft?.length > 0 ? ` | ${item.sqft}` : null}
+                                      {item.sqft?.length > 0
+                                        ? ` | ${item.sqft}`
+                                        : null}
                                     </div>
                                   </div>
                                 </div>
@@ -573,7 +594,9 @@ export default function GalleryComponent() {
                               .replace(/\s/g, "-")
                               .replace(/[^\w\s]/g, "-")
                               .toLowerCase();
-                            navigate(`/rentDetails/-${rent.id}-${modifiedPanelName}`);
+                            navigate(
+                              `/rentDetails/-${rent.id}-${modifiedPanelName}`
+                            );
                             window.scrollTo(0, 0);
                           }}
                           className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
@@ -647,7 +670,9 @@ export default function GalleryComponent() {
                                 const modifiedPanelName = rent.name
                                   .replace(/\s/g, "")
                                   .toLowerCase();
-                                navigate(`/rentDetails/-${rent.id}-${modifiedPanelName}`);
+                                navigate(
+                                  `/rentDetails/-${rent.id}-${modifiedPanelName}`
+                                );
                               }}
                               className="p-1 w-full text-black"
                               style={{ background: "#e2e2e2" }}
@@ -662,55 +687,64 @@ export default function GalleryComponent() {
                 </div>
 
                 <div className="project-home-div">
-                  <h2 className="rent-title lw-text-3xl text-2xl font-bold text-start text-green-900 mt-3">
+                  <h2 className="rent-title lg:text-3xl text-2xl font-bold text-start text-green-900 mt-3">
                     <AnimatedText text="PROJECTS" />
                   </h2>
                   <Slider {...ProjectSlider}>
-                    {listProjectData.map((data) => (
-                      <div className="project-card" key={data.id}>
-                        <div onClick={() => handleProjectClicks(data.id, data.Image_URLs || NoImage)}>
-                          <div className="project-image-container">
-                            {data.Image_URLs ? (
+                    {listProjectData.map((data) => {
+                      const imageUrl = getPropertyImageUrl(data); // Use the same image handling logic
+                      return (
+                        <div className="project-card" key={data.id}>
+                          <div
+                            onClick={() =>
+                              handleProjectClicks(data.id, imageUrl)
+                            }
+                          >
+                            <div className="project-image-container">
                               <img
-                                src={data.Image_URLs}
-                                alt={data.title}
+                                src={imageUrl}
+                                alt={data.Project_Name || "Project Image"}
                                 className="project-image"
+                                onError={(e) =>
+                                  handlePropertyImageError(e, data)
+                                }
                               />
-                            ) : (
-                              <img
-                                src={NoImage}
-                                alt={data.title}
-                                className="project-image"
-                              />
-                            )}
+                            </div>
+                          </div>
+                          <div className="project-details">
+                            <div
+                              onClick={() =>
+                                handleProjectClicks(data.id, imageUrl)
+                              }
+                            >
+                              <h5 className="project-title">
+                                {data.Project_Name}
+                              </h5>
+                            </div>
+                            <p className="project-location">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 384 512"
+                              >
+                                <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                              </svg>{" "}
+                              {data.Address}
+                            </p>
+                            <p className="project-price text-green-800 font-bold">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 320 512"
+                              >
+                                <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
+                              </svg>
+                              {data.Min_Budget ? "From " : ""}
+                              {formatBudget(data.Min_Budget)} |{" "}
+                              {formatBudget(data.Max_Budget)}
+                            </p>
                           </div>
                         </div>
-                        <div className="project-details">
-                          <div onClick={() => handleProjectClicks(data.id, data.Image_URLs || NoImage)}>
-                            <h5 className="project-title">{data.Project_Name}</h5>
-                          </div>
-                          <p className="project-location">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 384 512"
-                            >
-                              <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                            </svg>{" "}
-                            {data.Address}
-                          </p>
-                          <p className="project-price text-green-800 font-bold">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 320 512"
-                            >
-                              <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
-                            </svg>
-                            {data.Min_Budget ? "From " : ""}
-                            {formatBudget(data.Min_Budget)} | {formatBudget(data.Max_Budget)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </Slider>
                 </div>
               </div>

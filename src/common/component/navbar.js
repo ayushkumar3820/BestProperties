@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import logo from "../../assets/img/logoTwo.jpg";
 import Modal from "react-modal";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { liveUrl, token } from "./url";
@@ -17,7 +16,6 @@ export default function Navbar() {
   const [active, setActive] = useState("");
   const [selectedOption, setSelectedOption] = useState("residential");
   const [showData, setShowData] = useState(false);
-  // const [storedataShow, setStoreDataShow] = useState("");
   const [loader, setLoader] = useState(false);
   const [message, setMessage] = useState("");
   const [num1, setNum1] = React.useState(generateRandomNumber());
@@ -28,15 +26,13 @@ export default function Navbar() {
   const [storedata, setStoreData] = useState({
     phone: "",
   });
-  const handleNewData = (e) => {
-    setStoreData({ ...storedata, [e.target.name]: e.target.value });
-  };
   const [loanData, setLoanData] = useState({
     name: "",
     loanAmount: "",
     mobile: "",
     description: "",
   });
+
   const checkAnswer = () => {
     const expectedAnswer = operation === "+" ? num1 + num2 : num1 - num2;
     return parseInt(answer) === expectedAnswer;
@@ -57,15 +53,20 @@ export default function Navbar() {
     setLoanData({ ...loanData, [e.target.name]: e.target.value });
   };
 
+  const handleNewData = (e) => {
+    setStoreData({ ...storedata, [e.target.name]: e.target.value });
+  };
+
   const storedTitleFromLocalStorage = localStorage.getItem("panelTitle");
   const retrievedToken = localStorage.getItem("token");
 
   const isValidToken = () => {
-    // Check if token exists and is not empty/undefined/null
     return (
       retrievedToken &&
       retrievedToken !== "undefined" &&
-      retrievedToken !== "null"
+      retrievedToken !== "null" &&
+      retrievedToken.trim() !== "" &&
+      retrievedToken.length > 0
     );
   };
 
@@ -75,6 +76,19 @@ export default function Navbar() {
       setMessage("Please enter a valid 10-digit phone number");
       return;
     }
+    if (!active) {
+      setMessage("Please select a property action (Sell/Rent)");
+      return;
+    }
+    if (selectedOption === "residential" && !activeButton) {
+      setMessage("Please select a residential property type");
+      return;
+    }
+    if (selectedOption === "commercial" && !activeCommercial) {
+      setMessage("Please select a commercial property type");
+      return;
+    }
+    
     fetch(`${liveUrl}api/Seller/addSeller`, {
       method: "POST",
       headers: {
@@ -94,10 +108,13 @@ export default function Navbar() {
         localStorage.setItem("responseData", JSON.stringify(data.result));
         if (data.status === "done") {
           Navigate("/about-property");
+        } else {
+          setMessage(data.message || "Registration failed. Please try again.");
         }
       })
       .catch((error) => {
         console.error(error);
+        setMessage("An error occurred. Please try again.");
       });
   };
 
@@ -139,6 +156,7 @@ export default function Navbar() {
       })
       .catch((error) => {
         console.error(error);
+        setMessage("An error occurred. Please try again.");
       })
       .finally(() => {
         setLoader(false);
@@ -182,6 +200,9 @@ export default function Navbar() {
       transform: "translate(-50%, -50%)",
       borderRadius: "10px",
       zIndex: "999999",
+      width: "90%",
+      maxWidth: "700px",
+      padding: "20px",
     },
   };
 
@@ -195,26 +216,28 @@ export default function Navbar() {
       transform: "translate(-50%, -50%)",
       borderRadius: "10px",
       zIndex: 9999,
-      margin: "auto",
+      width: "90%",
+      maxWidth: "500px",
+      padding: "20px",
     },
   };
 
   return (
-    <div className="">
+    <div className="relative">
       <Modal
         isOpen={modals}
         onRequestClose={() => setModals(false)}
         style={customStyles}
       >
-        <div className="lg:w-[700px] w-full p-2">
-          <div className="text-red-600 text-center">{message}</div>
-          <div className="flex justify-between">
-            <h6 className="text-start text-2xl font-semibold text-green-600">
-              Positing your property is free, so get started.
+        <div className="w-full p-4">
+          <div className="text-red-600 text-center mb-4">{message}</div>
+          <div className="flex justify-between items-center">
+            <h6 className="text-2xl font-semibold text-green-600">
+              Posting your property is free, so get started.
             </h6>
             <div
               onClick={() => setModals(false)}
-              className="bg-red-600 w-9 h-9 cursor-pointer flex justify-center absolute top-0 right-0 items-center"
+              className="bg-red-600 w-9 h-9 cursor-pointer flex justify-center items-center absolute top-0 right-0"
             >
               <svg
                 fill="white"
@@ -227,12 +250,11 @@ export default function Navbar() {
             </div>
           </div>
           <div>
-            <p className="text3 mt-3 text-start text-lg font-semibold">
+            <p className="mt-3 text-lg font-semibold">
               Provide a few fundamental details
             </p>
           </div>
-          <div></div>
-          <div className="grid grid-cols-3  justify-center items-center gap-5 mt-3">
+          <div className="grid grid-cols-2 gap-4 mt-3">
             <button
               style={{
                 border: "2px solid #D3D3D3",
@@ -267,7 +289,7 @@ export default function Navbar() {
             </button>
           </div>
           {click && active === "" ? (
-            <div className="text-red-600">select any one option</div>
+            <div className="text-red-600 mt-2">Select any one option</div>
           ) : null}
           {showData ? (
             <>
@@ -297,7 +319,7 @@ export default function Navbar() {
               </div>
               {selectedOption === "residential" ? (
                 <>
-                  <div className="flex items-center gap-2 mt-5">
+                  <div className="grid grid-cols-2 gap-2 mt-5">
                     <button
                       style={{
                         border: "2px solid #D3D3D3",
@@ -328,44 +350,36 @@ export default function Navbar() {
                     >
                       IndependentHouse/villa
                     </button>
-                  </div>
-                  <div className="flex gap-2 justify-center">
-                    <div className="mt-3 text-start w-full">
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          borderRadius: "10px",
-                          backgroundColor: "white",
-                        }}
-                        onClick={() => handleClick("Independent/Builder Floor")}
-                        className={
-                          activeButton === "Independent/Builder Floor"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Independent/Builder Floor
-                      </button>
-                    </div>
-                    <div className="mt-3 text-start w-full">
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          borderRadius: "10px",
-                          backgroundColor: "white",
-                        }}
-                        onClick={() => handleClick("plot")}
-                        className={
-                          activeButton === "plot"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Plot/Land
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                      }}
+                      onClick={() => handleClick("Independent/Builder Floor")}
+                      className={
+                        activeButton === "Independent/Builder Floor"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Independent/Builder Floor
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                      }}
+                      onClick={() => handleClick("plot")}
+                      className={
+                        activeButton === "plot"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Plot/Land
+                    </button>
                     <button
                       style={{
                         border: "2px solid #D3D3D3",
@@ -396,8 +410,6 @@ export default function Navbar() {
                     >
                       Serviced Apartment
                     </button>
-                  </div>
-                  <div className="flex gap-2 mt-3">
                     <button
                       style={{
                         border: "2px solid #D3D3D3",
@@ -430,131 +442,135 @@ export default function Navbar() {
                     </button>
                   </div>
                   {click && activeButton === "" ? (
-                    <div className="text-red-600">select any one option</div>
+                    <div className="text-red-600 mt-2">Select any one option</div>
                   ) : null}
                 </>
               ) : null}
               {selectedOption === "commercial" ? (
                 <>
-                  <div>
-                    <div className="flex gap-5 mt-3">
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          width: "100px",
-                          backgroundColor: "white",
-                        }}
-                        onClick={() => handleCommercial("Office")}
-                        className={
-                          activeCommercial === "Office"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Office
-                      </button>
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Retail")}
-                        className={
-                          activeCommercial === "Retail"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Retail
-                      </button>
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Plot/Land")}
-                        className={
-                          activeCommercial === "Plot/Land"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Plot/Land
-                      </button>
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Storage")}
-                        className={
-                          activeCommercial === "Storage"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Storage
-                      </button>
-                    </div>
-                    <div className="flex gap-5 mt-3">
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Industry")}
-                        className={
-                          activeCommercial === "Industry"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Industry
-                      </button>
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Hospitality")}
-                        className={
-                          activeCommercial === "Hospitality"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Hospitality
-                      </button>
-                      <button
-                        style={{
-                          border: "2px solid #D3D3D3",
-                          backgroundColor: "white",
-                          fontSize: "15px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleCommercial("Other")}
-                        className={
-                          activeCommercial === "Other"
-                            ? "activess btn btn-solid w-full p-2 text-center"
-                            : "btn btn-solid w-full p-2 text-center"
-                        }
-                      >
-                        Other
-                      </button>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Office")}
+                      className={
+                        activeCommercial === "Office"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Office
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Retail")}
+                      className={
+                        activeCommercial === "Retail"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Retail
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Plot/Land")}
+                      className={
+                        activeCommercial === "Plot/Land"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Plot/Land
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Storage")}
+                      className={
+                        activeCommercial === "Storage"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Storage
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Industry")}
+                      className={
+                        activeCommercial === "Industry"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Industry
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Hospitality")}
+                      className={
+                        activeCommercial === "Hospitality"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Hospitality
+                    </button>
+                    <button
+                      style={{
+                        border: "2px solid #D3D3D3",
+                        borderRadius: "10px",
+                        backgroundColor: "white",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleCommercial("Other")}
+                      className={
+                        activeCommercial === "Other"
+                          ? "activess btn btn-solid w-full p-2 text-center"
+                          : "btn btn-solid w-full p-2 text-center"
+                      }
+                    >
+                      Other
+                    </button>
                   </div>
                   {click && activeCommercial === "" ? (
-                    <div className="text-red-600">select any one option</div>
+                    <div className="text-red-600 mt-2">Select any one option</div>
                   ) : null}
                 </>
               ) : null}
@@ -565,7 +581,7 @@ export default function Navbar() {
               Your contact information so the buyer can get in touch with you
             </h6>
           </div>
-          <div className="text-start ms-3">
+          <div className="mt-3">
             <input
               value={storedata.phone}
               name="phone"
@@ -578,23 +594,23 @@ export default function Navbar() {
             />
           </div>
           {click && storedata.phone.length !== 10 ? (
-            <div className="text-red-600">
+            <div className="text-red-600 mt-2">
               Please enter a valid 10-digit phone number
             </div>
           ) : null}
-          {!isValidToken() ? (
-            <p className="mt-2 text-start font-bold mb-2">
+          {!isValidToken() && (
+            <p className="mt-2 font-bold">
               Are you a registered user?{" "}
-              <Link to="/login" className="text5 text-green-600">
+              <Link to="/login" className="text-green-600">
                 Login
               </Link>
             </p>
-          ) : null}
+          )}
           <button
             onClick={handleSubmit}
-            className="bg-red-600 w-full p-2 mt-5 rounded flex justify-center items-center"
+            className="bg-red-600 w-full p-2 mt-5 rounded flex justify-center items-center text-white font-bold"
           >
-            <div className="text-white font-bold rounded-xl">Submit</div>
+            Submit
           </button>
         </div>
       </Modal>
@@ -603,10 +619,10 @@ export default function Navbar() {
         onRequestClose={() => setVisibleModal(false)}
         style={loanStyle}
       >
-        <div className="md:w-full sm:w-full">
+        <div className="w-full p-4">
           <div
             onClick={() => setVisibleModal(false)}
-            className="bg-red-600 w-9 h-9 cursor-pointer flex justify-center absolute top-0 right-0 items-center"
+            className="bg-red-600 w-9 h-9 cursor-pointer flex justify-center items-center absolute top-0 right-0"
           >
             <svg
               fill="white"
@@ -619,9 +635,10 @@ export default function Navbar() {
           </div>
           <div>
             <h6 className="text-center text-2xl font-semibold text-green-600">
-              Apply for Loan.
+              Apply for Loan
             </h6>
           </div>
+          <div className="text-red-600 text-center mb-4">{message}</div>
           <div className="mt-2 mb-2 font-bold">Name</div>
           <input
             onChange={handleLoan}
@@ -631,7 +648,7 @@ export default function Navbar() {
             className="border border-green-800 p-2 w-full rounded-md"
           />
           {click && loanData.name === "" ? (
-            <div className="text-red-600">Required To Fill name</div>
+            <div className="text-red-600 mt-2">Required to fill name</div>
           ) : null}
           <div className="mt-2 mb-2 font-bold">Enter Loan Amount</div>
           <input
@@ -642,7 +659,7 @@ export default function Navbar() {
             className="border border-green-800 p-2 w-full rounded-md"
           />
           {click && loanData.loanAmount === "" ? (
-            <div className="text-red-600">Required To Fill Loan Amount</div>
+            <div className="text-red-600 mt-2">Required to fill loan amount</div>
           ) : null}
           <div className="mt-2 mb-2 font-bold">Mobile Number</div>
           <input
@@ -655,9 +672,9 @@ export default function Navbar() {
             className="border border-green-800 p-2 w-full rounded-md"
           />
           {click && loanData.mobile === "" ? (
-            <div className="text-red-600">Required To Fill Mobile Number</div>
+            <div className="text-red-600 mt-2">Required to fill mobile number</div>
           ) : click && loanData.mobile.length !== 10 ? (
-            <div className="text-red-600">
+            <div className="text-red-600 mt-2">
               Please enter a valid 10-digit mobile number
             </div>
           ) : null}
@@ -665,55 +682,60 @@ export default function Navbar() {
             onChange={handleLoan}
             value={loanData.description}
             name="description"
-            placeholder="description"
-            className="w-full mt-4 p-2 lg:h-20 border border-green-800"
+            placeholder="Description"
+            className="w-full mt-4 p-2 h-20 border border-green-800 rounded-md"
           />
-          <div>
-            <div className="flex" style={{ alignItems: "center" }}>
-              <p className="lg:w-20 font-bold" style={{ width: "70%" }}>
+          <div className="mt-4">
+            <div className="flex items-center">
+              <p className="font-bold w-3/4">
                 Captcha: {num1} {operation} {num2}?
               </p>
               <input
-                style={{ width: "30%" }}
-                className="border border-green-800 p-2 rounded-md"
+                className="border border-green-800 p-2 rounded-md w-1/4"
                 type="text"
                 value={answer}
                 onChange={handleChange}
               />
             </div>
             <button
-              style={{ width: "100%", textDecoration: "underline" }}
-              className="text-end deconation-underline font-semibold text-red-600"
+              className="text-red-600 font-semibold underline w-full text-right mt-2"
               onClick={regenerateCaptcha}
             >
               Regenerate
             </button>
             {click && answer.length <= 0 ? (
-              <div className="text-red-600">Required To Fill the Captcha</div>
+              <div className="text-red-600 mt-2">Required to fill the captcha</div>
             ) : null}
           </div>
           <button
             onClick={handleLoans}
-            className="bg-red-600 p-2 mt-2 mb-2 m-auto w-full"
-            style={{ width: "100%" }}
+            className="bg-red-600 w-full p-2 mt-4 rounded flex justify-center items-center text-white font-bold min-h-[40px]"
+            disabled={loader}
           >
-            <div className="text-center text-white font-bold">
-              {loader ? (
-                <div className="flex justify-center align-items-center">
-                  <svg
-                    className="animate-spin h-6 w-6"
-                    fill="#ffff"
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="0.5rem"
-                    viewBox="0 0 512 512"
-                  >
-                    <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-                  </svg>
-                </div>
-              ) : (
-                <div>Submit</div>
-              )}
-            </div>
+            {loader ? (
+              <svg
+                className="animate-spin h-6 w-6 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                ></path>
+              </svg>
+            ) : (
+              "Submit"
+            )}
           </button>
         </div>
       </Modal>
@@ -812,7 +834,7 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-        <div className="border border-black-400"></div>
+        <div className="w-full border-t border-gray-400"></div>
       </div>
     </div>
   );

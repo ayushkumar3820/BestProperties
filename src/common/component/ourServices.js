@@ -80,7 +80,7 @@ export default function OurServices() {
                     navigate(`/property-type/${panel.our_services.replace(/\s/g, "-")}`);
                     window.scrollTo(0, 0);
                   }}
-                  className="relative cursor-pointer border border-black overflow-hidden"
+                  className="relative cursor-pointer border  overflow-hidden bg-white shadow-lg rounded-lg"
                 >
                   <div
                   >
