@@ -484,7 +484,7 @@ export default function UserInformation() {
                                 </div>
                               ) : null}
                               <div className="flex gap-2 items-center">
-                                <img className="w-5" src={panel.varifed} alt="Verified" />
+                                {/* <img className="w-5" src={panel.varifed} alt="Verified" /> */}
                               </div>
                             </div>
                             {panel.amenities && (
@@ -624,7 +624,7 @@ export default function UserInformation() {
                   <div>{check.bedrooms}</div>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <img className="w-5" src={check.varifed} alt="Verified" />
+                  {/* <img className="w-5" src={check.varifed} alt="Verified" /> */}
                 </div>
               </div>
             </div>
