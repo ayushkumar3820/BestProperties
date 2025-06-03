@@ -1,4 +1,5 @@
-/* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable no-unused-vars */
+
 import React, { useEffect, useRef, useState } from "react";
 import "../../App.css";
 import { useNavigate } from "react-router-dom";
@@ -290,6 +291,7 @@ export default function GalleryComponent() {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          height:"190px"
         },
       },
     ],
@@ -373,128 +375,119 @@ export default function GalleryComponent() {
                   <Slider {...oneSlider}>
                     {newData.slice(0, showCount).map((panel) => {
                       return (
-                        <>
-                          <div
-                            onClick={() => {
-                              const modifiedPanelName = panel.name
-                                .replace(/\s/g, "-")
-                                .replace(/[^\w\s]/g, "")
-                                .toLowerCase();
-                              navigate(
-                                `/property/-${panel.id}-${modifiedPanelName}`
-                              );
-                            }}
-                            className="main-sale-div border rounded-md  cursor-pointer     shadow-lg   transition duration-300 ease-in-out "
-                          >
-                            <div className="relative  ">
-                              <div className=" absolute left-0  "></div>
-                              {panel.type ? (
-                                <>
-                                  <div className=" flex items-center bg-green-900 text-white  px-2 py-2 left-0 bottom-0 absolute font-bold lg:text-xl  text-sm ">
-                                    <div className="text-md text-sm font-bold ml-2">
-                                      {panel.name}
-                                    </div>
-                                  </div>
-                                </>
-                              ) : null}
+                        <div
+                          key={panel.id}
+                          onClick={() => {
+                            const modifiedPanelName = panel.name
+                              .replace(/\s/g, "-")
+                              .replace(/[^\w\s]/g, "")
+                              .toLowerCase();
+                            navigate(
+                              `/property/-${panel.id}-${modifiedPanelName}`
+                            );
+                          }}
+                          className="rent-detail-div p-2"
+                        >
+                          <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
+                            <div className="felx justify-center gap-6 rent-image-div">
                               <div className="sale-image-div">
                                 {panel.image_one ? (
-                                  <>
-                                    <img
-                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
-                                      src={showData + panel.image_one}
-                                    />
-                                  </>
+                                  <img
+                                    className="rounded-t-md cursor-pointer h-52 w-full"
+                                    alt={panel.name}
+                                    src={showData + panel.image_one}
+                                  />
                                 ) : (
-                                  <>
-                                    <img
-                                      className=" rounded-t-md cursor-pointer  h-52 w-full"
-                                      src={NoImage}
-                                    />
-                                  </>
+                                  <img
+                                    className="rounded-t-md cursor-pointer h-52 w-full"
+                                    alt="No Image"
+                                    src={NoImage}
+                                    
+                                  />
                                 )}
                               </div>
                               <div className="for-sale-div">For Sale</div>
                             </div>
-                            <div className="text-left bg-white border border-t leading-4 p-2">
-                              <div className=" mr-2 ">
-                                <div className="">
-                                  <div className="text-sm font-extralight ">
-                                    {panel.property_name}
-                                  </div>
-
-                                  <div className="headingStyle flex items-center text-green-800 font-bold prperty-heading">
+                            <div className="border p-2 rent-inner-div">
+                              <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">
+                                {panel.property_name}
+                              </div>
+                              <div
+                                className="property-address mb-3 mt-0 items-center flex"
+                                style={{
+                                  justifyContent: "space-between",
+                                  marginTop: "0",
+                                }}
+                              >
+                                <div className="headingStyle text-green-800 font-bold prperty-heading">
+                                      {/* Row 2: Name on a new line, aligned with the text above */}
+                                  {panel.name && (
+                                    <div className="text-sm lg:text-lg ml-0 mt-1">
+                                      {panel.name}
+                                    </div>
+                                  )}
+                                  {/* Row 1: Icon + Budget + Sqft */}
+                                  <div className="flex items-center">
                                     <svg
                                       fill="#14532d"
-                                      className="w-5 h-5 "
+                                      className="w-5 h-5"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 320 512"
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-                                    {formatBudget(panel.budget)}
-                                    <div
-                                      className=" lg:text-lg ml-2 text-sm headingStyle"
-                                      style={headingStyle}
-                                    >
-                                      {panel.sqft > 0 ? (
-                                        <>
-                                          | {panel.sqft} {panel.measureUnit}
-                                        </>
-                                      ) : (
-                                        <></>
-                                      )}
+                                    <div className="text-sm lg:text-lg ml-2">
+                                      {formatBudget(panel.budget)}
+                                      {panel.sqft > 0
+                                        ? ` | ${panel.sqft} ${panel.measureUnit}`
+                                        : ""}
                                     </div>
                                   </div>
-                                  <div
-                                    className="flex  items-start mt-3"
-                                    style={{
-                                      alignItems: "flex-start !important;",
-                                    }}
+
+                              
+                                </div>
+                              </div>
+                              <div className="flex gap-2 items-center content-center mb-3">
+                                <div className="flex gap-2">
+                                  <svg
+                                    className="h-5 w-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 384 512"
+                                    fill="#14532d"
                                   >
-                                    <div>
-                                      <svg
-                                        className="h-5 w-5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 384 512"
-                                        fill="#14532d"
-                                      >
-                                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                      </svg>
-                                    </div>
-                                    <div className="property-address sale-address m-0">
-                                      {panel.address}
-                                    </div>
+                                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                  </svg>
+                                  <div>{panel.address}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center lg:gap-3 gap-3 mt-1">
+                                <div className="flex items-center gap-2">
+                                  {panel.bedrooms ? (
+                                    <img className="w-6" src={Bed} alt="" />
+                                  ) : null}
+                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                    {panel.bedrooms}
                                   </div>
-                                  <div className="flex items-center lg:gap-3 gap-3 mt-1">
-                                    <div className="flex items-center gap-2 ">
-                                      {panel.bedrooms ? (
-                                        <img className="w-6" src={Bed} />
-                                      ) : null}
-                                      <div className="font-semibold text-green-800 inner-rooms-heading">
-                                        {panel.bedrooms}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {panel.bathrooms ? (
-                                        <img className="w-6" src={Bath} />
-                                      ) : null}
-                                      <div className="font-semibold text-green-800 inner-rooms-heading">
-                                        {panel.bathrooms}
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                      <img
-                                        className="w-5"
-                                        src={panel.varifed}
-                                      />
-                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {panel.bathrooms ? (
+                                    <img className="w-6" src={Bath} alt="" />
+                                  ) : null}
+                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                    {panel.bathrooms}
                                   </div>
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                  <img
+                                    className="w-5"
+                                    src={panel.varifed}
+                                    alt=""
+                                  />
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </>
+                        </div>
                       );
                     })}
                   </Slider>
@@ -523,6 +516,7 @@ export default function GalleryComponent() {
                                     className="rounded-t-md cursor-pointer h-52 w-full"
                                     src={imageUrl}
                                     alt={`${item.type || "Property"} Image`}
+                                    aria-hidden="true"
                                     onError={(e) =>
                                       handlePropertyImageError(e, item)
                                     }
@@ -567,7 +561,7 @@ export default function GalleryComponent() {
                                     >
                                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
-                                    <div>{item.address}</div>
+                                    <div >{item.address}</div>
                                   </div>
                                 </div>
                               </div>
@@ -614,6 +608,7 @@ export default function GalleryComponent() {
                                   className="rounded-t-md cursor-pointer h-52 w-full"
                                   src={NoImage}
                                   alt="No Image"
+                                  aria-hidden="true"
                                 />
                               )}
                             </div>
@@ -636,7 +631,7 @@ export default function GalleryComponent() {
                                 >
                                   <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                 </svg>
-                                <div>{rent.address}</div>
+                                <div className="text-green-800 font-bold text-lg">{rent.address}</div>
                               </div>
                             </div>
                             {rent.sector && (
@@ -657,7 +652,7 @@ export default function GalleryComponent() {
                                 >
                                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                 </svg>
-                                <div>
+                                <div className="text-green-800 text-lg font-bold">
                                   {formatBudget(rent.budget)} Per Month Rent
                                 </div>
                               </div>

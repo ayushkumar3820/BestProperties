@@ -3,36 +3,32 @@ import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
-import { cssTransition, toast } from "react-toastify";
-import Toast from "./toast";
+import { toast, ToastContainer } from "react-toastify";
 import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
 import Searching from "./searching";
 import Logo from "../../assets/img/password.webp";
+
 export default function Login() {
   const Navigate = useNavigate();
   const [activeButton, setActiveButton] = useState("option1");
   const [click, setClick] = useState(false);
-  const [clickData, setClickData] = useState(false);
   const [loader, setLoader] = useState(false);
   const [modals, setModals] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
   const [store, setStore] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
+  
   });
   const [newData, setNewData] = useState({
     phone: "",
     password: "",
   });
-  // Forgot Password
   const [forgot, setForgot] = useState({
-    password: "",
-    confirmPassword: "",
+    email: "",
   });
 
   const handleForgot = (e) => {
@@ -40,7 +36,43 @@ export default function Login() {
   };
 
   const fireForgot = () => {
-    console.log(forgot, "$$$$$$$$$");
+    setClick(true);
+    console.log("Forgot Password Clicked:", forgot); // Debug
+    if (!forgot.email) {
+      toast.error("Please enter your email");
+      return;
+    }
+    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(forgot.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Simulate API call for forgot password (adjust URL and payload as needed)
+    fetch(`${liveUrl}api/User/forgotPassword`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: forgot.email,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Forgot Password API Response:", data); // Debug
+        if (data.status === "done") {
+          toast.success("Password reset link sent to your email");
+          setModals(false);
+          setForgot({ email: "" });
+        } else {
+          toast.error(data.message || "Failed to send reset link");
+        }
+      })
+      .catch((error) => {
+        console.error("Forgot Password Error:", error);
+        toast.error("Something went wrong");
+      });
   };
 
   const handleEnterKeyPress = (event) => {
@@ -52,12 +84,10 @@ export default function Login() {
     }
   };
 
-  const handleButtonClick = () => {
-    handleLogin();
-  };
-
   const handleClick = (span) => {
     setActiveButton(span);
+    setClick(false);
+    setLoginMessage("");
   };
 
   const handleChangeText = (e) => {
@@ -68,29 +98,63 @@ export default function Login() {
     setStore({ ...store, [e.target.name]: e.target.value });
   };
 
-  const ValidateEmail = () => {
-    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email)) {
-      setClick("email is not valid");
-    } else {
-      setClick("");
-    }
-  };
-
   const validatePhone = (phone) => {
-    // Allow empty input during typing, but validate length on submit
-    if (phone === "") return true;
-    // Check if phone is exactly 10 digits and doesn't start with 0
+    if (!phone) return false;
     return /^[1-9][0-9]{9}$/.test(phone);
   };
 
+  const validatePassword = (password) => {
+    if (!password || password.length < 6) {
+      return false;
+    }
+    return true;
+  };
+
   const HandleApi = () => {
+    setClick(true);
     setLoader(true);
-    ValidateEmail();
-    if (store.phone && !validatePhone(store.phone)) {
-      setMessages("Please enter a valid 10-digit phone number");
+    console.log("Register Clicked:", store); // Debug log
+
+    // Validation checks
+    if (!store.name) {
+      console.log("Validation Failed: No name");
+      toast.error("Please enter your name");
       setLoader(false);
       return;
     }
+    if (!store.email) {
+      console.log("Validation Failed: No email");
+      toast.error("Please enter your email");
+      setLoader(false);
+      return;
+    }
+    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email)) {
+      console.log("Validation Failed: Invalid email");
+      toast.error("Please enter a valid email address");
+      setLoader(false);
+      return;
+    }
+    if (!store.phone || !validatePhone(store.phone)) {
+      console.log("Validation Failed: Invalid phone");
+      toast.error("Please enter a valid 10-digit phone number");
+      setLoader(false);
+      return;
+    }
+    if (!store.password) {
+      console.log("Validation Failed: No password");
+      toast.error("Please enter a password");
+      setLoader(false);
+      return;
+    }
+    if (!validatePassword(store.password)) {
+      console.log("Validation Failed: Password too short");
+      toast.error("Password must be at least 6 characters long");
+      setLoader(false);
+      return;
+    }
+   
+
+    console.log("Sending Register API Request:", store); // Debug
     fetch(`${liveUrl}api/User/userRegister`, {
       method: "POST",
       headers: {
@@ -98,27 +162,30 @@ export default function Login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...store,
+        name: store.name,
+        email: store.email,
+        phone: store.phone,
+        password: store.password,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        setMessages(data.message);
+        console.log("Register API Response:", data); // Debug
         if (data.status === "done") {
-          toast.success("Create Account Successfully  ");
+          toast.success("Account created successfully");
           setTimeout(() => {
-            setLoading(false);
+            setLoader(false);
             Navigate("/login");
             window.location.reload();
-          }, 3000);
+          }, 2000);
         } else {
-          toast.error("Something Went Wrong");
+          toast.error(data.message || "Registration failed");
+          setLoader(false);
         }
       })
       .catch((error) => {
-        console.error("Error:", error);
-      })
-      .finally(() => {
+        console.error("Register Error:", error);
+        toast.error("Something went wrong");
         setLoader(false);
       });
   };
@@ -126,16 +193,25 @@ export default function Login() {
   const handleLogin = () => {
     setClick(true);
     setLoader(true);
-    
-    // Validate inputs
-    if (!newData.phone || !newData.password) {
-      setLoginMessage("Please enter Correct both phone number and password");
+    console.log("Login Clicked:", newData); // Debug
+
+    if (!newData.phone) {
+      toast.error("Please enter your phone number");
       setLoader(false);
       return;
     }
-    
     if (!validatePhone(newData.phone)) {
-      setLoginMessage("Please enter a valid 10-digit phone number");
+      toast.error("Please enter a valid 10-digit phone number");
+      setLoader(false);
+      return;
+    }
+    if (!newData.password) {
+      toast.error("Please enter your password");
+      setLoader(false);
+      return;
+    }
+    if (!validatePassword(newData.password)) {
+      toast.error("Password must be at least 6 characters long");
       setLoader(false);
       return;
     }
@@ -147,27 +223,32 @@ export default function Login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...newData,
+        phone: newData.phone,
+        password: newData.password,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        setLoginMessage(data.message);
+        console.log("Login API Response:", data); // Debug
         if (data.status === "done") {
           localStorage.setItem("token", data.token);
-          toast.success("Login Successfully");
+          toast.success("Login successful");
           setTimeout(() => {
             setLoader(false);
             Navigate("/contact");
           }, 1000);
         } else {
-          toast.error("Api Call Failed");
+          if (data.message.includes("password")) {
+            toast.error("Incorrect password");
+          } else {
+            toast.error(data.message || "Login failed");
+          }
+          setLoader(false);
         }
       })
       .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
+        console.error("Login Error:", error);
+        toast.error("Something went wrong");
         setLoader(false);
       });
   };
@@ -194,14 +275,11 @@ export default function Login() {
         <div className="lg:w-[400px] w-full">
           <div className="flex justify-center items-center">
             <div className="font-bold mb-6 text-2xl text-green-800">
-              Forget Password
+              Forgot Password
             </div>
             <button
-              onClick={() => {
-                setModals(false);
-              }}
-              className="bg-red-600 absolute top-0
-             right-0 w-8 h-8 flex justify-center items-center"
+              onClick={() => setModals(false)}
+              className="bg-red-600 absolute top-0 right-0 w-8 h-8 flex justify-center items-center"
             >
               <svg
                 fill="white"
@@ -217,26 +295,23 @@ export default function Login() {
             <img className="w-28" src={Logo} alt="password" />
           </div>
           <div className="text-sm text-slate-400">
-            Enter your email and we'll send you a link to reset your password
+            Enter your email to receive a password reset link
           </div>
           <div className="w-full mt-4">
             <input
               placeholder="test@gmail.com"
               onChange={handleForgot}
-              value={forgot.password}
-              name="password"
+              value={forgot.email}
+              name="email"
               className="border w-full p-2 border-green-600 h-10 rounded-md"
             />
-            {click && forgot.password === "" ? (
-              <div className="text-red-600">Required to fill Email</div>
-            ) : null}
             <button
               id="forgotPassword"
               className="mt-3 text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
               type="submit"
               onClick={fireForgot}
             >
-              Confirm
+              Send Reset Link
             </button>
           </div>
         </div>
@@ -306,15 +381,6 @@ export default function Login() {
                         onKeyDown={handleEnterKeyPress}
                         maxLength="10"
                       />
-                      {click && newData.phone === "" ? (
-                        <div className="text-red-600">
-                          Required to fill phone number
-                        </div>
-                      ) : click && !validatePhone(newData.phone) ? (
-                        <div className="text-red-600">
-                          Please enter a valid 10-digit phone number
-                        </div>
-                      ) : null}
                       <div className="text-lg mt-4 text-black">Password</div>
                       <input
                         className="border w-full p-2 border-green-600 h-10 rounded-md"
@@ -325,11 +391,6 @@ export default function Login() {
                         onChange={handleChangeText}
                         onKeyDown={handleEnterKeyPress}
                       />
-                      {click && newData.password === "" ? (
-                        <div className="text-red-600">
-                          Required to fill password
-                        </div>
-                      ) : null}
                     </div>
                     <div
                       className="forget-pass-div mt-2"
@@ -371,11 +432,8 @@ export default function Login() {
                   </>
                 ) : (
                   <>
-                    <div className="font-bold text-2xl text-white text-center">
+                    <div className="font-bold text-2xl text-black text-center">
                       Register
-                    </div>
-                    <div className="text-red-600 mb-4 text-center">
-                      {messages}
                     </div>
                     <div>
                       <div className="text-lg text-black">Name</div>
@@ -386,11 +444,6 @@ export default function Login() {
                         className="border w-full p-2 h-10 rounded-md"
                         type="text"
                       />
-                      {click && store.name === "" ? (
-                        <div className="text-red-600 capitalize mt-1">
-                          Required to fill Name
-                        </div>
-                      ) : null}
                     </div>
                     <div className="mt-3">
                       <div className="text-lg text-black">Email</div>
@@ -401,15 +454,6 @@ export default function Login() {
                         className="border w-full p-2 h-10 rounded-md"
                         type="email"
                       />
-                      {click && store.email === "" ? (
-                        <div className="text-red-600 capitalize">
-                          Required to fill Email
-                        </div>
-                      ) : click && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email) ? (
-                        <div className="text-red-600 capitalize">
-                          Email is not valid
-                        </div>
-                      ) : null}
                     </div>
                     <div>
                       <div className="mt-2 text-lg text-black">Password</div>
@@ -420,11 +464,10 @@ export default function Login() {
                         value={store.password}
                         className="w-full p-2 border h-10 rounded-md"
                       />
-                      {click && store.password === "" ? (
-                        <div className="text-red-600 capitalize">
-                          Required to fill password
-                        </div>
-                      ) : null}
+                    </div>
+                    <div>
+                      
+                      
                     </div>
                     <div>
                       <div className="mt-2 text-lg text-black">Mobile</div>
@@ -436,15 +479,6 @@ export default function Login() {
                         className="w-full p-2 border h-10 rounded-md"
                         maxLength="10"
                       />
-                      {click && store.phone === "" ? (
-                        <div className="text-red-600 capitalize">
-                          Required to fill phone number
-                        </div>
-                      ) : click && !validatePhone(store.phone) ? (
-                        <div className="text-red-600 capitalize">
-                          Please enter a valid 10-digit phone number
-                        </div>
-                      ) : null}
                     </div>
                     <div
                       onClick={HandleApi}
@@ -478,7 +512,7 @@ export default function Login() {
       <OurServices />
       <Searching />
       <BottomBar />
-      <Toast />
+      <ToastContainer />
     </>
   );
 }

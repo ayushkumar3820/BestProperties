@@ -295,11 +295,37 @@ button.rent-view-more {
 
 .image-four {
   background-image: url("../src/assets/img/bottom.jpg");
-  position: relative;
-  background-size: 100% 100%;
+  background-size: cover;              /* Fill the area without distortion */
   background-repeat: no-repeat;
   background-position: center center;
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
 }
+
+/* Mobile responsiveness */
+@media screen and (max-width: 640px) {
+  .image-four {
+    padding: 4rem 1rem;
+    background-size: cover;
+  }
+
+  .image-four .text-[45px] {
+    font-size: 1.75rem; /* 28px */
+  }
+
+  .image-four .text-[23px] {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+
 
 .rate {
   float: left;
@@ -537,6 +563,10 @@ header {
     gap: 10px;
       
 }
+/* .slick-track {
+  height: 190px !important;
+} */
+
 .nav-items-div {
   gap: 10px;
 }

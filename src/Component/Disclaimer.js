@@ -91,8 +91,8 @@ function DisclaimerPage() {
   return (
     <>
     <Navbar/>
-    <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl sm:text-3xl font-bold text-black mb-6 text-center">
         Disclaimer
       </h1>
       <div className="space-y-6">
@@ -101,10 +101,10 @@ function DisclaimerPage() {
             key={index}
             className="p-4 sm:p-6 bg-gray-50 rounded-md card-hover"
           >
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-3">
+            <h2 className="text-lg sm:text-xl font-semibold text-black mb-3">
               {section.title}
             </h2>
-            <div className="text-gray-600 text-sm sm:text-base leading-relaxed">
+            <div className="text-black text-sm sm:text-base leading-relaxed">
               {section.content}
             </div>
           </div>

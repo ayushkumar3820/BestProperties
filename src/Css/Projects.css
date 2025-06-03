@@ -227,7 +227,7 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0 0 10px;
-    color: #333;
+    color:	#166534;
 }
 
 .project-developer {
@@ -291,7 +291,8 @@ p.project-address
 
 .project-price {
     font-size: 16px;
-    /* color: #166534 !important; Your preferred color */
+    
+    color: #166534 !important; 
 }
 
 .project-price svg {

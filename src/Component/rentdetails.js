@@ -232,14 +232,14 @@ export default function RentDetails() {
                   {panel.image_one ? (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider max-h-[600px] bg-cover bg-no-repeat border border-green-800 cursor-pointer"
+                      className="image_slider max-h-[600px] bg-cover bg-no-repeat border rounded-lg cursor-pointer"
                       src={mainUrl + panel.image_one}
                       alt=""
                     />
                   ) : (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider border border-green-800 cursor-pointer"
+                      className="image_slider border  cursor-pointer rounded-lg"
                       src={ImageOne}
                       alt=""
                     />
@@ -250,7 +250,7 @@ export default function RentDetails() {
                   {imageShow && panel.image_two && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border border-green-800 cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border rounded-lg  cursor-pointer"
                       src={mainUrl + panel.image_two}
                       alt=""
                     />
@@ -258,7 +258,7 @@ export default function RentDetails() {
                   {imageShowTwo && panel.image_three && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border border-green-800 cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border rounded-lg  cursor-pointer"
                       src={mainUrl + panel.image_three}
                       alt=""
                     />
@@ -410,7 +410,7 @@ export default function RentDetails() {
                           </div>
                           <div className="grid lg:grid-cols-3 gap-5 px-2">
                             <div>
-                              <div className="flex h-1/1 max-w-[400px] relative rounded-md mb-2 items-center">
+                              <div className="flex h-1/1 max-w-[400px] relative rounded-lg  mb-2 items-center">
                                 {main ? (
                                   <>
                                     {panel.image_one ? (
@@ -420,7 +420,7 @@ export default function RentDetails() {
                                           cursor: "pointer",
                                           gap: "10px",
                                         }}
-                                        className="image_slider w-1/1 border border-green-800 cursor-pointer h-[350px] min-w-[30px] sm:min-w-[350px]"
+                                        className="image_slider w-1/1 border rounded-lg cursor-pointer h-[350px] min-w-[30px] sm:min-w-[350px]"
                                         src={mainUrl + panel.image_one}
                                         alt=""
                                       />
@@ -430,7 +430,7 @@ export default function RentDetails() {
                                           cursor: "pointer",
                                           gap: "10px",
                                         }}
-                                        className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                        className="image_slider w-1/1 border border-green-800  rounded-lg cursor-pointer"
                                         src={ImageOne}
                                         alt=""
                                       />
@@ -445,7 +445,7 @@ export default function RentDetails() {
                                           cursor: "pointer",
                                           gap: "10px",
                                         }}
-                                        className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                        className="image_slider w-1/1 border  rounded-lg cursor-pointer"
                                         src={mainUrl + panel.image_two}
                                         alt=""
                                       />
@@ -457,7 +457,7 @@ export default function RentDetails() {
                                           cursor: "pointer",
                                           gap: "10px",
                                         }}
-                                        className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                        className="image_slider w-1/1 border   rounded-lg cursor-pointer"
                                         src={mainUrl + panel.image_three}
                                         alt=""
                                       />
@@ -471,7 +471,7 @@ export default function RentDetails() {
                                           cursor: "pointer",
                                           gap: "10px",
                                         }}
-                                        className="image_slider w-24 cursor-pointer"
+                                        className="image_slider w-24 cursor-pointer rounded-lg"
                                         src={mainUrl + panel.image_four}
                                         alt=""
                                       />
@@ -496,7 +496,7 @@ export default function RentDetails() {
                                       cursor: "pointer",
                                       gap: "10px",
                                     }}
-                                    className="w-24 cursor-pointer"
+                                    className="w-24 cursor- rounded-lg"
                                     src={mainUrl + panel.image_two}
                                     alt=""
                                   />
@@ -524,7 +524,7 @@ export default function RentDetails() {
                                       cursor: "pointer",
                                       gap: "10px",
                                     }}
-                                    className="w-24 cursor-pointer"
+                                    className="w-24 cursor-pointer rounded-lg" 
                                     src={mainUrl + panel.image_four}
                                     alt=""
                                   />

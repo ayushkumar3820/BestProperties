@@ -21,7 +21,7 @@ export default function Rent() {
   const [loader, setLoader] = useState(false);
   const [like, setLike] = useState(false);
   const [click, setClick] = useState(false);
-  const [showCount, setShowCount] = useState(16);
+  const [showCount, setShowCount] = useState(8); // Changed initial value to 8
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -107,7 +107,7 @@ export default function Rent() {
     setRangeValues({ min: 5000, max: 100000 });
     setSortBy("");
     setSelectedLocation("");
-    setShowCount(16);
+    setShowCount(8); // Reset to 8 when clearing filters
   };
 
   const [store, setStore] = useState({
@@ -352,7 +352,7 @@ export default function Rent() {
         style={custom}
       >
         <div className="lg:w-[400px] w-full">
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center rounded-lg">
             <div className="font-bold text-2xl text-green-800">Book Now!</div>
             <button
               onClick={() => setModalIsOpen(false)}
@@ -579,7 +579,7 @@ export default function Rent() {
                   <div className="font-bold text-lg mb-3 mt-3 text-green-800">
                     Select Property
                   </div>
-                  <div className="border-2 border-green-600 p-2 bg-white">
+                  <div className="border-2 border-green-600 p-2 rounded-md bg-white">
                     <div>
                       <div className="flex justify-between">
                         <p>Budget: {formatBudget(rangeValues.min)}</p>
@@ -678,7 +678,7 @@ export default function Rent() {
                                   {panel.image ? (
                                     <div className="flex justify-center items-center">
                                       <img
-                                        className="cursor-pointer w-full lg:w-[200px] lg:min-h-[220px] lg:max-h-[200px] h-[200px]"
+                                        className="cursor-pointer rounded-lg w-full lg:w-[200px] lg:min-h-[220px] lg:max-h-[200px] h-[200px]"
                                         src={imageshow + panel.image}
                                         alt={panel.name}
                                       />
@@ -781,7 +781,7 @@ export default function Rent() {
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 512 512"
                                               >
-                                                <path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2v64H176C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c Moodie.4-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96h96v64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z" />
+                                                <path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2v64H176C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-14.4-9.8-19.5-22.2-17.2C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96h96v64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z" />
                                               </svg>
                                             </WhatsappShareButton>
                                           </div>
@@ -839,10 +839,10 @@ export default function Rent() {
                         {newData.filter(filterPanelsByBudget).length > showCount && (
                           <div className="flex justify-center mt-4">
                             <button
-                              onClick={() => setShowCount(showCount + 16)}
-                              className="bg-green-600 text-white p-2 rounded-md"
+                              onClick={() => setShowCount(showCount + 8)} // Increment by 8
+                              className="font-bold p-2 w-52 rounded-md text-white bg-red-600"
                             >
-                              Show More
+                              Load More
                             </button>
                           </div>
                         )}
@@ -985,10 +985,10 @@ export default function Rent() {
                             </div>
                           ))}
                         {newData.filter(filterPanelsByBudget).length > showCount && (
-                          <div className="flex justify-center mt-4">
+                          <div className="flex justify-center mt-4 col-span-full">
                             <button
-                              onClick={() => setShowCount(showCount + 16)}
-                              className="bg-green-600 text-white p-2 rounded-md"
+                              onClick={() => setShowCount(showCount + 8)} // Increment by 8
+                             className="font-bold p-2 w-52 rounded-md text-white bg-red-600"
                             >
                               Show More
                             </button>
@@ -996,7 +996,7 @@ export default function Rent() {
                         )}
                       </>
                     ) : (
-                      <p className="text-center mt-24 mb-24 font-bold text-lg text-red-600">
+                      <p className="text-center mt-24 mb-24 font-bold text-lg text-red-600 col-span-full">
                         No Data Available
                       </p>
                     ))}
@@ -1008,8 +1008,8 @@ export default function Rent() {
               >
                 {/* <img className="shadow-lg lg:w-[400px] p-2" src={Ads} /> */}
               </div>
-              </div>
             </div>
+          </div>
         </>
       )}
       <OurServices />

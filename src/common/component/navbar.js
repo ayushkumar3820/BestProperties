@@ -190,37 +190,41 @@ export default function Navbar() {
     setShowData(true);
   };
 
-  const customStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
-      zIndex: "999999",
-      width: "90%",
-      maxWidth: "700px",
-      padding: "20px",
-    },
-  };
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    borderRadius: "10px",
+    zIndex: "999999",
+    width: "90%",
+    maxWidth: "700px",
+    maxHeight: "500px", 
+    padding: "20px", 
+    overflowY: "auto", 
+  },
+};
 
-  const loanStyle = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
-      zIndex: 9999,
-      width: "90%",
-      maxWidth: "500px",
-      padding: "20px",
-    },
-  };
+const loanStyle = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    borderRadius: "10px",
+    zIndex: 9999,
+    width: "90%",
+    maxWidth: "700px", 
+    maxHeight: "600px", 
+    padding: "20px", 
+    overflowY: "auto", 
+  },
+};
 
   return (
     <div className="relative">

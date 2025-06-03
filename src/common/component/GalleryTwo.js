@@ -415,7 +415,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 <div className="font-bold text-xl mt-3 text-green-800">
                   Select Property
                 </div>
-                <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px]">
+                <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px] rounded-lg">
                   <div>
                     <div className="flex gap-2 mt-2 justify-between">
                       <p>Budget: {formatBudget(rangeValues.min)}</p>

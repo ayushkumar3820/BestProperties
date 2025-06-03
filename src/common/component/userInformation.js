@@ -387,7 +387,7 @@ export default function UserInformation() {
                               <img
                                 onClick={() => setModal(true)}
                                 style={{ cursor: "pointer", gap: "10px" }}
-                                className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
                                 src={panel.image_one_url || ImageOne}
                                 alt="Property"
                               />
@@ -397,7 +397,7 @@ export default function UserInformation() {
                                   <img
                                     onClick={() => setModal(true)}
                                     style={{ cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
                                     src={panel.image_two_url}
                                     alt="Property"
                                   />
@@ -406,7 +406,7 @@ export default function UserInformation() {
                                   <img
                                     onClick={() => setModal(true)}
                                     style={{ cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-1/1 border border-green-800 cursor-pointer"
+                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
                                     src={panel.image_three_url}
                                     alt="Property"
                                   />
@@ -520,7 +520,7 @@ export default function UserInformation() {
                           </div>
                         </div>
                         <div className="mt-4 mb-4">
-                          <div className="p-2 border">
+                          <div className="p-2 border rounded-lg" >
                             <div>
                               <div className="flex gap-2">
                                 <div className="font-semibold">Address:</div>
@@ -580,38 +580,41 @@ export default function UserInformation() {
                 window.location.reload();
                 window.scrollTo(0, 0);
               }}
-              className="shadow-lg cursor-pointer px-2 py-2 border border-black bg-white rounded-lg"
+              className="shadow-lg cursor-pointer px-2 py-2 border border-green bg-white rounded-lg"
             >
               <img
                 className="h-52 w-full"
                 src={check.image_one_url || ImageOne}
                 alt="Property"
               />
-              <div className="font-bold text-lg">{check.name}</div>
+              <div className="font-bold text-lg text-green-800">{check.name}</div>
               <div className="flex items-center">
                 <svg
-                  className="w-3 h-3 cursor-pointer"
+                  className="w-3 h-3 cursor-pointer  text-green-800" 
                   xmlns="http://www.w3.org/2000/svg"
+                  fill="CurrentColor"
                   viewBox="0 0 320 512"
                 >
                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                 </svg>
                 <div className="flex">
-                  <div className="font-bold lg:text-sm text-md">
+                  <div className="font-bold lg:text-sm text-md text-green-800">
                     {formatBudget(check.budget)}
                   </div>
                 </div>
               </div>
               <div className="flex gap-2 items-center">
-                <div>
-                  <svg
-                    className="h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 384 512"
-                  >
-                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                  </svg>
-                </div>
+             <div>
+  <svg
+    className="h-5 w-5 text-green-800"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 384 512"
+  >
+    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+  </svg>
+</div>
+
                 <div>{check.address}</div>
               </div>
               <div className="flex items-center lg:gap-3 gap-3 mt-4">

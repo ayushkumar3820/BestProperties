@@ -15,7 +15,7 @@ export default function Buyer() {
 
   const validateName = () => {
     if (!/^[a-zA-Z\s]{2,}$/.test(store.uName)) {
-      setNameError("Name must contain at least 2 letters and no numbers.");
+      setNameError("Name must contain at least 3 letters and no numbers.");
       return false;
     }
     setNameError("");
