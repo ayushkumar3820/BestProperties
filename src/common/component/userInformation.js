@@ -163,6 +163,7 @@ export default function UserInformation() {
       transform: "translate(-50%, -50%)",
       borderRadius: "10px",
       backgroundColor: "white",
+      padding: "20px",
     },
   };
 
@@ -203,23 +204,27 @@ export default function UserInformation() {
         style={custom}
       >
         <div className="flex justify-end">
-          <svg
+          <button
             onClick={() => setModal(false)}
-            fill="red"
-            className="w-10 h-10 cursor-pointer"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 -FontAwesomeIcon-512"
+            className="bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
           >
-            <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm79 143c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z" />
-          </svg>
+            <svg
+              fill="white"
+              className="w-5 h-5"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 384 512"
+            >
+              <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+            </svg>
+          </button>
         </div>
-        <div className="flex justify-center mx-h-[400px] items-center">
+        <div className="flex justify-center max-h-[400px] items-center">
           {newData.map((panel) => (
             <div key={panel.id}>
               {main ? (
                 <img
                   style={{ cursor: "pointer", gap: "10px" }}
-                  className="image_slider max-h-[600px] bg-cover bg-no-repeat border border-green-800 cursor-pointer"
+                  className="image_slider max-h-[400px] bg-cover bg-no-repeat border  rounded-lg cursor-pointer"
                   src={panel.image_one_url || ImageOne}
                   alt="Property"
                 />
@@ -228,7 +233,7 @@ export default function UserInformation() {
                   {imageShow && panel.image_two_url && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border border-green-800 cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border rounded-lg cursor-pointer"
                       src={panel.image_two_url}
                       alt="Property"
                     />
@@ -236,7 +241,7 @@ export default function UserInformation() {
                   {imageShowTwo && panel.image_three_url && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[600px] bg-cover border border-green-800 cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border  rounded-lg cursor-pointer"
                       src={panel.image_three_url}
                       alt="Property"
                     />
@@ -244,7 +249,7 @@ export default function UserInformation() {
                   {imageShowThree && panel.image_four_url && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[600px] bg-cover cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[400px] bg-cover cursor-pointer"
                       src={panel.image_four_url}
                       alt="Property"
                     />
@@ -415,7 +420,7 @@ export default function UserInformation() {
                                   <img
                                     onClick={() => setModal(true)}
                                     style={{ height: "400px", width: "400px", cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-24 cursor-pointer"
+                                    className="image_slider w-24 cursor-pointer rounded-lg"
                                     src={panel.image_four_url}
                                     alt="Property"
                                   />
@@ -520,7 +525,7 @@ export default function UserInformation() {
                           </div>
                         </div>
                         <div className="mt-4 mb-4">
-                          <div className="p-2 border rounded-lg" >
+                          <div className="p-2 border rounded-lg">
                             <div>
                               <div className="flex gap-2">
                                 <div className="font-semibold">Address:</div>
@@ -590,9 +595,9 @@ export default function UserInformation() {
               <div className="font-bold text-lg text-green-800">{check.name}</div>
               <div className="flex items-center">
                 <svg
-                  className="w-3 h-3 cursor-pointer  text-green-800" 
+                  className="w-3 h-3 cursor-pointer text-green-800"
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="CurrentColor"
+                  fill="currentColor"
                   viewBox="0 0 320 512"
                 >
                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
@@ -604,17 +609,16 @@ export default function UserInformation() {
                 </div>
               </div>
               <div className="flex gap-2 items-center">
-             <div>
-  <svg
-    className="h-5 w-5 text-green-800"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    viewBox="0 0 384 512"
-  >
-    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-  </svg>
-</div>
-
+                <div>
+                  <svg
+                    className="h-5 w-5 text-green-800"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 384 512"
+                  >
+                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                  </svg>
+                </div>
                 <div>{check.address}</div>
               </div>
               <div className="flex items-center lg:gap-3 gap-3 mt-4">

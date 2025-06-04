@@ -410,7 +410,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </button>
               )}
             </div>
-            <div className="flex gap-10" style={{ alignItems: "flex-start" }}>
+            <div className="flex gap-10" style={{ alignItems: "flex-start", justifyContent:"center" }}>
               <div className="lg:block hidden shadow-lg p-2 min-w-[250px]">
                 <div className="font-bold text-xl mt-3 text-green-800">
                   Select Property

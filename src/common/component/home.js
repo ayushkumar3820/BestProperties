@@ -73,7 +73,7 @@ export default function Home() {
               </span>
             </div>
             <button
-              className={`w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200 bg-gray-400 text-gray-200 cursor-not-allowed bg-green-600 text-white hover:bg-green-700
+              className={`w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200 bg-gray-400 text-gray-200 cursor-not-allowed bg-green-600 text-white hover:bg-green-700 cursor-pointer
               }`}
               onClick={handleSearch}
               

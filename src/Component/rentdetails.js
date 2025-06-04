@@ -232,7 +232,7 @@ export default function RentDetails() {
                   {panel.image_one ? (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider max-h-[600px] bg-cover bg-no-repeat border rounded-lg cursor-pointer"
+                      className="image_slider max-h-[500px] bg-cover bg-no-repeat border rounded-lg cursor-pointer"
                       src={mainUrl + panel.image_one}
                       alt=""
                     />
