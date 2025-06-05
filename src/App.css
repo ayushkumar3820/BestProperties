@@ -221,6 +221,7 @@ button.rent-view-more {
 .activess {
   background-color: black !important;
   color: white !important;
+
 }
 @keyframes slidein {
   from {
@@ -560,7 +561,7 @@ header {
   .main-navbar-div  {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 100px;
       
 }
 /* .slick-track {
@@ -577,6 +578,27 @@ header {
   width: 125px;
   height: auto;
 }
+
+.rent-class {
+  width: 25vh;
+  height: 47px;
+}
+.rent_class_point {
+  width: 25vh;
+  height: 47px;
+  margin-left: 0;
+}
+.project-page {
+  padding: 10px;
+}
+
+.project-slider-container{
+  padding: 10px;
+  text-align: center;
+}
+
+
+
 }
 @media (max-width:575px){
   .nav-items-div {
@@ -592,6 +614,7 @@ header {
 .project-home-div {
     width: 100%;
 }
+
 
 
 }

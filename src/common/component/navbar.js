@@ -23,24 +23,21 @@ export default function Navbar() {
   const [operation, setOperation] = React.useState(generateRandomOperation());
   const [answer, setAnswer] = React.useState("");
   const [visibleModal, setVisibleModal] = useState(false);
-  const [storedata, setStoreData] = useState({
-    phone: "",
-  });
+  const [storedata, setStoreData] = useState({ phone: "" });
   const [loanData, setLoanData] = useState({
     name: "",
     loanAmount: "",
     mobile: "",
     description: "",
   });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const checkAnswer = () => {
     const expectedAnswer = operation === "+" ? num1 + num2 : num1 - num2;
     return parseInt(answer) === expectedAnswer;
   };
 
-  const handleChange = (event) => {
-    setAnswer(event.target.value);
-  };
+  const handleChange = (event) => setAnswer(event.target.value);
 
   const regenerateCaptcha = () => {
     setNum1(generateRandomNumber());
@@ -88,7 +85,7 @@ export default function Navbar() {
       setMessage("Please select a commercial property type");
       return;
     }
-    
+
     fetch(`${liveUrl}api/Seller/addSeller`, {
       method: "POST",
       headers: {
@@ -120,7 +117,7 @@ export default function Navbar() {
 
   const handleLoans = () => {
     setClick(true);
-    setLoader(true);
+    setLoader (true);
     if (!loanData.name || !loanData.loanAmount || !loanData.mobile || !answer) {
       setMessage("Please fill all required fields");
       setLoader(false);
@@ -158,9 +155,7 @@ export default function Navbar() {
         console.error(error);
         setMessage("An error occurred. Please try again.");
       })
-      .finally(() => {
-        setLoader(false);
-      });
+      .finally(() => setLoader(false));
   };
 
   const handleLogout = () => {
@@ -170,61 +165,48 @@ export default function Navbar() {
     window.location.reload();
   };
 
-  const handleClick = (span) => {
-    setActiveButton(span);
+  const handleClick = (span) => setActiveButton(span);
+  const handleCommercial = (span) => setActiveCommercial(span);
+  const handleClickButton = (div) => setActive(div);
+  const handleOptionChange = (event) => setSelectedOption(event.target.value);
+  const datashow = () => setShowData(true);
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      borderRadius: "10px",
+      zIndex: "999999",
+      width: "90%",
+      maxWidth: "700px",
+      maxHeight: "500px",
+      padding: "20px",
+      overflowY: "auto",
+    },
   };
 
-  const handleCommercial = (span) => {
-    setActiveCommercial(span);
+  const loanStyle = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      borderRadius: "10px",
+      zIndex: 9999,
+      width: "90%",
+      maxWidth: "700px",
+      maxHeight: "600px",
+      padding: "20px",
+      overflowY: "auto",
+    },
   };
-
-  const handleClickButton = (div) => {
-    setActive(div);
-  };
-
-  const handleOptionChange = (event) => {
-    setSelectedOption(event.target.value);
-  };
-
-  const datashow = () => {
-    setShowData(true);
-  };
-
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "10px",
-    zIndex: "999999",
-    width: "90%",
-    maxWidth: "700px",
-    maxHeight: "500px", 
-    padding: "20px", 
-    overflowY: "auto", 
-  },
-};
-
-const loanStyle = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "10px",
-    zIndex: 9999,
-    width: "90%",
-    maxWidth: "700px", 
-    maxHeight: "600px", 
-    padding: "20px", 
-    overflowY: "auto", 
-  },
-};
 
   return (
     <div className="relative">
@@ -352,7 +334,7 @@ const loanStyle = {
                           : "btn btn-solid w-full p-2 text-center"
                       }
                     >
-                      IndependentHouse/villa
+                      Independent House/villa
                     </button>
                     <button
                       style={{
@@ -367,7 +349,7 @@ const loanStyle = {
                           : "btn btn-solid w-full p-2 text-center"
                       }
                     >
-                      Independent/Builder Floor
+                      Independent/ Builder Floor
                     </button>
                     <button
                       style={{
@@ -746,8 +728,8 @@ const loanStyle = {
       <div className="relative">
         <div className="w-full bg-white z-50">
           <div className="container mx-auto">
-            <div className="main-navbar-div flex gap-10 justify-between">
-              <div className="justify-center lg:justify-start logo-div">
+            <div className="main-navbar-div flex justify-between items-center p-2">
+              <div className="logo-div">
                 <Link to="/">
                   <img
                     className="w-1/1 p-2"
@@ -756,7 +738,32 @@ const loanStyle = {
                   />
                 </Link>
               </div>
-              <div className="flex lg:ml-2 mb-2 mt-2 lg:gap-5 gap-5 justify-center items-center nav-items-div">
+              <div className="lg:hidden">
+                <button
+                  onClick={toggleMenu}
+                  className="text-black focus:outline-none"
+                >
+                  <svg
+                    className="w-9 h-9"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d={
+                        isMenuOpen
+                          ? "M6 18L18 6M6 6l12 12"
+                          : "M4 6h16M4 12h16M4 18h16"
+                      }
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="hidden lg:flex lg:ml-2 mb-2 mt-2 lg:gap-5 justify-center items-center nav-items-div">
                 <button
                   onClick={() => Navigate("/property")}
                   className={`menu-item text-black-bold rounded-sm p-1 lg:px-1 ${
@@ -779,7 +786,7 @@ const loanStyle = {
                 </Link>
                 <button
                   onClick={() => Navigate("/for-rent")}
-                  className={`menu-item rounded-sm text-black-bold p-1 lg:px-1 ${
+                  className={`menu-item rounded-sm text-black font-semibold p-1 lg:px-1 ${
                     location.pathname === "/for-rent"
                       ? "bg-green-600 rounded-md text-white"
                       : ""
@@ -789,7 +796,7 @@ const loanStyle = {
                 </button>
                 <button
                   onClick={() => Navigate("/projects")}
-                  className={`menu-item rounded-sm text-black-bold p-1 lg:px-1 ${
+                  className={`menu-item rounded-sm text-black font-semibold p-1 lg:px-1 ${
                     location.pathname === "/projects"
                       ? "bg-green-600 rounded-md text-white"
                       : ""
@@ -814,7 +821,7 @@ const loanStyle = {
                       {storedTitleFromLocalStorage}
                     </div>
                     <button
-                      className="menu-item text-red-600 font-leading"
+                      className="menu-item text-red-600 font-semibold"
                       onClick={handleLogout}
                     >
                       Logout
@@ -823,19 +830,125 @@ const loanStyle = {
                 ) : (
                   <div
                     onClick={() => setVisibleModal(true)}
-                    className="menu-item cursor-pointer text-black-bold"
+                    className="menu-item cursor-pointer text-black font-semibold"
                   >
                     Home Loan
                   </div>
                 )}
                 <button
-                  className="menu-item text-red-600 font-leading"
+                  className="menu-item text-red-600 font-semibold"
                   onClick={() => Navigate("/login")}
                 >
                   Login
                 </button>
               </div>
             </div>
+            {isMenuOpen && (
+              <div className="lg:hidden flex flex-col bg-white text-center shadow-md absolute top-full left-0 w-full z-50">
+                <button
+                  onClick={() => {
+                    Navigate("/property");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
+                    location.pathname === "/property"
+                      ? "bg-green-600 text-white"
+                      : ""
+                  }`}
+                >
+                  For Sale
+                </button>
+                <Link
+                  to="/buyer-data"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
+                    location.pathname === "/buyer-data"
+                      ? "bg-green-600 text-white"
+                      : ""
+                  }`}
+                >
+                  Buy
+                </Link>
+                <button
+                  onClick={() => {
+                    Navigate("/for-rent");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
+                    location.pathname === "/for-rent"
+                      ? "bg-green-600 text-white"
+                      : ""
+                  }`}
+                >
+                  For Rent
+                </button>
+                <button
+                  onClick={() => {
+                    Navigate("/projects");
+                    setIsMenuOpen(false);
+                  }}
+                  className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
+                    location.pathname === "/projects"
+                      ? "bg-green-600 text-white"
+                      : ""
+                  }`}
+                >
+                  Projects
+                </button>
+                <Link
+                  onClick={() => {
+                    setModals(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
+                    location.pathname === "" ? "bg-green-600" : ""
+                  }`}
+                >
+                  Sell With Us
+                </Link>
+                {isValidToken() ? (
+                  <>
+                    <div
+                      onClick={() => {
+                        Navigate("/Agent");
+                        setIsMenuOpen(false);
+                      }}
+                      className="text-black font-semibold p-3 border-b border-gray-200 cursor-pointer"
+                    >
+                      {storedTitleFromLocalStorage}
+                    </div>
+                    <button
+                      className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <div
+                    onClick={() => {
+                      setVisibleModal(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="menu-item text-black font-semibold p-3 border-b border-gray-200 cursor-pointer"
+                  >
+                    Home Loan
+                  </div>
+                )}
+                <button
+                  className="menu-item text-red-600 font-semibold p-3"
+                  onClick={() => {
+                    Navigate("/login");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="w-full border-t border-gray-400"></div>

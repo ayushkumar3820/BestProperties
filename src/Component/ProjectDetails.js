@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css'; // Added for toast styling
 import Slider from "react-slick";
 import Searching from '../common/component/searching';
 import BgImage from '../Images/nirwana-heights03.jpg';
-import MapImage from '../Images/room-structure.png';
+import MapImage from '../Images/room-structure.jpg';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -86,20 +86,17 @@ const ProjectDetails = () => {
     }
   };
 
-  // Added: Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: '' });
   };
 
-  // Added: Validate phone number (10 digits)
   const validatePhoneNumber = (phone) => {
     const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(phone);
   };
 
-  // Added: Validate form
   const validateForm = () => {
     let isValid = true;
     const newErrors = { name: '', phone: '' };
@@ -121,7 +118,6 @@ const ProjectDetails = () => {
     return isValid;
   };
 
-  // Added: Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -157,6 +153,7 @@ const ProjectDetails = () => {
     }
   };
 
+  // Mobile-responsive slider settings
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -164,6 +161,22 @@ const ProjectDetails = () => {
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      }
+    ]
   };
 
   return (
@@ -241,28 +254,28 @@ const ProjectDetails = () => {
                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                     </svg>
                     <strong>Address:</strong> {data.Address}
-                  </p>
+                    </p>
                   {data.Built ? (
                     <p>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
                         <path d="M16 144a144 144 0 1 1 288 0A144 144 0 1 1 16 144zM160 80c8.8 0 16-7.2 16-16s-7.2-16-16-16c-53 0-96 43-96 96c0 8.8 7.2 16 16 16s16-7.2 16-16c0-35.3 28.7-64 64-64zM128 480l0-162.9c10.4 1.9 21.1 2.9 32 2.9s21.6-1 32-2.9L192 480c0 17.7-14.3 32-32 32s-32-14.3-32-32z" />
                       </svg>
                       <strong>Area:</strong> {data.Built} Sqft
-                    </p>
+                      </p>
                   ) : null}
                   <p>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                       <path d="M448 160l-128 0 0-32 128 0 0 32zM48 64C21.5 64 0 85.5 0 112l0 64c0 26.5 21.5 48 48 48l416 0c26.5 0 48-21.5 48-48l0-64c0-26.5-21.5-48-48-48L48 64zM448 352l0 32-256 0 0-32 256 0zM48 288c-26.5 0-48 21.5-48 48l0 64c0 26.5 21.5 48 48 48l416 0c26.5 0 48-21.5 48-48l0-64c0-26.5-21.5-48-48-48L48 288z" />
                     </svg>
                     <strong>Construction Status:</strong> {data.Construction_Status}
-                  </p>
+                    </p>
                   {data.Bankers ? (
                     <p>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                         <path d="M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160l0 8c0 13.3 10.7 24 24 24l400 0c13.3 0 24-10.7 24-24l0-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224l-64 0 0 196.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512l448 0c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1L448 224l-64 0 0 192-40 0 0-192-64 0 0 192-48 0 0-192-64 0 0 192-40 0 0-192zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
                       </svg>
                       <strong>Bankers:</strong> {data.Bankers}
-                    </p>
+                      </p>
                   ) : null}
                   <p>{data.Property_Sub_Description}</p>
                   <p>Exclusive Limited- {data.Exclusive_Limited}</p>
@@ -271,7 +284,7 @@ const ProjectDetails = () => {
                   <div className="property-details">
                     <button className="contact-button">
                       <Link to="/contact">Contact Us</Link>
-                    </button>
+                  </button>
                   </div>
                 </div>
               </div>
@@ -364,33 +377,33 @@ const ProjectDetails = () => {
             <form className="form" onSubmit={handleSubmit}>
               <h2 className="form-heading">The Best Way To Design Your Awesome Home!</h2>
               <label className="block tracking-wide text-lg font-bold mb-2">
-                Your Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter Your Name"
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter Your Name"
                 className="form-input"
-                value={formData.name}
-                onChange={handleInputChange}
-              />
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
               {errors.name && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.name}</p>}
               <label className="block tracking-wide text-lg font-bold mb-2">
-                Phone*
-              </label>
-              <input
-                type="text"
-                name="phone"
-                placeholder="Enter your Number"
+                    Phone*
+                  </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    placeholder="Enter your Number"
                 className="form-input"
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                  />
               {errors.phone && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.phone}</p>}
               <button type="submit" className="form-button" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit Your Information'}
-              </button>
-            </form>
+                  {isSubmitting ? 'Submitting...' : 'Submit Your Information'}
+                </button>
+              </form>
           </div>
         </div>
       </div>

@@ -218,7 +218,7 @@ export default function GalleryComponent() {
   const oneSlider = {
     infinite: true,
     speed: 1000,
-    slidesToShow: 3,
+    slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
@@ -245,7 +245,7 @@ export default function GalleryComponent() {
   const PropertySlider = {
     infinite: true,
     speed: 1500,
-    slidesToShow: 3,
+    slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 2000,

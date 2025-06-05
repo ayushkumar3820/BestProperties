@@ -429,16 +429,16 @@ export default function Rent() {
         </div>
       ) : (
         <>
-          <div className="text-green-800 uppercase font-bold text-2xl text-center py-4 flex flex-wrap justify-center items-center gap-2">
+          <div className="text-green-800 uppercase font-bold text-xl text-center py-4 flex flex-wrap justify-center items-center gap-4">
             <AnimatedText text="Properties for Rent" />
-            <div className="gap-3 inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 text-xl rounded-md">
+            <div className="gap-3 inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 text-base rounded-md">
               {newData.filter(filterPanelsByBudget).length} Property Found
             </div>
           </div>
 
           <div className="container mx-auto">
-            <div className="bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap lg:flex-nowrap">
-              <div className="flex flex-col lg:flex-row items-center gap-2 min-n-[200px]">
+            <div className=" bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap ">
+              <div className="parent-container flex flex-col lg:flex-row item-start gap-2 min-n-[200px]">
                 <div className="relative w-full min-w-[150px]">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                     🔍
@@ -451,7 +451,7 @@ export default function Rent() {
                   />
                 </div>
 
-                <div className="checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-full lg:w-1/4 min-w-[200px] relative">
+                <div className="rent-class checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-full lg:w-1/4 min-w-[200px] relative">
                   <button
                     onClick={handleToggleDropdown}
                     className="w-full h-full text-left flex items-center justify-between px-2"
@@ -501,7 +501,7 @@ export default function Rent() {
                   )}
                 </div>
                 <select
-                  className="bg-white border-2 border-green-600 p-1 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
+                  className="rent_class_point bg-white border-2 border-green-600 p-1 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
                   value={sortBy}
                   onChange={handleSortChange}
                 >
@@ -510,7 +510,7 @@ export default function Rent() {
                   <option value="highToLow">High to Low</option>
                 </select>
                 <select
-                  className="bg-white border-2 border-green-600 p-2 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
+                  className="rent_class_point bg-white border-2 border-green-600 p-2 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
                   value={selectedLocation}
                   onChange={handleLocationChange}
                 >
