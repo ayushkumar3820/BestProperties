@@ -234,6 +234,24 @@ export default function Rent() {
     clearFilters();
   }, []);
 
+  // Add this new useEffect after your existing useEffect hooks:
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const dropdown = document.querySelector(".rent-class.checkbox-dropdown");
+      if (dropdown && !dropdown.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   const LikeContainer = () => {
     setLike(true);
   };
@@ -437,109 +455,123 @@ export default function Rent() {
           </div>
 
           <div className="container mx-auto">
-            <div className=" bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap ">
-              <div className="parent-container flex flex-col lg:flex-row item-start gap-2 min-n-[200px]">
-                <div className="relative w-full min-w-[150px]">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    🔍
-                  </span>
-                  <input
-                    placeholder="Search by name, address, or sector..."
-                    className="border-2 border-green-600 p-3 pl-10 text-lg rounded-md h-11 w-full"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                  />
-                </div>
+           <div className=" bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap ">
+  
+  {/* Search Input - Full Width */}
+  <div className="relative w-full min-w-[150px] lg:flex-1">
+    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+      🔍
+    </span>
+    <input
+      placeholder="Search by name, address, or sector..."
+      className="border-2 border-green-600 p-3 pl-10 text-lg rounded-md h-11 w-full"
+      value={searchQuery}
+      onChange={handleSearchChange}
+    />
+  </div>
 
-                <div className="rent-class checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-full lg:w-1/4 min-w-[200px] relative">
-                  <button
-                    onClick={handleToggleDropdown}
-                    className="w-full h-full text-left flex items-center justify-between px-2"
-                  >
-                    <div className="truncate">
-                      {selectedPropertyType.length > 0
-                        ? selectedPropertyType.join(", ")
-                        : "Select Property"}
-                    </div>
-                    <svg
-                      fill="black"
-                      className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                    >
-                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-                    </svg>
-                  </button>
-                  {isOpen && (
-                    <div className="absolute top-full left-0 bg-white border border-green-600 rounded-md mt-1 z-10 w-full max-h-60 overflow-y-auto">
-                      {visibleData.map((main) => (
-                        <div
-                          className="flex cursor-pointer gap-4 px-2 py-1 hover:bg-gray-100"
-                          key={main}
-                        >
-                          <input
-                            type="checkbox"
-                            id={main}
-                            checked={selectedPropertyType.includes(main.toLowerCase())}
-                            onChange={() => handleChange(main)}
-                            className="h-4 w-4"
-                          />
-                          <label className="seach-label cursor-pointer" htmlFor={main}>
-                            {main}
-                          </label>
-                        </div>
-                      ))}
-                      {!showMore && propertyType.length > 6 && (
-                        <button
-                          className="text-blue-600 px-2 py-1 w-full text-left"
-                          onClick={() => setShowMore(true)}
-                        >
-                          Show More
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <select
-                  className="rent_class_point bg-white border-2 border-green-600 p-1 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
-                  value={sortBy}
-                  onChange={handleSortChange}
-                >
-                  <option value="">Sort By:</option>
-                  <option value="lowToHigh">Low to High</option>
-                  <option value="highToLow">High to Low</option>
-                </select>
-                <select
+  {/* Mobile: Property + Sort in one row, Desktop: separate */}
+  <div className="flex gap-4 w-full lg:w-auto lg:contents">
+    {/* Property Selector */}
+    <div className="rent-class checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-1/2 lg:w-[200px] relative">
+      <button
+        onClick={handleToggleDropdown}
+        className="w-full h-full text-left flex items-center justify-between px-2"
+      >
+        <div className="truncate text-base
+         lg:text-base">
+          {selectedPropertyType.length > 0
+            ? selectedPropertyType.join(", ")
+            : "Select Property"}
+        </div>
+        <svg
+          fill="black"
+          className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 512 512"
+        >
+          <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute top-full left-0 bg-white border border-green-600 rounded-md mt-1 z-10 w-full max-h-60 overflow-y-auto">
+          {visibleData.map((main) => (
+            <div
+              className="flex cursor-pointer gap-4 px-2 py-1 hover:bg-gray-100"
+              key={main}
+            >
+              <input
+                type="checkbox"
+                id={main}
+                checked={selectedPropertyType.includes(main.toLowerCase())}
+                onChange={() => handleChange(main)}
+                className="h-4 w-4"
+              />
+              <label className="seach-label cursor-pointer" htmlFor={main}>
+                {main}
+              </label>
+            </div>
+          ))}
+          {!showMore && propertyType.length > 6 && (
+            <button
+              className="text-blue-600 px-2 py-1 w-full text-left"
+              onClick={() => setShowMore(true)}
+            >
+              Show More
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+
+    {/* Sort By */}
+    <select
+      className="rent_class_point bg-white border-2 border-green-600 p-1 text-base lg:text-base rounded-md h-11 w-1/2 lg:w-[200px]"
+      value={sortBy}
+      onChange={handleSortChange}
+    >
+      <option value="">Sort By:</option>
+      <option value="lowToHigh">Low to High</option>
+      <option value="highToLow">High to Low</option>
+    </select>
+  </div>
+
+  {/* Mobile: Location + Clear in one row, Desktop: separate */}
+  <div className="flex gap-2 w-full lg:w-auto lg:contents">
+    {/* Location */}
+    <select
                   className="rent_class_point bg-white border-2 border-green-600 p-2 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
-                  value={selectedLocation}
-                  onChange={handleLocationChange}
-                >
+      value={selectedLocation}
+      onChange={handleLocationChange}
+    >
                   <option value="">Select Location</option>
-                  <option value="Mohali">Mohali</option>
-                  <option value="Zirakpur">Zirakpur</option>
-                  <option value="Kharar">Kharar</option>
-                  <option value="Chandigarh">Chandigarh</option>
-                </select>
-                {areFiltersApplied && (
-                  <button
-                    onClick={clearFilters}
+      <option value="Mohali">Mohali</option>
+      <option value="Zirakpur">Zirakpur</option>
+      <option value="Kharar">Kharar</option>
+      <option value="Chandigarh">Chandigarh</option>
+    </select>
+
+    {/* Clear Button */}
+    {areFiltersApplied && (
+      <button
+        onClick={clearFilters}
                     className="clear-button bg-red-600 d-flex justify-center align-middle text-white p-3 text-lg rounded-md h-11 w-full lg:w-auto min-w-[100px] px-4"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+      >
+        Clear
+      </button>
+    )}
+  </div>
               <div className="w-14 flex justify-center lg:ml-auto">
-                <div
-                  className={`${
-                    activeView === "grid"
-                      ? "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
-                      : "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
-                  }`}
-                  onClick={() =>
-                    handleSwitchView(activeView === "grid" ? "list" : "grid")
-                  }
-                >
+    <div
+      className={`${
+        activeView === "grid"
+          ? "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
+          : "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
+      }`}
+      onClick={() =>
+        handleSwitchView(activeView === "grid" ? "list" : "grid")
+      }
+    >
                   {activeView === "grid" ? (
                     <svg
                       fill="green"
@@ -559,9 +591,9 @@ export default function Rent() {
                       <path d="M448 96V224H288V96H448zm0 192V416H288V288H448zM224 224H64V96H224V224zM64 288H224V416H64V288zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
                     </svg>
                   )}
-                </div>
-              </div>
-            </div>
+    </div>
+  </div>
+</div>
 
             <div className="flex w-full justify-center gap-4 mb-10 p-2 items-start">
               <div className="w-1/4 lg:block hidden">
@@ -765,7 +797,9 @@ export default function Rent() {
                                                   fill="green"
                                                   xmlns="http://www.w3.org/2000/svg"
                                                   viewBox="0 0 512 512"
-                                                  onClick={() => Navigate("/login")}
+                                                  onClick={() =>
+                                                    Navigate("/login")
+                                                  }
                                                 >
                                                   <path d="M225.8 468.2l-2.5-2.3L48.1 303.2C17.4 274.7 0 234.7 0 192.8v-3.3c0-70.4 50-130.8 119.2-144C158.6 37.9 198.9 47 231 69.6c9 6.4 17.4 13.8 25 22.3c4.2-4.8 8.7-9.2 13.5-13.3c3.7-3.2 7.5-6.2 11.5-9c0 0 0 0 0 0C313.1 47 353.4 37.9 392.8 45.4C462 58.6 512 119.1 512 189.5v3.3c0 41.9-17.4 81.9-48.1 110.4L288.7 465.9l-2.5 2.3c-8.2 7.6-19 11.9-30.2 11.9s-22-4.2-30.2-11.9zM239.1 145c-.4-.3-.7-.7-1-1.1l-17.8-20c0 0-.1-.1-.1-.1c0 0 0 0 0 0c-23.1-25.9-58-37.7-92-31.2C81.6 101.5 48 142.1 48 189.5v3.3c0 28.5 11.9 55.8 32.8 75.2L256 430.7 431.2 268c20.9-19.4 32.8-46.7 32.8-75.2v-3.3c0-47.3-33.6-88-80.1-96.9c-34-6.5-69 5.4-92 31.2c0 0 0 0-.1 .1s0 0-.1 .1l-17.8 20c-.3 .4-.7 .7-1 1.1c-4.5 4.5-10.6 7-16.9 7s-12.4-2.5-16.9-7z" />
                                                 </svg>
@@ -988,7 +1022,7 @@ export default function Rent() {
                           <div className="flex justify-center mt-4 col-span-full">
                             <button
                               onClick={() => setShowCount(showCount + 8)} // Increment by 8
-                             className="font-bold p-2 w-52 rounded-md text-white bg-red-600"
+                              className="font-bold p-2 w-52 rounded-md text-white bg-red-600"
                             >
                               Show More
                             </button>

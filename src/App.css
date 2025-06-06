@@ -553,7 +553,7 @@ header {
   align-items: center;
 }
 .seach-label {
-    font-size: 15px;
+    font-size: 13px;
 }
 
 /*  ----------- Start Media Query --------------------- */
@@ -564,9 +564,17 @@ header {
     gap: 100px;
       
 }
-/* .slick-track {
-  height: 190px !important;
-} */
+.project-card {
+  width: 100% !important;
+  margin: 0 !important;
+}
+.slick-slide{
+  padding: 0 5px !important;
+}
+.slick-track {
+  display: flex !important;
+  align-items: stretch !important;
+}
 
 .nav-items-div {
   gap: 10px;
@@ -580,11 +588,11 @@ header {
 }
 
 .rent-class {
-  width: 25vh;
+  width: 30vh;
   height: 47px;
 }
 .rent_class_point {
-  width: 25vh;
+  width: 30vh;
   height: 47px;
   margin-left: 0;
 }
@@ -596,7 +604,15 @@ header {
   padding: 10px;
   text-align: center;
 }
-
+.project-home-page
+{
+  display: flex;
+  flex-direction: row;
+}
+.forSale{
+  align-Items: "center";
+   justify-Content:"center"
+}
 
 
 }

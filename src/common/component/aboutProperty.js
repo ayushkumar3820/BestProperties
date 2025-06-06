@@ -15,6 +15,7 @@ export default function AboutProperty() {
   const [sale, setSale] = useState("Buy");
   const [propertyType, setPropertyType] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isChecked, setIsChecked] = useState(true); // Changed from false to true
   const [formData, setFormData] = useState({
     plot_area: "",
     carpet_area: "",
@@ -71,16 +72,19 @@ export default function AboutProperty() {
       if (!formData.title) errors.title = "Title is required";
       if (!propertyType) errors.property_type = "Property type is required";
       if (!formData.sector) errors.sector = "Sector is required";
-      if (!formData.rentpermonth) errors.rentpermonth = "Rent per month is required";
+      if (!formData.rentpermonth)
+        errors.rentpermonth = "Rent per month is required";
       if (!formData.address) errors.address = "Address is required";
       if (!selectedDate) errors.available_from = "Available date is required";
     } else {
       if (!formData.carpet_area) errors.carpet_area = "Carpet area is required";
       if (!formData.plot_area) errors.plot_area = "Plot area is required";
-      if (!formData.property_name) errors.property_name = "Property name is required";
+      if (!formData.property_name)
+        errors.property_name = "Property name is required";
       if (!formData.price) errors.price = "Price is required";
       if (!formData.address) errors.address = "Address is required";
-      if (!formData.property_description) errors.property_description = "Description is required";
+      if (!formData.property_description)
+        errors.property_description = "Description is required";
       if (!sale) errors.sale = "Purpose is required";
     }
     return errors;
@@ -134,13 +138,15 @@ export default function AboutProperty() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h1 className="text-2xl font-extrabold   text-green-600 text-center uppercase mb-8">
-            <AnimatedText text="Tell Us about Your Property"  />
+            <AnimatedText text="Tell Us about Your Property" />
           </h1>
           {storedData === '"Rent/Lease"' ? (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Title</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Title
+                  </label>
                   <input
                     onChange={handleChange}
                     value={formData.title}
@@ -149,11 +155,15 @@ export default function AboutProperty() {
                     placeholder="Enter title"
                   />
                   {formErrors.title && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.title}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.title}
+                    </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Property Type*</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Property Type*
+                  </label>
                   <select
                     onChange={handlePropertyType}
                     name="property_type"
@@ -167,7 +177,9 @@ export default function AboutProperty() {
                     <option value="Room Only">Room Only</option>
                     <option value="Room With Kitchen">Room With Kitchen</option>
                     <option value="Rooms Only">Rooms Only</option>
-                    <option value="Rooms With Kitchen">Rooms With Kitchen</option>
+                    <option value="Rooms With Kitchen">
+                      Rooms With Kitchen
+                    </option>
                     <option value="Boys PG">Boys PG</option>
                     <option value="Girls PG">Girls PG</option>
                     <option value="Shop">Shop</option>
@@ -175,13 +187,17 @@ export default function AboutProperty() {
                     <option value="Other">Other</option>
                   </select>
                   {formErrors.property_type && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.property_type}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.property_type}
+                    </p>
                   )}
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Add Rent</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Add Rent
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -191,11 +207,15 @@ export default function AboutProperty() {
                     placeholder="Enter rent amount"
                   />
                   {formErrors.rentpermonth && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.rentpermonth}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.rentpermonth}
+                    </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Owner Name</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Owner Name
+                  </label>
                   <input
                     onChange={handleChange}
                     value={formData.bookedby}
@@ -206,7 +226,9 @@ export default function AboutProperty() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Area (Square Feet)</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Area (Square Feet)
+                </label>
                 <input
                   type="number"
                   onChange={handleChange}
@@ -218,7 +240,9 @@ export default function AboutProperty() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Sector*</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Sector*
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -228,11 +252,15 @@ export default function AboutProperty() {
                     placeholder="Enter sector"
                   />
                   {formErrors.sector && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.sector}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.sector}
+                    </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Available From*</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Available From*
+                  </label>
                   <DatePicker
                     selected={selectedDate}
                     onChange={handleChangeDate}
@@ -240,13 +268,17 @@ export default function AboutProperty() {
                     dateFormat="MM/dd/yyyy"
                   />
                   {formErrors.available_from && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.available_from}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.available_from}
+                    </p>
                   )}
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Bathrooms</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Bathrooms
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -257,7 +289,9 @@ export default function AboutProperty() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Bedrooms</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Bedrooms
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -270,7 +304,9 @@ export default function AboutProperty() {
               </div>
               <div className="flex flex-wrap gap-6">
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Agreement</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Agreement
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
                       <input
@@ -295,7 +331,9 @@ export default function AboutProperty() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Police Verification</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Police Verification
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
                       <input
@@ -320,7 +358,9 @@ export default function AboutProperty() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Security</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Security
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
                       <input
@@ -345,7 +385,9 @@ export default function AboutProperty() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Commission</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Commission
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
                       <input
@@ -371,7 +413,9 @@ export default function AboutProperty() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Property Description</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Property Description
+                </label>
                 <textarea
                   onChange={handleChange}
                   value={formData.property_description}
@@ -381,7 +425,9 @@ export default function AboutProperty() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Address*</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Address*
+                </label>
                 <textarea
                   onChange={handleChange}
                   value={formData.address}
@@ -390,14 +436,18 @@ export default function AboutProperty() {
                   placeholder="Enter address"
                 />
                 {formErrors.address && (
-                  <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.address}
+                  </p>
                 )}
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Carpet Area</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Carpet Area
+                </label>
                 <div className="flex">
                   <input
                     type="number"
@@ -422,11 +472,15 @@ export default function AboutProperty() {
                   </select>
                 </div>
                 {formErrors.carpet_area && (
-                  <p className="text-red-600 text-sm mt-1">{formErrors.carpet_area}</p>
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.carpet_area}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Plot Area</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Plot Area
+                </label>
                 <input
                   type="number"
                   onChange={handleChange}
@@ -436,11 +490,15 @@ export default function AboutProperty() {
                   placeholder="Enter plot area"
                 />
                 {formErrors.plot_area && (
-                  <p className="text-red-600 text-sm mt-1">{formErrors.plot_area}</p>
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.plot_area}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Property For*</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Property For*
+                </label>
                 <select
                   onChange={handlePurpose}
                   name="purpose"
@@ -458,7 +516,9 @@ export default function AboutProperty() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Property Name*</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Property Name*
+                  </label>
                   <input
                     onChange={handleChange}
                     value={formData.property_name}
@@ -467,11 +527,15 @@ export default function AboutProperty() {
                     placeholder="Enter property name"
                   />
                   {formErrors.property_name && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.property_name}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.property_name}
+                    </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Price*</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Price*
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -481,13 +545,17 @@ export default function AboutProperty() {
                     placeholder="Enter price"
                   />
                   {formErrors.price && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.price}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.price}
+                    </p>
                   )}
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Bathrooms</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Bathrooms
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -497,11 +565,15 @@ export default function AboutProperty() {
                     placeholder="Enter number of bathrooms"
                   />
                   {formErrors.bathroom && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.bathroom}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.bathroom}
+                    </p>
                   )}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-gray-700 font-medium mb-1">Bedrooms</label>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Bedrooms
+                  </label>
                   <input
                     type="number"
                     onChange={handleChange}
@@ -511,12 +583,16 @@ export default function AboutProperty() {
                     placeholder="Enter number of bedrooms"
                   />
                   {formErrors.bedrooms && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.bedrooms}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {formErrors.bedrooms}
+                    </p>
                   )}
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Property Description</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Property Description
+                </label>
                 <textarea
                   onChange={handleChange}
                   value={formData.property_description}
@@ -525,11 +601,15 @@ export default function AboutProperty() {
                   placeholder="Describe your property"
                 />
                 {formErrors.property_description && (
-                  <p className="text-red-600 text-sm mt-1">{formErrors.property_description}</p>
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.property_description}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Address*</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Address*
+                </label>
                 <textarea
                   onChange={handleChange}
                   value={formData.address}
@@ -538,21 +618,34 @@ export default function AboutProperty() {
                   placeholder="Enter address"
                 />
                 {formErrors.address && (
-                  <p className="text-red-600 text-sm mt-1">{formErrors.address}</p>
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.address}
+                  </p>
                 )}
               </div>
             </div>
           )}
-          <div className="flex items-center gap-2 mt-6">
-            <input
-              name="checkbox"
-              className="h-4 w-4"
-              type="checkbox"
-              onChange={handleChange}
-            />
-            <p className="text-sm text-gray-600">
-              By submitting this form, you hereby agree that we may collect, store, and process your data that you provided.
-            </p>
+          <div className="mt-6">
+            <div className="flex items-start gap-2">
+              <input
+                name="checkbox"
+                className="h-4 w-4 mt-1"
+                type="checkbox"
+                checked={isChecked}
+                onChange={handleChange}
+              />
+              <div>
+                <p className="text-sm text-gray-600">
+                  By submitting this form, you hereby agree that we may collect,
+                  store, and process your data that you provided.
+                </p>
+                {formErrors.checkbox && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {formErrors.checkbox}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
           <div className="flex justify-center mt-8">
             <button

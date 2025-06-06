@@ -391,7 +391,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 <option value="highToLow">High to Low</option>
               </select>
               <select
-                className="bg-white border border-green-600 p-2 rounded-md min-w-[150px] focus:outline-none focus:ring-2 focus:ring-green-600"
+                className="bg-white border border-green-600 p-2 rounded-md min-w-[100px] focus:outline-none focus:ring-2 focus:ring-green-600"
                 value={locationFilter}
                 onChange={handleLocationChange}
               >
@@ -410,9 +410,9 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </button>
               )}
             </div>
-            <div className="flex gap-10" style={{ alignItems: "flex-start", justifyContent:"center" }}>
-              <div className="lg:block hidden shadow-lg p-2 min-w-[250px]">
-                <div className="font-bold text-xl mt-3 text-green-800">
+            <div className="forSale flex gap-10" style={{ alignItems: "flex-start", justifyContent:"center" }}>
+              <div className="lg:block hidden shadow-lg p-2 min-w-[250px] ">
+                <div className="font-bold text-xl mt-3 text-green-800 " >
                   Select Property
                 </div>
                 <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px] rounded-lg">

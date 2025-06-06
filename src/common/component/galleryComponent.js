@@ -260,10 +260,12 @@ export default function GalleryComponent() {
         },
       },
       {
-        breakpoint: 575,
+        breakpoint: 768,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          // arrows:false,
+          // dots:true
         },
       },
     ],
@@ -291,7 +293,7 @@ export default function GalleryComponent() {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          height:"190px"
+          height: "190px",
         },
       },
     ],
@@ -402,7 +404,6 @@ export default function GalleryComponent() {
                                     className="rounded-t-md cursor-pointer h-52 w-full"
                                     alt="No Image"
                                     src={NoImage}
-                                    
                                   />
                                 )}
                               </div>
@@ -420,7 +421,7 @@ export default function GalleryComponent() {
                                 }}
                               >
                                 <div className="headingStyle text-green-800 font-bold prperty-heading">
-                                      {/* Row 2: Name on a new line, aligned with the text above */}
+                                  {/* Row 2: Name on a new line, aligned with the text above */}
                                   {panel.name && (
                                     <div className="text-sm lg:text-lg ml-0 mt-1">
                                       {panel.name}
@@ -443,8 +444,6 @@ export default function GalleryComponent() {
                                         : ""}
                                     </div>
                                   </div>
-
-                              
                                 </div>
                               </div>
                               <div className="flex gap-2 items-center content-center mb-3">
@@ -561,7 +560,7 @@ export default function GalleryComponent() {
                                     >
                                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
-                                    <div >{item.address}</div>
+                                    <div>{item.address}</div>
                                   </div>
                                 </div>
                               </div>
@@ -631,7 +630,9 @@ export default function GalleryComponent() {
                                 >
                                   <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                 </svg>
-                                <div className="text-green-800 font-bold text-lg">{rent.address}</div>
+                                <div className="text-green-800 font-bold text-lg">
+                                  {rent.address}
+                                </div>
                               </div>
                             </div>
                             {rent.sector && (
@@ -695,15 +696,17 @@ export default function GalleryComponent() {
                               handleProjectClicks(data.id, imageUrl)
                             }
                           >
-                            <div className="project-image-container">
-                              <img
-                                src={imageUrl}
-                                alt={data.Project_Name || "Project Image"}
-                                className="project-image"
-                                onError={(e) =>
-                                  handlePropertyImageError(e, data)
-                                }
-                              />
+                            <div className="project-home-page">
+                              <div className="project-image-container">
+                                <img
+                                  src={imageUrl}
+                                  alt={data.Project_Name || "Project Image"}
+                                  className="project-image"
+                                  onError={(e) =>
+                                    handlePropertyImageError(e, data)
+                                  }
+                                />
+                              </div>
                             </div>
                           </div>
                           <div className="project-details">

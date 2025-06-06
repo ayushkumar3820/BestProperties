@@ -500,3 +500,329 @@ p{
   margin-top: 5px;
   margin-bottom: 10px;
 }
+
+
+/* Mobile-specific styles */
+@media only screen and (max-width: 768px) {
+  /* Container adjustments */
+  .container {
+    max-width: 100%; /* Use full width on mobile */
+    padding: 0 10px; /* Reduced padding for mobile */
+  }
+
+  /* Banner Section */
+  .property-images {
+    min-height: 350px; /* Reduced height for mobile */
+    padding: 40px 0; /* Reduced padding */
+  }
+
+  .banner-content {
+    padding: 20px 15px;
+  }
+
+  .banner-content h1 {
+    font-size: 1.8rem; /* Smaller title */
+  }
+
+  .banner-content p {
+    font-size: 0.9rem; /* Smaller description */
+  }
+
+  .contact-button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  /* Image Gallery */
+  .img-gallery {
+    flex-direction: column; /* Stack slider and video vertically */
+    padding: 10px 0;
+  }
+
+  .slider-section {
+    width: 100%; /* Full width */
+    margin-bottom: 20px;
+  }
+
+  .video-section {
+    width: 100%; /* Full width */
+  }
+
+  .video-section iframe {
+    height: 200px !important; /* Adjusted height for mobile */
+  }
+
+  .slider-section .slick-track .slider-image {
+    height: 200px; /* Smaller height for slider images */
+    padding: 0 3px; /* Reduced padding */
+    border-radius: 8px;
+  }
+
+  /* Main Layout */
+  .inner-pro-main {
+    flex-direction: column; /* Stack sections vertically */
+    padding: 20px 0;
+  }
+
+  .inner-pro-main .left-bar {
+    width: 100%; /* Full width for left-bar */
+  }
+
+  .inner-pro-main .right-side {
+    width: 100%; /* Full width for right-side */
+    margin-top: 20px; /* Space between sections */
+  }
+
+  /* Property Card Header */
+  .property-card-header h2 {
+    font-size: 1.2rem; /* Smaller heading */
+  }
+
+  .property-card-header h3 {
+    font-size: 1rem; /* Smaller subheading */
+  }
+
+  .property-card-header p {
+    font-size: 0.9rem; /* Smaller text */
+  }
+
+  /* Property Address */
+  .property-address p {
+    font-size: 0.9rem; /* Smaller text */
+    margin: 10px 0;
+  }
+
+  .property-address svg {
+    width: 16px; /* Smaller icons */
+    margin-right: 10px;
+  }
+
+  /* Amenities Section */
+  .amenities-container {
+    margin: 10px 0; /* Reduced margin */
+  }
+
+  .amenities-content {
+    width: 100%;
+  }
+
+  .amenities-content h2 {
+    font-size: 1.5rem; /* Smaller heading */
+    margin-bottom: 8px;
+  }
+
+  .amenities-content p {
+    font-size: 0.9rem; /* Smaller paragraph text */
+    margin-bottom: 15px;
+    line-height: 1.4; /* Better readability */
+  }
+
+  .amenities-content ul {
+    padding: 0;
+  }
+
+  .amenities-content li {
+    font-size: 0.9rem; /* Smaller list items */
+    margin-bottom: 8px;
+  }
+
+  .amenities-content li::before {
+    font-size: 0.9rem; /* Match list item size */
+  }
+
+  /* Form Section */
+  .form-container {
+    position: relative !important; /* Override sticky positioning */
+    top: 0;
+    height: auto; /* Remove fixed height */
+    align-items: flex-start; /* Align to top */
+  }
+
+  .form {
+    margin: 0 10px;
+    padding: 15px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Lighter shadow */
+  }
+
+  .form-heading {
+    font-size: 1.2rem; /* Smaller heading */
+    margin-bottom: 15px;
+    line-height: 1.3; /* Better readability */
+  }
+
+  .form label {
+    font-size: 0.9rem; /* Smaller labels */
+  }
+
+  .form-input {
+    font-size: 0.9rem; /* Smaller input text */
+    padding: 8px;
+    margin: 5px 0;
+  }
+
+  .form-button {
+    font-size: 0.9rem; /* Smaller button text */
+    padding: 8px;
+  }
+
+  .error-message {
+    font-size: 0.8rem; /* Smaller error message */
+  }
+
+  /* Lightbox */
+  .lightbox-content img {
+    max-width: 90%; /* Larger image for mobile */
+    max-height: 80%;
+  }
+
+  /* General Text */
+  p {
+    font-size: 0.9rem !important; /* Override global p styling */
+    color: #777 !important; /* Maintain original color */
+  }
+
+  /* Tabs and Cards (for commented-out section) */
+  .tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+    margin: 5px;
+  }
+
+  .slider-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    width: 90%;
+    margin: 10px 0;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+  }
+
+  .card button {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+  }
+}
+
+/* Adjustments for very small screens (e.g., 360px or less) */
+@media only screen and (max-width: 480px) {
+  /* Container */
+  .container {
+    padding: 0 5px; /* Even less padding */
+  }
+
+  /* Banner Section */
+  .property-images {
+    min-height: 300px; /* Further reduced height */
+    padding: 30px 0;
+  }
+
+  .banner-content h1 {
+    font-size: 1.5rem; /* Even smaller title */
+  }
+
+  .banner-content p {
+    font-size: 0.8rem;
+  }
+
+  .contact-button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+
+  /* Image Gallery */
+  .video-section iframe {
+    height: 160px !important; /* Smaller height */
+  }
+
+  .slider-section .slick-track .slider-image {
+    height: 160px; /* Smaller height */
+  }
+
+  /* Main Layout */
+  .inner-pro-main {
+    padding: 10px 0; /* Reduced padding */
+  }
+
+  /* Property Card Header */
+  .property-card-header h2 {
+    font-size: 1rem;
+  }
+
+  .property-card-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .property-card-header p {
+    font-size: 0.8rem;
+  }
+
+  /* Property Address */
+  .property-address p {
+    font-size: 0.8rem;
+  }
+
+  .property-address svg {
+    width: 14px;
+  }
+
+  /* Amenities Section */
+  .amenities-content h2 {
+    font-size: 1.2rem; /* Even smaller heading */
+  }
+
+  .amenities-content p {
+    font-size: 0.8rem;
+  }
+
+  .amenities-content li {
+    font-size: 0.8rem;
+  }
+
+  /* Form Section */
+  .form-heading {
+    font-size: 1rem; /* Even smaller heading */
+  }
+
+  .form label {
+    font-size: 0.8rem;
+  }
+
+  .form-input {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+
+  .form-button {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+
+  .error-message {
+    font-size: 0.7rem;
+  }
+
+  /* Tabs and Cards */
+  .tab {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .card p {
+    font-size: 0.8rem;
+  }
+
+  .card button {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+}

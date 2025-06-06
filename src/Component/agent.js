@@ -159,7 +159,7 @@ export default function Agent() {
           </div>
           <div className="w-full mt-4 ">
             <label className="block tracking-wide  text-lg font-bold mb-2">
-              Your Name
+              Your Name*
             </label>
             <input
               className="appearance-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -184,7 +184,7 @@ export default function Agent() {
         <div className="flex flex-wrap -mx-3 mb-2">
           <div className="w-full px-3">
             <label className="block  tracking-wide  text-lg font-bold mb-2">
-              Phone
+              Phone*
             </label>
             <input
               maxLength={10}

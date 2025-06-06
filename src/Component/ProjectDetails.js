@@ -1,46 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import '../Css/ProjectDetails.css';
-import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import Navbar from '../common/component/navbar';
-import { liveUrl, token } from '../common/component/url';
-import BottomBar from '../common/component/bottomBar';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Added for toast styling
+import React, { useEffect, useState } from "react";
+import "../Css/ProjectDetails.css";
+import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Navbar from "../common/component/navbar";
+import { liveUrl, token } from "../common/component/url";
+import BottomBar from "../common/component/bottomBar";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Added for toast styling
 import Slider from "react-slick";
-import Searching from '../common/component/searching';
-import BgImage from '../Images/nirwana-heights03.jpg';
-import MapImage from '../Images/room-structure.jpg';
+import Searching from "../common/component/searching";
+import BgImage from "../Images/nirwana-heights03.jpg";
+import MapImage from "../Images/room-structure.jpg";
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
-  const [activeTab, setActiveTab] = useState('2BHK');
+  const [activeTab, setActiveTab] = useState("2BHK");
   const [projectDetails, setProjectDetails] = useState([]);
-  const [formData, setFormData] = useState({ name: '', phone: '' }); // Added for form inputs
-  const [errors, setErrors] = useState({ name: '', phone: '' }); // Added for error messages
+  const [formData, setFormData] = useState({ name: "", phone: "" }); // Added for form inputs
+  const [errors, setErrors] = useState({ name: "", phone: "" }); // Added for error messages
   const [isSubmitting, setIsSubmitting] = useState(false); // Added to manage submit state
 
   // Extract the project ID from the URL (last part after the hyphen)
-  const projectId = id.split('-').pop();
+  const projectId = id.split("-").pop();
 
   // Fetch project details using the projectId
   useEffect(() => {
     window.scrollTo(0, 0);
     fetch(`${liveUrl}project-detail`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ pid: projectId }),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         setProjectDetails(data.result);
         console.log(data.result);
       })
-      .catch(error => console.error('Error fetching project details:', error));
+      .catch((error) =>
+        console.error("Error fetching project details:", error)
+      );
   }, [projectId]);
 
   console.log(projectDetails, "Getting Single Data");
@@ -89,7 +91,7 @@ const ProjectDetails = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    setErrors({ ...errors, [name]: "" });
   };
 
   const validatePhoneNumber = (phone) => {
@@ -99,18 +101,18 @@ const ProjectDetails = () => {
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { name: '', phone: '' };
+    const newErrors = { name: "", phone: "" };
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Please enter your name';
+      newErrors.name = "Please enter your name";
       isValid = false;
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Please enter your phone number';
+      newErrors.phone = "Please enter your phone number";
       isValid = false;
     } else if (!validatePhoneNumber(formData.phone)) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
+      newErrors.phone = "Please enter a valid 10-digit phone number";
       isValid = false;
     }
 
@@ -129,9 +131,9 @@ const ProjectDetails = () => {
 
     try {
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
@@ -140,14 +142,16 @@ const ProjectDetails = () => {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success('Your information has been submitted successfully!');
-        setFormData({ name: '', phone: '' });
+        toast.success("Your information has been submitted successfully!");
+        setFormData({ name: "", phone: "" });
       } else {
-        toast.error(result.message || 'Failed to submit information. Please try again.');
+        toast.error(
+          result.message || "Failed to submit information. Please try again."
+        );
       }
     } catch (error) {
-      toast.error('An error occurred. Please try again later.');
-      console.error('Error submitting form:', error);
+      toast.error("An error occurred. Please try again later.");
+      console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -167,24 +171,28 @@ const ProjectDetails = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-        }
+        },
       },
       {
         breakpoint: 480,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-        }
-      }
-    ]
+        },
+      },
+    ],
   };
 
   return (
     <>
       <Navbar />
       {projectDetails.map((data) => (
-        <div className="property-images" style={{ backgroundImage: `url(${BgImage})` }} key={data.id}>
-          <div className='container'>
+        <div
+          className="property-images"
+          style={{ backgroundImage: `url(${BgImage})` }}
+          key={data.id}
+        >
+          <div className="container">
             <div className="banner-content">
               <h1>{data.Project_Name}</h1>
               <p>{data.Project_Discription}</p>
@@ -201,21 +209,21 @@ const ProjectDetails = () => {
             <Slider {...sliderSettings}>
               <div>
                 <img
-                  src='https://bestpropertiesmohali.com/assets/properties/zr1.jpeg'
+                  src="https://bestpropertiesmohali.com/assets/properties/zr1.jpeg"
                   className="slider-image"
                   alt="Property 1"
                 />
               </div>
               <div>
                 <img
-                  src='https://bestpropertiesmohali.com/assets/properties/zr2.jpeg'
+                  src="https://bestpropertiesmohali.com/assets/properties/zr2.jpeg"
                   className="slider-image"
                   alt="Property 2"
                 />
               </div>
               <div>
                 <img
-                  src='https://bestpropertiesmohali.com/assets/properties/zr3.jpeg'
+                  src="https://bestpropertiesmohali.com/assets/properties/zr3.jpeg"
                   className="slider-image"
                   alt="Property 3"
                 />
@@ -228,9 +236,9 @@ const ProjectDetails = () => {
         </div>
       ))}
 
-      <div className='inner-pro-main container'>
-        <div className='left-bar'>
-          <div className='container'>
+      <div className="inner-pro-main container">
+        <div className="left-bar">
+          <div className="container">
             {selectedImage && (
               <div className="lightbox" onClick={closeLightbox}>
                 <div className="lightbox-content">
@@ -242,40 +250,58 @@ const ProjectDetails = () => {
 
           <div className="">
             {projectDetails.map((data) => (
-              <div className='container' key={data.id}>
+              <div className="container" key={data.id}>
                 <div className="property-card-header">
-                  <h2>₹ {formatBudget(data.Min_Budget)} - {formatBudget(data.Max_Budget)} {data.Built ? <>|</> : <></>} {data.Built} {data.Built ? <>Sqft</> : <></>}</h2>
+                  <h2>
+                    ₹ {formatBudget(data.Min_Budget)} -{" "}
+                    {formatBudget(data.Max_Budget)}{" "}
+                    {data.Built ? <>|</> : <></>} {data.Built}{" "}
+                    {data.Built ? <>Sqft</> : <></>}
+                  </h2>
                   <h3>{data.Address}</h3>
                   <p>Flats & Apartments/Mohali</p>
                 </div>
                 <div className="property-address">
                   <p>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 384 512"
+                    >
                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                     </svg>
                     <strong>Address:</strong> {data.Address}
-                    </p>
+                  </p>
                   {data.Built ? (
                     <p>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512"
+                      >
                         <path d="M16 144a144 144 0 1 1 288 0A144 144 0 1 1 16 144zM160 80c8.8 0 16-7.2 16-16s-7.2-16-16-16c-53 0-96 43-96 96c0 8.8 7.2 16 16 16s16-7.2 16-16c0-35.3 28.7-64 64-64zM128 480l0-162.9c10.4 1.9 21.1 2.9 32 2.9s21.6-1 32-2.9L192 480c0 17.7-14.3 32-32 32s-32-14.3-32-32z" />
                       </svg>
                       <strong>Area:</strong> {data.Built} Sqft
-                      </p>
+                    </p>
                   ) : null}
                   <p>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                    >
                       <path d="M448 160l-128 0 0-32 128 0 0 32zM48 64C21.5 64 0 85.5 0 112l0 64c0 26.5 21.5 48 48 48l416 0c26.5 0 48-21.5 48-48l0-64c0-26.5-21.5-48-48-48L48 64zM448 352l0 32-256 0 0-32 256 0zM48 288c-26.5 0-48 21.5-48 48l0 64c0 26.5 21.5 48 48 48l416 0c26.5 0 48-21.5 48-48l0-64c0-26.5-21.5-48-48-48L48 288z" />
                     </svg>
-                    <strong>Construction Status:</strong> {data.Construction_Status}
-                    </p>
+                    <strong>Construction Status:</strong>{" "}
+                    {data.Construction_Status}
+                  </p>
                   {data.Bankers ? (
                     <p>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                      >
                         <path d="M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160l0 8c0 13.3 10.7 24 24 24l400 0c13.3 0 24-10.7 24-24l0-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224l-64 0 0 196.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512l448 0c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1L448 224l-64 0 0 192-40 0 0-192-64 0 0 192-48 0 0-192-64 0 0 192-40 0 0-192zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
                       </svg>
                       <strong>Bankers:</strong> {data.Bankers}
-                      </p>
+                    </p>
                   ) : null}
                   <p>{data.Property_Sub_Description}</p>
                   <p>Exclusive Limited- {data.Exclusive_Limited}</p>
@@ -284,7 +310,7 @@ const ProjectDetails = () => {
                   <div className="property-details">
                     <button className="contact-button">
                       <Link to="/contact">Contact Us</Link>
-                  </button>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -346,7 +372,6 @@ const ProjectDetails = () => {
                 </div>
               </div>
             </div> */}
-
           </div>
 
           {/* Emalites */}
@@ -355,7 +380,13 @@ const ProjectDetails = () => {
               <div className="amenities-content">
                 <h2>AMENITIES</h2>
                 <p>
-                  Nirwana Heights Mohali presents an exclusive opportunity to own a stunning home that offers all kinds of amenities and facilities. This includes an air hockey, swimming pool, and easy access to changing area. It also has a terrace garden, an exclusive offering only for Nirwana Heights residents. Nirwana Heights has an excellent combination of comfort and convenience to suit every requirement as well as need.
+                  Nirwana Heights Mohali presents an exclusive opportunity to
+                  own a stunning home that offers all kinds of amenities and
+                  facilities. This includes an air hockey, swimming pool, and
+                  easy access to changing area. It also has a terrace garden, an
+                  exclusive offering only for Nirwana Heights residents. Nirwana
+                  Heights has an excellent combination of comfort and
+                  convenience to suit every requirement as well as need.
                 </p>
                 <ul>
                   <li>Air Hockey</li>
@@ -372,38 +403,58 @@ const ProjectDetails = () => {
             </div>
           </div>
         </div>
-        <div className='right-side'>
+        <div className="right-side">
           <div className="form-container">
             <form className="form" onSubmit={handleSubmit}>
-              <h2 className="form-heading">The Best Way To Design Your Awesome Home!</h2>
+              <h2 className="form-heading">
+                The Best Way To Design Your Awesome Home!
+              </h2>
               <label className="block tracking-wide text-lg font-bold mb-2">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Enter Your Name"
+                Your Name*
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter Your Name"
                 className="form-input"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                  />
-              {errors.name && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.name}</p>}
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+              {errors.name && (
+                <p
+                  className="error-message"
+                  style={{ color: "red", fontSize: "14px" }}
+                >
+                  {errors.name}
+                </p>
+              )}
               <label className="block tracking-wide text-lg font-bold mb-2">
-                    Phone*
-                  </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    placeholder="Enter your Number"
+                Phone*
+              </label>
+              <input
+                type="text"
+                name="phone"
+                placeholder="Enter your Number"
                 className="form-input"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                  />
-              {errors.phone && <p className="error-message" style={{ color: 'red', fontSize: '14px' }}>{errors.phone}</p>}
-              <button type="submit" className="form-button" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit Your Information'}
-                </button>
-              </form>
+                value={formData.phone}
+                onChange={handleInputChange}
+              />
+              {errors.phone && (
+                <p
+                  className="error-message"
+                  style={{ color: "red", fontSize: "14px" }}
+                >
+                  {errors.phone}
+                </p>
+              )}
+              <button
+                type="submit"
+                className="form-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Your Information"}
+              </button>
+            </form>
           </div>
         </div>
       </div>

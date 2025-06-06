@@ -285,7 +285,7 @@ export default function UserInformation() {
           <form onSubmit={handleSubmitForm} className="mt-4">
             <div className="w-full">
               <label className="block tracking-wide text-lg font-bold mb-2">
-                Your Name
+                Your Name*
               </label>
               <input
                 className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -300,7 +300,7 @@ export default function UserInformation() {
             </div>
             <div className="w-full mt-4">
               <label className="block tracking-wide text-lg font-bold mb-2">
-                Phone
+                Phone*
               </label>
               <input
                 type="text"
