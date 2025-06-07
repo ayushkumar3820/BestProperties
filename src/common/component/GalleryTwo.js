@@ -265,6 +265,22 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     handlePropertyType();
     handleAmenties();
   }, []);
+  useEffect(() => {
+      const handleClickOutside = (event) => {
+        const dropdown = document.querySelector(".rent-class.checkbox-dropdown");
+        if (dropdown && !dropdown.contains(event.target)) {
+          setIsOpen(false);
+        }
+      };
+  
+      if (isOpen) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+  
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [isOpen]);
 
   const customStyles = {
     content: {

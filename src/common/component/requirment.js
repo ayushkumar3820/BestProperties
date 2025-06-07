@@ -431,7 +431,7 @@
             </div>
           </div>
         </div>
-        <OurServices />
+        <OurServices /> 
         <Searching />
         <BottomBar />
       </>
