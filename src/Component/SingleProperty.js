@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useEffect, useState } from "react";
 import Navbar from "../common/component/navbar";
 import { Link, useParams, useLocation } from "react-router-dom";

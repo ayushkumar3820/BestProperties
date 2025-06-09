@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GalleryComponent from "./galleryComponent";
@@ -65,7 +66,9 @@ export default function Home() {
                 placeholder="Search property name, address, sector, or BHK type..."
                 className="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500"
                 value={searchParams.searchText}
-                onChange={(e) => handleInputChange("searchText", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("searchText", e.target.value)
+                }
                 onKeyPress={handleKeyPress}
               />
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -73,10 +76,9 @@ export default function Home() {
               </span>
             </div>
             <button
-              className={`w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200 bg-gray-400 text-gray-200 cursor-not-allowed bg-green-600 text-white hover:bg-green-700 cursor-pointer
+              className={`w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200  text-gray-200  bg-green-600 hover:bg-green-700 cursor-pointer
               }`}
               onClick={handleSearch}
-              
             >
               Search
             </button>

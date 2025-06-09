@@ -1,8 +1,8 @@
-import React from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
 
 export default function About() {
+  window.scroll(0,0);
   return (
     <>
     <Navbar/>

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable eqeqeq */
 import React, { useEffect, useState } from "react";
 import { liveUrl } from "./url";
 import { useNavigate } from "react-router-dom";

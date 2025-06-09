@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
@@ -714,7 +715,7 @@ export default function Termandcondition() {
         </li>
         <li>impersonates another person;</li>
         <li>
-          threatens the unity, integrity, defence, security or Sovereignty of
+          threatens the unity, integrity, defense, security or Sovereignty of
           India, friendly relations with foreign States, or public order, or
           causes incitement to the commission of any cognizable offence or
           prevents investigation of any offence or is insulting any foreign

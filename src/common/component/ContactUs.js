@@ -67,7 +67,7 @@ export default function Contact() {
     if (!validateForm()) {
       setLoader(false);
       toast.error(
-        "Your form has errors. Make sure Name, Phone, and all required fields are filled correctly."
+        "Please correct the errors in the form. Ensure that Name, Phone, and all required fields are filled out properly."
       );
       return;
     }

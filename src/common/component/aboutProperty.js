@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // React Router for navigation
 import { liveUrl } from "./url";
 import AnimatedText from "./HeadingAnimation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function AboutProperty() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // React Router navigate
   const [loader, setLoader] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [measure, setMeasure] = useState("sq.ft");
   const [sale, setSale] = useState("Buy");
   const [propertyType, setPropertyType] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [isChecked, setIsChecked] = useState(true); // Changed from false to true
+  const [isChecked, setIsChecked] = useState(true); // Checkbox default true
   const [formData, setFormData] = useState({
     plot_area: "",
     carpet_area: "",
@@ -38,7 +38,16 @@ export default function AboutProperty() {
     police_verification: "",
   });
 
-  const storedData = localStorage.getItem("responseData");
+  // Safely parse responseData from localStorage
+  let storedData;
+  try {
+    storedData = JSON.parse(localStorage.getItem("responseData") || "{}");
+  } catch (error) {
+    console.error("Error parsing responseData:", error);
+    storedData = {};
+  }
+  // Extract propertyType (e.g., "sale" or "Rent/Lease")
+  const propertyAction = storedData.propertyType || "sale";
 
   const handleChangeDate = (date) => {
     setSelectedDate(date);
@@ -66,9 +75,14 @@ export default function AboutProperty() {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const handleCheckboxChange = (e) => {
+    setIsChecked(e.target.checked);
+    setFormErrors((prev) => ({ ...prev, checkbox: "" }));
+  };
+
   const validateForm = () => {
     const errors = {};
-    if (storedData === '"Rent/Lease"') {
+    if (propertyAction === "Rent/Lease") {
       if (!formData.title) errors.title = "Title is required";
       if (!propertyType) errors.property_type = "Property type is required";
       if (!formData.sector) errors.sector = "Sector is required";
@@ -87,6 +101,7 @@ export default function AboutProperty() {
         errors.property_description = "Description is required";
       if (!sale) errors.sale = "Purpose is required";
     }
+    if (!isChecked) errors.checkbox = "You must agree to the terms";
     return errors;
   };
 
@@ -98,11 +113,19 @@ export default function AboutProperty() {
       setFormErrors(errors);
       return;
     }
+
+    if (!token || token === "undefined" || token === "null" || token.trim() === "") {
+      alert("Please log in to continue.");
+      navigate("/login");
+      return;
+    }
+
     setLoader(true);
     const url =
-      storedData === '"Rent/Lease"'
+      propertyAction === "Rent/Lease"
         ? `${liveUrl}add-rent-property`
         : `${liveUrl}api/PropertyDetail/propertyDetails`;
+
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -114,18 +137,21 @@ export default function AboutProperty() {
           ...formData,
           measure_unit: measure,
           property_type: propertyType,
-          available_from: selectedDate,
+          available_from: selectedDate.toISOString(), // Send date in ISO format
           token,
         }),
       });
+
       const data = await response.json();
       if (data.status === "done") {
-        navigate("/success");
+        navigate("/success"); // Use React Router navigate
       } else {
         console.error("API error:", data.message);
+        alert(data.message || "Failed to submit property details.");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Submission error:", error);
+      alert("An error occurred while submitting. Please try again.");
     } finally {
       setLoader(false);
     }
@@ -137,10 +163,10 @@ export default function AboutProperty() {
       <div className="border border-green-800" />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="bg-white shadow-lg rounded-lg p-6">
-          <h1 className="text-2xl font-extrabold   text-green-600 text-center uppercase mb-8">
+          <h1 className="text-2xl font-extrabold text-green-600 text-center uppercase mb-8">
             <AnimatedText text="Tell Us about Your Property" />
           </h1>
-          {storedData === '"Rent/Lease"' ? (
+          {propertyAction === "Rent/Lease" ? (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
@@ -523,7 +549,7 @@ export default function AboutProperty() {
                     onChange={handleChange}
                     value={formData.property_name}
                     name="property_name"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     placeholder="Enter property name"
                   />
                   {formErrors.property_name && (
@@ -564,11 +590,6 @@ export default function AboutProperty() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     placeholder="Enter number of bathrooms"
                   />
-                  {formErrors.bathroom && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {formErrors.bathroom}
-                    </p>
-                  )}
                 </div>
                 <div className="flex-1">
                   <label className="block text-gray-700 font-medium mb-1">
@@ -582,11 +603,6 @@ export default function AboutProperty() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     placeholder="Enter number of bedrooms"
                   />
-                  {formErrors.bedrooms && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {formErrors.bedrooms}
-                    </p>
-                  )}
                 </div>
               </div>
               <div>
@@ -632,7 +648,7 @@ export default function AboutProperty() {
                 className="h-4 w-4 mt-1"
                 type="checkbox"
                 checked={isChecked}
-                onChange={handleChange}
+                onChange={handleCheckboxChange}
               />
               <div>
                 <p className="text-sm text-gray-600">

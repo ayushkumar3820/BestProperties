@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React,{ useState, useEffect } from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,7 @@ export default function Budget() {
     maxBudget: "1000000",
   });
 
-  // Check localStorage on component mount
+  
   useEffect(() => {
     console.log("Budget component mounted - checking localStorage...");
     
@@ -42,7 +42,7 @@ export default function Budget() {
       
       // Alert user and redirect back to buyer page
       alert("Phone number not found. Please enter your details again.");
-      Navigate("/buyer");
+      Navigate("/buyer-data");
     }
   }, [Navigate]);
 

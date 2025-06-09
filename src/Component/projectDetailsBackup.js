@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from 'react';
 import '../Css/ProjectDetails.css';
 import { useParams } from 'react-router-dom';

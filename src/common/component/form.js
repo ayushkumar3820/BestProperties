@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-lone-blocks */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { liveUrl } from "./url";
@@ -81,7 +83,7 @@ export default function Form() {
   return (
     <>
       <div className="absolute top-2  right-0 lg:w-[500px] ">
-        {showForm ? <>{/* <Buyer /> */}</> : <></>}
+        {showForm ? <>{/* <Buyer-data /> */}</> : <></>}
       </div>
     </>
   );

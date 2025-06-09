@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Main from "./Component/main";
 import "../src/App.css";
@@ -9,7 +9,7 @@ import Gallery from "./common/component/Gallery";
 import Login from "./common/component/login";
 import OtpScreen from "./common/component/otpScreen";
 import AboutProperty from "./common/component/aboutProperty";
-import Buyer from "./common/component/Buyer";
+// import Buyer from "./common/component/Buyer";
 import LoactionPage from "./common/component/loaction";
 import Budget from "./common/component/budget";
 import Requirment from "./common/component/requirment";
@@ -53,7 +53,10 @@ export default function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/loan-emi-calculator" element={<EMICalculator />} />
         <Route path="/agent-properties" element={<AgentProperties />} />
-        <Route path="/agent-propertie-details" element={<AgentPropertiesDetails />} />
+        <Route
+          path="/agent-propertie-details"
+          element={<AgentPropertiesDetails />}
+        />
         <Route path="term-and-condition/" element={<TermandCondition />} />
         <Route path="about/" element={<About />} />
         <Route path="property/:id" element={<UserInformation />} />
@@ -61,7 +64,7 @@ export default function App() {
         <Route path="login/" element={<Login />} />
         <Route path="otpscreen/" element={<OtpScreen />} />
         <Route path="about-property/" element={<AboutProperty />} />
-        <Route path="buyer/" element={<Buyer />} />
+        {/* <Route path="buyer/" element={<Buyer />} /> */}
         <Route path="loaction/" element={<LoactionPage />} />
         <Route path="budget/" element={<Budget />} />
         <Route path="requirment/" element={<Requirment />} />
@@ -74,7 +77,7 @@ export default function App() {
         <Route path="search" element={<Search />} />
         <Route path="for-rent/" element={<Rent />} />
         <Route path="rentdetails/:id" element={<RentDetails />} />
-        <Route path="diclaimer" element={<Disclaimer/>} />
+        <Route path="diclaimer" element={<Disclaimer />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

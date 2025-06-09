@@ -561,8 +561,13 @@ header {
   .main-navbar-div  {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 100px;
+    gap: 20px;
       
+}
+.myPoint{
+  display: flex;
+  text-align: center;
+  justify-content: center;
 }
 .project-card {
   width: 100% !important;

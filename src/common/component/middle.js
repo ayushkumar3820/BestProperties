@@ -1,5 +1,6 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect } from "react";
-import Slider from "react-slick";
+// import Slider from "react-slick";
 import { useState } from "react";
 import { liveUrl } from "./url";
 

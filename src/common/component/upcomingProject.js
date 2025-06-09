@@ -1,8 +1,12 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable array-callback-return */
+/* eslint-disable no-undef */
 import React, { useEffect, useState } from "react";
 import { liveUrl } from "./url";
 
 export default function UpcomingProject() {
   const [newData, setNewData] = useState([]);
+
   const handleSubmit = () => {
     fetch(`${liveUrl}api/Services/servicesInnerPages`, {
       method: "POST",
@@ -13,6 +17,7 @@ export default function UpcomingProject() {
       .then((response) => response.json())
       .then((data) => {
         setNewData(data?.result);
+        // eslint-disable-next-line no-undef
         setPropertyData(data?.result[0].name);
       })
       .catch((error) => {

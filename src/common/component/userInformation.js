@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import Navbar from "./navbar";
-import './ModalPage.css';
+import "./ModalPage.css";
 import BottomBar from "./bottomBar";
 import { useNavigate, useParams } from "react-router-dom";
 import ImageOne from "../../assets/img/image-not.jpg";
@@ -29,8 +30,8 @@ export default function UserInformation() {
   const [show, setShow] = useState(false);
   const [main, setMain] = useState(true);
   const [loader, setLoader] = useState(false);
-  const [formData, setFormData] = useState({ firstname: '', phone: '' });
-  const [errors, setErrors] = useState({ firstname: '', phone: '' });
+  const [formData, setFormData] = useState({ firstname: "", phone: "" });
+  const [errors, setErrors] = useState({ firstname: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleShowMore = () => {
@@ -65,18 +66,18 @@ export default function UserInformation() {
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { firstname: '', phone: '' };
+    const newErrors = { firstname: "", phone: "" };
 
     if (!formData.firstname.trim()) {
-      newErrors.firstname = 'Please enter your name';
+      newErrors.firstname = "Please enter your name";
       isValid = false;
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Please enter your phone number';
+      newErrors.phone = "Please enter your phone number";
       isValid = false;
     } else if (!validatePhoneNumber(formData.phone)) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
+      newErrors.phone = "Please enter a valid 10-digit phone number";
       isValid = false;
     }
 
@@ -87,7 +88,7 @@ export default function UserInformation() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    setErrors({ ...errors, [name]: "" });
   };
 
   const handleSubmitForm = async (e) => {
@@ -101,9 +102,9 @@ export default function UserInformation() {
 
     try {
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
@@ -112,15 +113,17 @@ export default function UserInformation() {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success('Your information has been submitted successfully!');
-        setFormData({ firstname: '', phone: '' });
+        toast.success("Your information has been submitted successfully!");
+        setFormData({ firstname: "", phone: "" });
         setModalIsOpen(false);
       } else {
-        toast.error(result.message || 'Failed to submit information. Please try again.');
+        toast.error(
+          result.message || "Failed to submit information. Please try again."
+        );
       }
     } catch (error) {
-      toast.error('An error occurred. Please try again later.');
-      console.error('Error submitting form:', error);
+      toast.error("An error occurred. Please try again later.");
+      console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -267,7 +270,9 @@ export default function UserInformation() {
       >
         <div className="lg:w-[400px] w-full">
           <div className="flex justify-between items-center">
-            <div className="font-bold text-2xl text-green-800">Contact Owner</div>
+            <div className="font-bold text-2xl text-green-800">
+              Contact Owner
+            </div>
             <button
               onClick={() => setModalIsOpen(false)}
               className="bg-red-600 w-8 h-8 flex justify-center items-center"
@@ -363,7 +368,9 @@ export default function UserInformation() {
                               </div>
                             </div>
                             <div className="font-semibold lg:text-lg ml-2 text-sm">
-                              {panel.sqft > 0 ? ` | ${panel.sqft} ${panel.measureUnit}` : ""}
+                              {panel.sqft > 0
+                                ? ` | ${panel.sqft} ${panel.measureUnit}`
+                                : ""}
                             </div>
                           </div>
                           <div
@@ -419,7 +426,12 @@ export default function UserInformation() {
                                 {imageShowThree && panel.image_four_url && (
                                   <img
                                     onClick={() => setModal(true)}
-                                    style={{ height: "400px", width: "400px", cursor: "pointer", gap: "10px" }}
+                                    style={{
+                                      height: "400px",
+                                      width: "400px",
+                                      cursor: "pointer",
+                                      gap: "10px",
+                                    }}
                                     className="image_slider w-24 cursor-pointer rounded-lg"
                                     src={panel.image_four_url}
                                     alt="Property"
@@ -429,13 +441,23 @@ export default function UserInformation() {
                             )}
                           </div>
                           <div
-                            style={{ display: "flex", flexDirection: "row", marginTop: "6px", gap: "4px" }}
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              marginTop: "6px",
+                              gap: "4px",
+                            }}
                             className="cursor-pointer"
                           >
                             {panel.image_two_url && (
                               <img
                                 onClick={handleImageShow}
-                                style={{ height: "100px", width: "100px", cursor: "pointer", gap: "10px" }}
+                                style={{
+                                  height: "100px",
+                                  width: "100px",
+                                  cursor: "pointer",
+                                  gap: "10px",
+                                }}
                                 className="w-24 cursor-pointer"
                                 src={panel.image_two_url}
                                 alt="Property"
@@ -444,7 +466,12 @@ export default function UserInformation() {
                             {panel.image_three_url && (
                               <img
                                 onClick={handleImageShowTwo}
-                                style={{ height: "100px", width: "100px", cursor: "pointer", gap: "10px" }}
+                                style={{
+                                  height: "100px",
+                                  width: "100px",
+                                  cursor: "pointer",
+                                  gap: "10px",
+                                }}
                                 className="w-24 cursor-pointer"
                                 src={panel.image_three_url}
                                 alt="Property"
@@ -453,7 +480,12 @@ export default function UserInformation() {
                             {panel.image_four_url && (
                               <img
                                 onClick={handleImageShowThree}
-                                style={{ height: "100px", width: "100px", cursor: "pointer", gap: "10px" }}
+                                style={{
+                                  height: "100px",
+                                  width: "100px",
+                                  cursor: "pointer",
+                                  gap: "10px",
+                                }}
                                 className="w-24 cursor-pointer"
                                 src={panel.image_four_url}
                                 alt="Property"
@@ -467,25 +499,47 @@ export default function UserInformation() {
                               <div className="text-lg ml-2 font-leading text-green-800">
                                 {panel.property_type}
                               </div>
-                              <div className="text-lg text-leading">/{panel.city}</div>
+                              <div className="text-lg text-leading">
+                                /{panel.city}
+                              </div>
                             </div>
                             <div className="flex mb-2 items-center p-2 lg:gap-3 gap-3 mt-4">
                               {panel.bathrooms ? (
                                 <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.bedrooms < 1 ? null : <img className="w-6" src={Bath} alt="Bath" />}
-                                  <div className="font-bold">{panel.bathrooms} Baths</div>
+                                  {panel.bedrooms < 1 ? null : (
+                                    <img
+                                      className="w-6"
+                                      src={Bath}
+                                      alt="Bath"
+                                    />
+                                  )}
+                                  <div className="font-bold">
+                                    {panel.bathrooms} Baths
+                                  </div>
                                 </div>
                               ) : null}
                               {panel.bedrooms ? (
                                 <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.bathrooms < 1 ? null : <img className="w-6" src={Bed} alt="Bed" />}
-                                  <div className="font-bold">{panel.bedrooms} Beds</div>
+                                  {panel.bathrooms < 1 ? null : (
+                                    <img className="w-6" src={Bed} alt="Bed" />
+                                  )}
+                                  <div className="font-bold">
+                                    {panel.bedrooms} Beds
+                                  </div>
                                 </div>
                               ) : null}
                               {panel.kitchen ? (
                                 <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.kitchen < 1 ? null : <img className="w-6" src={Kitchen} alt="Kitchen" />}
-                                  <div className="font-bold">{panel.kitchen} Kitchen</div>
+                                  {panel.kitchen < 1 ? null : (
+                                    <img
+                                      className="w-6"
+                                      src={Kitchen}
+                                      alt="Kitchen"
+                                    />
+                                  )}
+                                  <div className="font-bold">
+                                    {panel.kitchen} Kitchen
+                                  </div>
                                 </div>
                               ) : null}
                               <div className="flex gap-2 items-center">
@@ -494,23 +548,30 @@ export default function UserInformation() {
                             </div>
                             {panel.amenities && (
                               <>
-                                <div className="font-bold leading-5 mt-4">Amenities:</div>
+                                <div className="font-bold leading-5 mt-4">
+                                  Amenities:
+                                </div>
                                 <div className="flex gap-2 mt-2">
                                   <div className="text-md leading-2 text-black font-leading">
                                     <div className="grid grid-cols-2">
-                                      {panel.amenities.split("~-~").map((amenity, index) => (
-                                        <div className="flex items-center gap-1" key={index}>
-                                          <svg
-                                            fill="green"
-                                            className="w-2 h-2"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 512 512"
+                                      {panel.amenities
+                                        .split("~-~")
+                                        .map((amenity, index) => (
+                                          <div
+                                            className="flex items-center gap-1"
+                                            key={index}
                                           >
-                                            <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-                                          </svg>
-                                          <div>{amenity}</div>
-                                        </div>
-                                      ))}
+                                            <svg
+                                              fill="green"
+                                              className="w-2 h-2"
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              viewBox="0 0 512 512"
+                                            >
+                                              <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+                                            </svg>
+                                            <div>{amenity}</div>
+                                          </div>
+                                        ))}
                                     </div>
                                   </div>
                                 </div>
@@ -529,7 +590,9 @@ export default function UserInformation() {
                             <div>
                               <div className="flex gap-2">
                                 <div className="font-semibold">Address:</div>
-                                <div className="font-normal">{panel.address}</div>
+                                <div className="font-normal">
+                                  {panel.address}
+                                </div>
                               </div>
                               {panel.sqft.length > 0 && (
                                 <div className="flex gap-2 mt-1">
@@ -544,8 +607,12 @@ export default function UserInformation() {
                                   <div className="text-md leading-2 font-normal">
                                     {show
                                       ? panel.description
-                                      : panel.description.split(" ").slice(0, 20).join(" ")}
-                                    {panel.description.split(" ").length > 50 && (
+                                      : panel.description
+                                          .split(" ")
+                                          .slice(0, 20)
+                                          .join(" ")}
+                                    {panel.description.split(" ").length >
+                                      50 && (
                                       <button
                                         onClick={handleShowMore}
                                         className="text-blue-500 ml-2"
@@ -592,7 +659,9 @@ export default function UserInformation() {
                 src={check.image_one_url || ImageOne}
                 alt="Property"
               />
-              <div className="font-bold text-lg text-green-800">{check.name}</div>
+              <div className="font-bold text-lg text-green-800">
+                {check.name}
+              </div>
               <div className="flex items-center">
                 <svg
                   className="w-3 h-3 cursor-pointer text-green-800"
@@ -623,11 +692,15 @@ export default function UserInformation() {
               </div>
               <div className="flex items-center lg:gap-3 gap-3 mt-4">
                 <div className="flex items-center gap-2">
-                  {check.bedrooms < 1 ? null : <img className="w-6" src={Bath} alt="Bath" />}
+                  {check.bedrooms < 1 ? null : (
+                    <img className="w-6" src={Bath} alt="Bath" />
+                  )}
                   <div>{check.bathrooms}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {check.bathrooms < 1 ? null : <img className="w-6" src={Bed} alt="Bed" />}
+                  {check.bathrooms < 1 ? null : (
+                    <img className="w-6" src={Bed} alt="Bed" />
+                  )}
                   <div>{check.bedrooms}</div>
                 </div>
                 <div className="flex gap-2 items-center">

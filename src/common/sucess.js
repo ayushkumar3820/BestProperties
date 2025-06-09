@@ -89,7 +89,8 @@ export default function Sucess() {
             Thank You
           </div>
           <div className="text-center text-sm mt-4 capitalize w-full p-2">
-            Thank you for sharing your details. Our executive will contact you within 24 to 48 hours to provide a better solution.
+            Thank you for sharing your details. Our executive will contact you
+            within 24 to 48 hours to provide a better solution.
           </div>
           <div className="text-green-800 mt-4 font-semibold">Message</div>
           <textarea

@@ -1,3 +1,7 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable eqeqeq */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import Navbar from "../common/component/navbar";
 import BottomBar from "../common/component/bottomBar";
@@ -95,7 +99,7 @@ export default function Agent() {
     }
     fetch(`${liveUrl}Contact/contact`, {
       method: "POST",
-     
+
       body: JSON.stringify({
         ...store,
         message: "",
@@ -223,9 +227,7 @@ export default function Agent() {
                   return (
                     <>
                       <div className="shadow-lg cursor-pointer border border-black p-1 rounded-md ">
-                        <div className="text-center py-4">
-                          {plann.title}
-                        </div>
+                        <div className="text-center py-4">{plann.title}</div>
                         <div className="flex justify-center  items-center">
                           <svg
                             fill=""
@@ -264,7 +266,6 @@ export default function Agent() {
                         <div className="font-bold text-green-600">
                           {panel.name}
                           {localStorage.setItem("panelTitle", panel.name)}
-
                         </div>
                         {panel.varified ? (
                           <>

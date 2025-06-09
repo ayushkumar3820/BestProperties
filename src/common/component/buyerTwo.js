@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomBar from "./bottomBar";
@@ -84,48 +85,51 @@ export default function BuyerTwo() {
     }
   };
 
-  const handleApi = () => {
-    const isMobileValid = ValidateMobile();
-    const isNameValid = ValidateName();
+ const handleApi = () => {
+  const isMobileValid = ValidateMobile();
+  const isNameValid = ValidateName();
 
-    if (!isMobileValid || !isNameValid) {
-      return; // Stop if validation fails
-    }
+  if (!isMobileValid || !isNameValid) {
+    return;
+  }
 
-    setLoader(true);
-    fetch(`${liveUrl}api/Buyer/addBuyer`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...store,
-        userType: user,
-        infotype: "personalInfo",
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "done") {
-          setLoader(false);
-          // Clear localStorage on successful submission
-          localStorage.removeItem("buyerFormData");
-          navigate("/budget");
-          setStore({ uName: "", mobile: "" });
-          setUser("Individual Customer");
-          console.log(data);
-        } else {
-          setLoader(false);
-          setClick("Failed to submit. Please try again.");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
+  setLoader(true);
+  
+  // ADD THIS: Store mobile number in localStorage before API call
+  localStorage.setItem("dataKey", store.mobile);
+  localStorage.setItem("userMobile", store.mobile);
+  
+  fetch(`${liveUrl}api/Buyer/addBuyer`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...store,
+      userType: user,
+      infotype: "personalInfo",
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "done") {
         setLoader(false);
-        setClick("An error occurred. Please try again.");
-      });
-  };
+        // CHANGE: Don't clear localStorage here, we need mobile number for next pages
+        // localStorage.removeItem("buyerFormData"); // REMOVE THIS LINE
+        navigate("/budget");
+        console.log(data);
+      } else {
+        setLoader(false);
+        setClick("Failed to submit. Please try again.");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      setLoader(false);
+      setClick("An error occurred. Please try again.");
+    });
+};
 
   function handleSelectUser(event) {
     setUser(event.target.value);
@@ -225,5 +229,5 @@ export default function BuyerTwo() {
         <BottomBar />
       </div>
     </>
-  );
+  )
 }

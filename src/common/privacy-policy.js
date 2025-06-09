@@ -3,7 +3,6 @@ import Navbar from "./component/navbar";
 import BottomBar from "./component/bottomBar";
 
 export default function PrivacyPolicy() {
-  
   return (
     <div>
       <Navbar />

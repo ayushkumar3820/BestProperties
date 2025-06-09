@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 import React from 'react'
 import {Navigate, useLocation} from "react-router-dom"
 
@@ -8,7 +9,7 @@ const ProtectedRoute = ({children}) => {
     // if(!user.state.isAuthenticated) {
         return <Navigate to="/" state={{ from: location}} replace />
     // }
- return children
+ return children;
 
 };
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
@@ -21,7 +22,6 @@ export default function Login() {
     email: "",
     phone: "",
     password: "",
-  
   });
   const [newData, setNewData] = useState({
     phone: "",
@@ -37,7 +37,7 @@ export default function Login() {
 
   const fireForgot = () => {
     setClick(true);
-    console.log("Forgot Password Clicked:", forgot); // Debug
+    console.log("Forgot Password Clicked:", forgot);
     if (!forgot.email) {
       toast.error("Please enter your email");
       return;
@@ -113,7 +113,7 @@ export default function Login() {
   const HandleApi = () => {
     setClick(true);
     setLoader(true);
-    console.log("Register Clicked:", store); // Debug log
+    console.log("Register Clicked:", store);
 
     // Validation checks
     if (!store.name) {
@@ -152,9 +152,8 @@ export default function Login() {
       setLoader(false);
       return;
     }
-   
 
-    console.log("Sending Register API Request:", store); // Debug
+    console.log("Sending Register API Request:", store);
     fetch(`${liveUrl}api/User/userRegister`, {
       method: "POST",
       headers: {
@@ -193,7 +192,7 @@ export default function Login() {
   const handleLogin = () => {
     setClick(true);
     setLoader(true);
-    console.log("Login Clicked:", newData); // Debug
+    console.log("Login Clicked:", newData);
 
     if (!newData.phone) {
       toast.error("Please enter your phone number");
@@ -229,7 +228,7 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Login API Response:", data); // Debug
+        console.log("Login API Response:", data);
         if (data.status === "done") {
           localStorage.setItem("token", data.token);
           toast.success("Login successful");
@@ -465,10 +464,7 @@ export default function Login() {
                         className="w-full p-2 border h-10 rounded-md"
                       />
                     </div>
-                    <div>
-                      
-                      
-                    </div>
+                    <div></div>
                     <div>
                       <div className="mt-2 text-lg text-black">Mobile</div>
                       <input

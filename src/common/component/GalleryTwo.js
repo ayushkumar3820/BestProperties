@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Bed from "../../assets/img/bed.png";
@@ -164,8 +166,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
       formatBudget(panelBudget).toLowerCase().includes(searchLower);
 
     const matchesCategory =
-      category === "All" ||
-      propertyCheck.includes(category.toLowerCase());
+      category === "All" || propertyCheck.includes(category.toLowerCase());
 
     const matchesLocation =
       !locationFilter ||
@@ -182,9 +183,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         propertyCheck.includes(type.toLowerCase())
       );
 
-    const matchesRentFilter =
-      !rentFilter ||
-      propertyCheck.includes("rent");
+    const matchesRentFilter = !rentFilter || propertyCheck.includes("rent");
 
     return (
       isBudgetInRange &&
@@ -266,21 +265,21 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     handleAmenties();
   }, []);
   useEffect(() => {
-      const handleClickOutside = (event) => {
-        const dropdown = document.querySelector(".rent-class.checkbox-dropdown");
-        if (dropdown && !dropdown.contains(event.target)) {
-          setIsOpen(false);
-        }
-      };
-  
-      if (isOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
+    const handleClickOutside = (event) => {
+      const dropdown = document.querySelector(".rent-class.checkbox-dropdown");
+      if (dropdown && !dropdown.contains(event.target)) {
+        setIsOpen(false);
       }
-  
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [isOpen]);
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const customStyles = {
     content: {
@@ -426,9 +425,12 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </button>
               )}
             </div>
-            <div className="forSale flex gap-10" style={{ alignItems: "flex-start", justifyContent:"center" }}>
+            <div
+              className="myPoint flex gap-10"
+              style={{ alignItems: "flex-start", justifyContent: "start" }}
+            >
               <div className="lg:block hidden shadow-lg p-2 min-w-[250px] ">
-                <div className="font-bold text-xl mt-3 text-green-800 " >
+                <div className="font-bold text-xl mt-3 text-green-800 ">
                   Select Property
                 </div>
                 <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px] rounded-lg">

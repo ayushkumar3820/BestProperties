@@ -56,7 +56,7 @@ export default function OtpScreen() {
             />
           </div>
           <div className="flex justify-center items-center mt-2">
-            <div className="">Have't recieved yet? </div>
+            <div className="">Have't received yet? </div>
             <button className="text-blue-400">Resend OTP</button>
           </div>
           <button
