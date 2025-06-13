@@ -396,46 +396,66 @@ export default function UserInformation() {
                         <div>
                           <div className="flex h-1/1 max-w-[400px] relative rounded-md items-center">
                             {main ? (
-                              <img
-                                onClick={() => setModal(true)}
-                                style={{ cursor: "pointer", gap: "10px" }}
-                                className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                src={panel.image_one_url || ImageOne}
-                                alt="Property"
-                              />
+                              <div className="relative w-full">
+                                <img
+                                  onClick={() => setModal(true)}
+                                  style={{ cursor: "pointer", gap: "10px" }}
+                                  className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                  src={panel.image_one_url || ImageOne}
+                                  alt="Property"
+                                />
+                                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                  {panel.id}
+                                </div>
+                              </div>
                             ) : (
                               <>
                                 {imageShow && panel.image_two_url && (
-                                  <img
-                                    onClick={() => setModal(true)}
-                                    style={{ cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                    src={panel.image_two_url}
-                                    alt="Property"
-                                  />
+                                  <div className="relative w-full">
+                                    <img
+                                      onClick={() => setModal(true)}
+                                      style={{ cursor: "pointer", gap: "10px" }}
+                                      className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                      src={panel.image_two_url}
+                                      alt="Property"
+                                    />
+                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                      {panel.id}
+                                    </div>
+                                  </div>
                                 )}
                                 {imageShowTwo && panel.image_three_url && (
-                                  <img
-                                    onClick={() => setModal(true)}
-                                    style={{ cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                    src={panel.image_three_url}
-                                    alt="Property"
-                                  />
+                                  <div className="relative w-full">
+                                    <img
+                                      onClick={() => setModal(true)}
+                                      style={{ cursor: "pointer", gap: "10px" }}
+                                      className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                      src={panel.image_three_url}
+                                      alt="Property"
+                                    />
+                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                      {panel.id}
+                                    </div>
+                                  </div>
                                 )}
                                 {imageShowThree && panel.image_four_url && (
-                                  <img
-                                    onClick={() => setModal(true)}
-                                    style={{
-                                      height: "400px",
-                                      width: "400px",
-                                      cursor: "pointer",
-                                      gap: "10px",
-                                    }}
-                                    className="image_slider w-24 cursor-pointer rounded-lg"
-                                    src={panel.image_four_url}
-                                    alt="Property"
-                                  />
+                                  <div className="relative w-full">
+                                    <img
+                                      onClick={() => setModal(true)}
+                                      style={{
+                                        height: "400px",
+                                        width: "400px",
+                                        cursor: "pointer",
+                                        gap: "10px",
+                                      }}
+                                      className="image_slider w-24 cursor-pointer rounded-lg"
+                                      src={panel.image_four_url}
+                                      alt="Property"
+                                    />
+                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                      {panel.id}
+                                    </div>
+                                  </div>
                                 )}
                               </>
                             )}
@@ -654,11 +674,16 @@ export default function UserInformation() {
               }}
               className="shadow-lg cursor-pointer px-2 py-2 border border-green bg-white rounded-lg"
             >
-              <img
-                className="h-52 w-full"
-                src={check.image_one_url || ImageOne}
-                alt="Property"
-              />
+              <div className="relative">
+                <img
+                  className="h-52 w-full"
+                  src={check.image_one_url || ImageOne}
+                  alt="Property"
+                />
+                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                  {check.id}
+                </div>
+              </div>
               <div className="font-bold text-lg text-green-800">
                 {check.name}
               </div>
