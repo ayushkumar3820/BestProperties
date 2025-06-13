@@ -530,7 +530,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                             }}
                             className="flex flex-col h-full"
                           >
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 relative">
                               {panel.image &&
                               typeof panel.image === "string" &&
                               (panel.image.endsWith(".jpg") ||
@@ -549,6 +549,9 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   alt="No Image"
                                 />
                               )}
+                              <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                {panel.id}
+                              </div>
                             </div>
                             <div className="flex-grow text-left bg-white border border-t leading-4 p-3">
                               <div className="mr-2">
