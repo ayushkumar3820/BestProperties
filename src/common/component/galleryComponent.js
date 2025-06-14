@@ -376,6 +376,19 @@ export default function GalleryComponent() {
                   </h2>
                   <Slider {...oneSlider}>
                     {newData.slice(0, showCount).map((panel) => {
+                      const propertyType = panel.type?.toLowerCase();
+                      let saleTag = "For Sale";
+                      if (propertyType === "flat") {
+                        saleTag = "For Sale Flat";
+                      } else if (propertyType === "plot") {
+                        saleTag = "For Sale Plot";
+                      } else if (
+                        propertyType === "kothi" ||
+                        propertyType === "house"
+                      ) {
+                        saleTag = "For Sale Kothi";
+                      }
+
                       return (
                         <div
                           key={panel.id}
@@ -407,7 +420,7 @@ export default function GalleryComponent() {
                                   />
                                 )}
                               </div>
-                              <div className="for-sale-div">For Sale</div>
+                              <div className="for-sale-div">{saleTag}</div>
                             </div>
                             <div className="border p-2 rent-inner-div">
                               <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">
@@ -420,14 +433,12 @@ export default function GalleryComponent() {
                                   marginTop: "0",
                                 }}
                               >
-                                <div className="headingStyle text-green-800 font-bold prperty-heading">
-                                  {/* Row 2: Name on a new line, aligned with the text above */}
+                                <div className="headingStyle text-green-800 font-bold">
                                   {panel.name && (
                                     <div className="text-sm lg:text-lg ml-0 mt-1">
                                       {panel.name}
                                     </div>
                                   )}
-                                  {/* Row 1: Icon + Budget + Sqft */}
                                   <div className="flex items-center">
                                     <svg
                                       fill="#14532d"

@@ -105,9 +105,10 @@ button.property-div {
   background: red;
   padding: 7px 4px ;
   border-radius: 58px;
-  height: 44px;
+  height: 24px;
   text-align: center;
-  width: 47px;
+  justify-content: center;
+  width: 103px;
   color: white;
   font-family: "Poppins", Sans-serif !important;
   font-size: 13px !important;

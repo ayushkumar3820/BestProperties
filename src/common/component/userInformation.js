@@ -404,7 +404,7 @@ export default function UserInformation() {
                                   src={panel.image_one_url || ImageOne}
                                   alt="Property"
                                 />
-                                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                <div className="absolute top-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                                   {panel.id}
                                 </div>
                               </div>
@@ -419,7 +419,7 @@ export default function UserInformation() {
                                       src={panel.image_two_url}
                                       alt="Property"
                                     />
-                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                                       {panel.id}
                                     </div>
                                   </div>
@@ -433,7 +433,7 @@ export default function UserInformation() {
                                       src={panel.image_three_url}
                                       alt="Property"
                                     />
-                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                                       {panel.id}
                                     </div>
                                   </div>
@@ -452,7 +452,7 @@ export default function UserInformation() {
                                       src={panel.image_four_url}
                                       alt="Property"
                                     />
-                                    <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                                       {panel.id}
                                     </div>
                                   </div>
@@ -680,7 +680,7 @@ export default function UserInformation() {
                   src={check.image_one_url || ImageOne}
                   alt="Property"
                 />
-                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm">
+                <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                   {check.id}
                 </div>
               </div>
