@@ -379,14 +379,18 @@ export default function GalleryComponent() {
                       const propertyType = panel.type?.toLowerCase();
                       let saleTag = "For Sale";
                       if (propertyType === "flat") {
-                        saleTag = "For Sale Flat";
+                        saleTag = "Luxury Flat  for Sale";
                       } else if (propertyType === "plot") {
-                        saleTag = "For Sale Plot";
+                        saleTag = "Prime Residential Plot for Sale";
                       } else if (
                         propertyType === "kothi" ||
                         propertyType === "house"
                       ) {
-                        saleTag = "For Sale Kothi";
+                        saleTag = "Spacious Kothi/House for Sale";
+                      } else if (propertyType === "villa") {
+                        saleTag = "Exclusive Villa Now on Sale";
+                      } else if (propertyType === "commercial") {
+                        saleTag = "Commercial Property Available";
                       }
 
                       return (

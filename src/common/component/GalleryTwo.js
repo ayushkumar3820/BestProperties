@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Bed from "../../assets/img/bed.png";
 import AnimatedText from "./HeadingAnimation";
@@ -17,16 +16,17 @@ Modal.setAppElement("#root");
 export default function GalleryComponentTwo({ initialPropertyType }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const dropdownRef = useRef(null);
   const [newData, setNewData] = useState([]);
+  const [savedProperties, setSavedProperties] = useState([]);
   const [showCount, setShowCount] = useState(12);
-  const [modals, setModals] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [amnties, setAmnties] = useState([]);
+  const [amenities, setAmenities] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
-  const [selectedPropertyType, setSelectedPropertType] = useState([]);
+  const [selectedPropertyType, setSelectedPropertyType] = useState([]);
   const [propertyType, setPropertyType] = useState([]);
-  const [showMoreData, setShowMoreData] = useState(false);
-  const [showMore, setShowMore] = useState(false);
+  const [showMorePropertyTypes, setShowMorePropertyTypes] = useState(false);
+  const [showMoreAmenities, setShowMoreAmenities] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,16 +36,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   });
   const [locationFilter, setLocationFilter] = useState("");
   const [rentFilter, setRentFilter] = useState(false);
+  const [unitSelections, setUnitSelections] = useState({});
 
   // Reset all filters
   const handleClearFilters = () => {
     setSearchQuery("");
-    setSelectedPropertType([]);
+    setSelectedPropertyType([]);
     setSelectedAmenities([]);
     setSortBy("");
     setRangeValues({ min: 500000, max: 200000000 });
     setLocationFilter("");
     setRentFilter(false);
+    setUnitSelections({});
     navigate("/property?category=All&propertyType=buy");
   };
 
@@ -57,24 +59,42 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     const propertyTypeParam = queryParams.get("propertyType") || "buy";
 
     setSearchQuery(keyword);
+    setRentFilter(propertyTypeParam === "rent");
 
     if (category !== "All" && propertyType.length > 0) {
       const preSelectedTypes = propertyType.filter((type) =>
         type.toLowerCase().includes(category.toLowerCase())
       );
-      setSelectedPropertType(preSelectedTypes);
-      setRentFilter(propertyTypeParam === "rent");
+      setSelectedPropertyType(preSelectedTypes);
     } else {
-      setRentFilter(propertyTypeParam === "rent");
-      setSelectedPropertType([]);
+      setSelectedPropertyType([]);
     }
   }, [location.search, propertyType]);
 
-  const visibleDataSidebar = showMore ? propertyType : propertyType.slice(0, 6);
-  const AmenitiesDataSidebar = showMoreData ? amnties : amnties.slice(0, 6);
-  const visibleData = propertyType;
-  const AmenitiesData = amnties;
+  // Handle outside clicks for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
+  // Limit visible items in sidebar
+  const visiblePropertyTypes = showMorePropertyTypes
+    ? propertyType
+    : propertyType.slice(0, 6);
+  const visibleAmenities = showMoreAmenities
+    ? amenities
+    : amenities.slice(0, 6);
+
+  // Handle range input for budget
   const handleRangeChange = (event) => {
     setRangeValues({
       min: parseInt(event.target.value),
@@ -82,66 +102,111 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     });
   };
 
+  // Handle sort selection
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
 
+  // Handle location filter
   const handleLocationChange = (event) => {
     setLocationFilter(event.target.value);
   };
 
+  // Toggle dropdown visibility
   const handleToggleDropdown = () => {
-    setIsOpen(!isOpen);
+    setIsOpen((prev) => !prev);
   };
 
+  // Handle search input
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  const handleCheckboxChange = (panel) => {
+  // Handle amenities checkbox
+  const handleCheckboxChange = (amenity) => {
     setSelectedAmenities((prev) =>
-      prev.includes(panel)
-        ? prev.filter((item) => item !== panel)
-        : [...prev, panel]
+      prev.includes(amenity)
+        ? prev.filter((item) => item !== amenity)
+        : [...prev, amenity]
     );
   };
 
-  const handleChange = (main) => {
-    setSelectedPropertType((prev) =>
-      prev.includes(main)
-        ? prev.filter((item) => item !== main)
-        : [...prev, main]
+  // Handle property type checkbox
+  const handleChange = (type) => {
+    setSelectedPropertyType((prev) =>
+      prev.includes(type)
+        ? prev.filter((item) => item !== type)
+        : [...prev, type]
     );
   };
 
+  // Format budget for display
   const formatBudget = (value) => {
+    if (!value || isNaN(value)) return "N/A";
     if (value >= 10000000) {
       return (
+        "₹" +
         (value / 10000000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }) + " Cr"
+        }) +
+        " Cr"
       );
     } else if (value >= 100000) {
       return (
+        "₹" +
         (value / 100000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }) + " Lac"
+        }) +
+        " Lac"
       );
     } else {
       return (
+        "₹" +
         (value / 1000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
-        }) + " Thousand"
+        }) +
+        " Thousand"
       );
     }
   };
 
+  // Format price per square foot
+  const formatPricePerSqft = (budget, sqft) => {
+    const effectiveSqft = sqft && !isNaN(sqft) && sqft > 0 ? sqft : 100;
+    if (!budget || isNaN(budget)) return "N/A";
+    const pricePerSqft = Math.round(budget / effectiveSqft);
+    return `₹${pricePerSqft.toLocaleString()}/sqft`;
+  };
+
+  // Convert area based on selected unit
+  const convertArea = (sqft, unit, panelId) => {
+    const effectiveSqft = sqft && !isNaN(sqft) && sqft > 0 ? sqft : 100;
+    const conversions = {
+      "sq.ft.": effectiveSqft,
+      "sq.m.": effectiveSqft * 0.092903,
+      "sq.yards": effectiveSqft / 9,
+      hectares: effectiveSqft / 107639,
+    };
+    const convertedValue = conversions[unit] || effectiveSqft;
+    return `${Math.round(convertedValue).toLocaleString()} ${unit}`;
+  };
+
+  // Handle unit change for a specific property
+  const handleUnitChange = (panelId, unit) => {
+    setUnitSelections((prev) => ({
+      ...prev,
+      [panelId]: unit,
+    }));
+  };
+
+  // Filter properties based on budget, search, category, location, amenities, and property type
   const filterPanelsByBudget = (panel) => {
     const panelBudget = parseInt(panel.budget) || 0;
     const panelAmenities = panel.amenities ? panel.amenities.split("~-~") : [];
     const propertyCheck = (panel.property_type || "").toLowerCase().trim();
+    const propertyName = (panel.property_name || "").toLowerCase().trim();
     const searchLower = searchQuery.toLowerCase().trim();
     const queryParams = new URLSearchParams(location.search);
     const category = queryParams.get("category") || "All";
@@ -152,11 +217,9 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     const matchesSearch =
       !searchQuery ||
       (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
-      (panel.property_name &&
-        panel.property_name.toLowerCase().includes(searchLower)) ||
+      (panel.property_name && propertyName.includes(searchLower)) ||
       (panel.address && panel.address.toLowerCase().includes(searchLower)) ||
-      (panel.property_type &&
-        panel.property_type.toLowerCase().includes(searchLower)) ||
+      (panel.property_type && propertyCheck.includes(searchLower)) ||
       panelAmenities.some((amenity) =>
         amenity.toLowerCase().includes(searchLower)
       ) ||
@@ -183,7 +246,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         propertyCheck.includes(type.toLowerCase())
       );
 
-    const matchesRentFilter = !rentFilter || propertyCheck.includes("rent");
+    const matchesRentFilter =
+      !rentFilter || (rentFilter && propertyCheck.includes("rent"));
 
     return (
       isBudgetInRange &&
@@ -198,10 +262,12 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
   const filteredData = newData.filter(filterPanelsByBudget);
 
+  // Handle "Show More" for properties
   const handleShowMore = () => {
     setShowCount((prev) => prev + 12);
   };
 
+  // Fetch properties and save the required data
   const handleSubmit = () => {
     setLoader(true);
     fetch(`${liveUrl}api/Reactjs/gallery`, {
@@ -212,15 +278,35 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        setNewData(data.result || []);
+        console.log("API Response (Properties):", data);
+        const properties = data.result || [];
+        setNewData(properties);
+
+        // Extract and save the required data (budget, sqft, property type, property name)
+        const extractedData = properties.map((item) => ({
+          id: item.id || "N/A",
+          budget: item.budget || "N/A",
+          sqft: item.sqft || 100, // Updated default to 100
+          property_type: item.property_type || "N/A",
+          property_name: item.property_name || item.name || "N/A",
+        }));
+        setSavedProperties(extractedData);
+        console.log("Saved Properties:", extractedData);
+
+        properties.forEach((item, index) => {
+          console.log(
+            `Property ${index}: sqft=${item.sqft}, budget=${item.budget}`
+          );
+        });
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching properties:", error);
         setLoader(false);
       });
   };
 
+  // Fetch property types
   const handlePropertyType = () => {
     setLoader(true);
     fetch(`${liveUrl}property-property-type`, {
@@ -231,16 +317,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log("API Response (Property Types):", data);
         setPropertyType(data.result || []);
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching property types:", error);
         setLoader(false);
       });
   };
 
-  const handleAmenties = () => {
+  // Fetch amenities
+  const handleAmenities = () => {
     setLoader(true);
     fetch(`${liveUrl}api/Reactjs/amenities`, {
       headers: {
@@ -250,36 +338,22 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     })
       .then((response) => response.json())
       .then((data) => {
-        setAmnties(data.result || []);
+        console.log("API Response (Amenities):", data);
+        setAmenities(data.result || []);
         setLoader(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error fetching amenities:", error);
         setLoader(false);
       });
   };
 
+  // Initial data fetch
   useEffect(() => {
     handleSubmit();
     handlePropertyType();
-    handleAmenties();
+    handleAmenities();
   }, []);
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const dropdown = document.querySelector(".rent-class.checkbox-dropdown");
-      if (dropdown && !dropdown.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
 
   const customStyles = {
     content: {
@@ -306,7 +380,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
       locationFilter !== "" ||
       rangeValues.min !== 500000 ||
       rangeValues.max !== 200000000 ||
-      rentFilter
+      rentFilter ||
+      Object.keys(unitSelections).length > 0
     );
   };
 
@@ -347,10 +422,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                   onChange={handleSearchChange}
                 />
               </div>
-              <div className="relative bg-white border border-green-600 p-2 rounded-md min-w-[200px] max-w-[200px]">
+              <div
+                className="relative bg-white border border-green-600 p-2 rounded-md min-w-[200px] max-w-[200px]"
+                ref={dropdownRef}
+              >
                 <button
-                  onClick={handleToggleDropdown}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleDropdown();
+                  }}
                   className="w-full text-left flex justify-between items-center"
+                  role="button"
+                  aria-expanded={isOpen}
                 >
                   {selectedPropertyType.length > 0 ? (
                     <div
@@ -375,21 +458,23 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </button>
                 {isOpen && (
                   <div
-                    onMouseEnter={() => setIsOpen(true)}
-                    onMouseLeave={() => setIsOpen(false)}
                     className="absolute bg-white border border-green-600 mt-2 p-2 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto min-w-[200px]"
+                    role="menu"
                   >
-                    {visibleData.map((main) => (
-                      <div className="flex gap-2 items-center py-1" key={main}>
+                    {visiblePropertyTypes.map((type) => (
+                      <div className="flex gap-2 items-center py-1" key={type}>
                         <input
                           type="checkbox"
-                          id={main}
-                          checked={selectedPropertyType.includes(main)}
-                          onChange={() => handleChange(main)}
+                          id={`property-type-${type}`}
+                          checked={selectedPropertyType.includes(type)}
+                          onChange={() => handleChange(type)}
                           className="h-4 w-4 text-green-600 focus:ring-green-600"
                         />
-                        <label htmlFor={main} className="text-sm">
-                          {main}
+                        <label
+                          htmlFor={`property-type-${type}`}
+                          className="text-sm"
+                        >
+                          {type}
                         </label>
                       </div>
                     ))}
@@ -416,6 +501,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 <option value="Kharar">Kharar</option>
                 <option value="Chandigarh">Chandigarh</option>
               </select>
+              <button
+                onClick={() => {
+                  setRentFilter(!rentFilter);
+                  navigate(
+                    `/property?category=${category}&propertyType=${
+                      rentFilter ? "buy" : "rent"
+                    }`
+                  );
+                }}
+              >
+                {/* Button content can be added here if needed */}
+              </button>
               {isAnyFilterActive() && (
                 <button
                   className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 min-w-[100px]"
@@ -429,8 +526,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
               className="myPoint flex gap-10"
               style={{ alignItems: "flex-start", justifyContent: "start" }}
             >
-              <div className="lg:block hidden shadow-lg p-2 min-w-[250px] ">
-                <div className="font-bold text-xl mt-3 text-green-800 ">
+              <div className="lg:block hidden shadow-lg p-2 min-w-[250px]">
+                <div className="font-bold text-xl mt-3 text-green-800">
                   Select Property
                 </div>
                 <div className="border mt-4 border-green-800 p-2 bg-white min-h-[50px] max-w-[200px] rounded-lg">
@@ -450,50 +547,51 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 </div>
                 <div>
                   <div className="font-bold mb-2 mt-2">Property Type</div>
-                  {visibleDataSidebar.map((main) => (
-                    <div key={main} className="flex gap-2 mt-1">
+                  {visiblePropertyTypes.map((type) => (
+                    <div key={type} className="flex gap-2 mt-1">
                       <input
-                        checked={selectedPropertyType.includes(main)}
-                        onChange={() => handleChange(main)}
-                        className="h-4 w-4"
                         type="checkbox"
+                        id={`sidebar-property-type-${type}`}
+                        checked={selectedPropertyType.includes(type)}
+                        onChange={() => handleChange(type)}
+                        className="h-4 w-4 text-green-600 focus:ring-green-600"
                       />
-                      <div>{main}</div>
+                      <label
+                        htmlFor={`sidebar-property-type-${type}`}
+                        className="text-sm"
+                      >
+                        {type}
+                      </label>
                     </div>
                   ))}
-                  {!showMore && propertyType.length > 6 && (
+                  {!showMorePropertyTypes && propertyType.length > 6 && (
                     <button
                       className="text-blue-600"
-                      onClick={() => setShowMore(true)}
+                      onClick={() => setShowMorePropertyTypes(true)}
                     >
                       Show More
                     </button>
                   )}
                 </div>
                 <div className="font-bold text-lg mt-2">Amenities</div>
-                {AmenitiesDataSidebar.map((panel) => (
-                  <div className="flex gap-2 mt-1" key={panel}>
-                    <div className="text-md leading-2 text-black font-leading">
-                      <div className="grid grid-cols-1">
-                        <div className="flex items-center leading-6">
-                          <div>
-                            <input
-                              type="checkbox"
-                              className="w-4 h-4"
-                              checked={selectedAmenities.includes(panel)}
-                              onChange={() => handleCheckboxChange(panel)}
-                            />
-                          </div>
-                          <div className="ml-2 mr-2">{panel}</div>
-                        </div>
-                      </div>
-                    </div>
+                {visibleAmenities.map((amenity) => (
+                  <div className="flex gap-2 mt-1" key={amenity}>
+                    <input
+                      type="checkbox"
+                      id={`amenity-${amenity}`}
+                      checked={selectedAmenities.includes(amenity)}
+                      onChange={() => handleCheckboxChange(amenity)}
+                      className="h-4 w-4 text-green-600 focus:ring-green-600"
+                    />
+                    <label htmlFor={`amenity-${amenity}`} className="text-sm">
+                      {amenity}
+                    </label>
                   </div>
                 ))}
-                {!showMoreData && amnties.length > 6 && (
+                {!showMoreAmenities && amenities.length > 6 && (
                   <button
                     className="text-blue-600"
-                    onClick={() => setShowMoreData(true)}
+                    onClick={() => setShowMoreAmenities(true)}
                   >
                     Show More
                   </button>
@@ -505,32 +603,40 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                     filteredData
                       .slice(0, showCount)
                       .sort((a, b) => {
-                        if (sortBy === "lowToHigh") return a.budget - b.budget;
-                        if (sortBy === "highToLow") return b.budget - a.budget;
+                        if (sortBy === "lowToHigh")
+                          return (a.budget || 0) - (b.budget || 0);
+                        if (sortBy === "highToLow")
+                          return (b.budget || 0) - (a.budget || 0);
                         return 0;
                       })
-                      .map((panel) => (
-                        <button
-                          className={`property-div w-full max-w-[350px] h-[350px] rounded-md shadow-lg transition duration-300 ease-in-out ${
+                      .map((panel, index) => (
+                        <div
+                          className={`property-div w-full max-w-[350px] rounded-md shadow-lg transition duration-300 ease-in-out ${
                             selectedPropertyType.includes(panel.property_type)
-                              ? "border-2 "
+                              ? "border-2"
                               : ""
                           }`}
-                          key={panel.id}
+                          key={panel.id || index}
                         >
-                          <div
-                            onClick={() => {
-                              const modifiedPanelName = panel.name
-                                .replace(/\s/g, "-")
-                                .replace(/[^\w\s]/g, "-")
-                                .toLowerCase();
-                              navigate(
-                                `/property/-${panel.id}-${modifiedPanelName}`
-                              );
-                            }}
-                            className="flex flex-col h-full"
-                          >
-                            <div className="flex-shrink-0 relative">
+                          <div className="flex flex-col h-full">
+                            <div
+                              className="flex-shrink-0 relative cursor-pointer"
+                              onClick={() => {
+                                const modifiedPanelName = (
+                                  panel.property_name ||
+                                  panel.name ||
+                                  "property"
+                                )
+                                  .replace(/\s/g, "-")
+                                  .replace(/[^\w\s]/g, "-")
+                                  .toLowerCase();
+                                navigate(
+                                  `/property/-${
+                                    panel.id || index
+                                  }-${modifiedPanelName}`
+                                );
+                              }}
+                            >
                               {panel.image &&
                               typeof panel.image === "string" &&
                               (panel.image.endsWith(".jpg") ||
@@ -540,73 +646,225 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 <img
                                   className="rounded-t-md h-[200px] w-full object-cover"
                                   src={panel.image}
-                                  alt="Panel"
+                                  alt={`Property ${
+                                    panel.property_name || panel.name || "Image"
+                                  }`}
                                 />
                               ) : (
                                 <img
                                   className="rounded-t-md h-[200px] w-full object-cover"
                                   src={NoImage}
-                                  alt="No Image"
+                                  alt="No Image Available"
                                 />
                               )}
-                              <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                                {panel.id}
+                              <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
+                                ID: {panel.id || "N/A"}
                               </div>
                             </div>
                             <div className="flex-grow text-left bg-white border border-t leading-4 p-3">
                               <div className="mr-2">
-                                <div className="text-sm font-extralight truncate">
-                                  {panel.property_name}
-                                </div>
-                                <div className="flex items-center text-green-800 font-bold flex-wrap">
-                                  <svg
-                                    fill="#14532D"
-                                    className="w-5 h-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 320 512"
-                                  >
-                                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                                  </svg>
-                                  <span className="ml-1">
-                                    {formatBudget(panel.budget)}
-                                  </span>
-                                  <div className="text-sm ml-2">
-                                    {panel.sqft > 0
-                                      ? `| ${panel.sqft} ${panel.measureUnit}`
-                                      : null}
+                                <div className="flex items-center justify-between whitespace-nowrap text-lg  text-red-800 pr-3">
+                                  <div className="flex items-center space-x-4">
+                                    <span
+                                      className="cursor-pointer"
+                                      onClick={() => {
+                                        const modifiedPanelName = (
+                                          panel.property_name ||
+                                          panel.name ||
+                                          "property"
+                                        )
+                                          .replace(/\s/g, "-")
+                                          .replace(/[^\w\s]/g, "-")
+                                          .toLowerCase();
+                                        navigate(
+                                          `/property/-${
+                                            panel.id || index
+                                          }-${modifiedPanelName}`
+                                        );
+                                      }}
+                                    >
+                                      {formatBudget(panel.budget)}
+                                    </span>
+                                    <span
+                                      className="text-[#303030] text-sm  cursor-pointer"
+                                      onClick={() => {
+                                        const modifiedPanelName = (
+                                          panel.property_name ||
+                                          panel.name ||
+                                          "property"
+                                        )
+                                          .replace(/\s/g, "-")
+                                          .replace(/[^\w\s]/g, "-")
+                                          .toLowerCase();
+                                        navigate(
+                                          `/property/-${
+                                            panel.id || index
+                                          }-${modifiedPanelName}`
+                                        );
+                                      }}
+                                    >
+                                      {convertArea(
+                                        panel.sqft,
+                                        unitSelections[panel.id || index] ||
+                                          "sq.ft.",
+                                        panel.id || index
+                                      )}
+                                    </span>
                                   </div>
-                                  {panel.type ? (
-                                    <div className="text-sm ml-2">
-                                      | {panel.name}
-                                    </div>
-                                  ) : null}
+                                  <div className="relative">
+                                    <select
+                                      value={
+                                        unitSelections[panel.id || index] ||
+                                        "sq.ft."
+                                      }
+                                      onChange={(e) =>
+                                        handleUnitChange(
+                                          panel.id || index,
+                                          e.target.value
+                                        )
+                                      }
+                                      className="appearance-none bg-white border  text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                                      aria-label="Select area unit for property"
+                                    >
+                                      <option value="sq.ft.">sq.ft.</option>
+                                      <option value="sq.m.">sq.m.</option>
+                                      <option value="sq.yards">sq.yards</option>
+                                      {/* <option value="hectares">hectares</option> */}
+                                    </select>
+                                    <svg
+                                      fill="black"
+                                      className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 512 512"
+                                    >
+                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                                    </svg>
+                                  </div>
                                 </div>
-                                <div className="flex gap-2 mt-2 items-center text-green-800">
+                                <div
+                                  className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
+                                  onClick={() => {
+                                    const modifiedPanelName = (
+                                      panel.property_name ||
+                                      panel.name ||
+                                      "property"
+                                    )
+                                      .replace(/\s/g, "-")
+                                      .replace(/[^\w\s]/g, "-")
+                                      .toLowerCase();
+                                    navigate(
+                                      `/property/-${
+                                        panel.id || index
+                                      }-${modifiedPanelName}`
+                                    );
+                                  }}
+                                >
                                   <div>
                                     <svg
                                       fill="#15803d"
-                                      className="h-5 w-5"
+                                      className="h-5 w-5 fill-[#303030]"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 576 512"
+                                    >
+                                      <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 88.4c0 8-1.5 15.8-4.5 23.1l-88 0c-2.9 0-5.6-.6-8-1.7l-191-95c-5.6-2.8-9.2-8.3-9.8-14.3l-4-160.2c0-17.7 14.3-32 32-32l31.1 0 0-80.2c0-26.5 21.5-48 48-48l32 0 0-63.9c0-8.7 3.5-17 10-23.6c6.4-6.6 15.2-10.3 24.2-10.3l96 0c9.1 0 17.8 3.7 24.2 10.3c6.5 6.6 10 14.9 10 23.6l0 63.9 32 0c26.5 0 48 21.5 48 48l0 80.2 0 31.9zM272 192a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm-48 256l0-112 96 48 0 112-96-48z" />
+                                    </svg>
+                                  </div>
+                                  <div className="leading-6  text-[#303030] text-sm truncate">
+                                    {panel.property_name || panel.name || "N/A"}
+                                  </div>
+                                </div>
+                                <div
+                                  className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
+                                  onClick={() => {
+                                    const modifiedPanelName = (
+                                      panel.property_name ||
+                                      panel.name ||
+                                      "property"
+                                    )
+                                      .replace(/\s/g, "-")
+                                      .replace(/[^\w\s]/g, "-")
+                                      .toLowerCase();
+                                    navigate(
+                                      `/property/-${
+                                        panel.id || index
+                                      }-${modifiedPanelName}`
+                                    );
+                                  }}
+                                >
+                                  <div>
+                                    <svg
+                                      fill="#15803d"
+                                      className="h-5 w-5 fill-[#303030]"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 512 512"
+                                    >
+                                      <path d="M32 32C14.3 32 0 46.3 0 64V448c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H32zM160 160c0-17.7 14.3-32 32-32H320c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V160zM288 352c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V288c0-17.7 14.3-32 32-32H256c17.7 0 32 14.3 32 32v64z" />
+                                    </svg>
+                                  </div>
+                                  <div className="leading-6  text-[#303030] text-sm truncate">
+                                    {panel.property_type || "N/A"}
+                                  </div>
+                                </div>
+                                <div
+                                  className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
+                                  onClick={() => {
+                                    const modifiedPanelName = (
+                                      panel.property_name ||
+                                      panel.name ||
+                                      "property"
+                                    )
+                                      .replace(/\s/g, "-")
+                                      .replace(/[^\w\s]/g, "-")
+                                      .toLowerCase();
+                                    navigate(
+                                      `/property/-${
+                                        panel.id || index
+                                      }-${modifiedPanelName}`
+                                    );
+                                  }}
+                                >
+                                  <div>
+                                    <svg
+                                      fill="#15803d"
+                                      className="h-5 w-5 fill-[#303030]"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 384 512"
                                     >
                                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
                                   </div>
-                                  <div className="leading-6 font-semibold text-sm truncate">
-                                    {panel.address}
+                                  <div className="leading-6  text-[#303030]  text-sm truncate">
+                                    {panel.address || "N/A"}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-3 mt-4">
+                                <div
+                                  className="flex items-center gap-3 mt-2 cursor-pointer"
+                                  onClick={() => {
+                                    const modifiedPanelName = (
+                                      panel.property_name ||
+                                      panel.name ||
+                                      "property"
+                                    )
+                                      .replace(/\s/g, "-")
+                                      .replace(/[^\w\s]/g, "-")
+                                      .toLowerCase();
+                                    navigate(
+                                      `/property/-${
+                                        panel.id || index
+                                      }-${modifiedPanelName}`
+                                    );
+                                  }}
+                                >
                                   <div className="flex items-center gap-2">
                                     {panel.bedrooms != null &&
                                       panel.bedrooms > 0 && (
                                         <img
                                           className="w-6"
                                           src={Bed}
-                                          alt="Bed"
+                                          alt="Bed icon"
                                         />
                                       )}
-                                    <div>
+                                    <div className="text-sm font-bold text-[#303030]">
                                       {panel.bedrooms != null &&
                                       panel.bedrooms > 0
                                         ? panel.bedrooms
@@ -619,10 +877,10 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                         <img
                                           className="w-6"
                                           src={Bath}
-                                          alt="Bath"
+                                          alt="Bath icon"
                                         />
                                       )}
-                                    <div>
+                                    <div className="text-sm font-bold text-green-800">
                                       {panel.bathrooms != null &&
                                       panel.bathrooms > 0
                                         ? panel.bathrooms
@@ -635,7 +893,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                         <img
                                           className="w-5"
                                           src={panel.verified}
-                                          alt="Verified"
+                                          alt="Verified icon"
                                           onError={(e) =>
                                             (e.target.src = NoImage)
                                           }
@@ -646,7 +904,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                               </div>
                             </div>
                           </div>
-                        </button>
+                        </div>
                       ))
                   ) : (
                     <p className="text-center mt-24 mb-24 font-bold text-lg text-red-600">

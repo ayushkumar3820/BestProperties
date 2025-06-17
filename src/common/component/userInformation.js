@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ImageOne from "../../assets/img/image-not.jpg";
 import Modal from "react-modal";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Added for toast styling
+import "react-toastify/dist/ReactToastify.css";
 import AnimatedText from "./HeadingAnimation";
 import { liveUrl, token } from "./url";
 import Bed from "../../assets/img/bed.png";
@@ -227,7 +227,7 @@ export default function UserInformation() {
               {main ? (
                 <img
                   style={{ cursor: "pointer", gap: "10px" }}
-                  className="image_slider max-h-[400px] bg-cover bg-no-repeat border  rounded-lg cursor-pointer"
+                  className="image_slider max-h-[400px] bg-cover bg-no-repeat border rounded-lg cursor-pointer"
                   src={panel.image_one_url || ImageOne}
                   alt="Property"
                 />
@@ -244,7 +244,7 @@ export default function UserInformation() {
                   {imageShowTwo && panel.image_three_url && (
                     <img
                       style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border  rounded-lg cursor-pointer"
+                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border rounded-lg cursor-pointer"
                       src={panel.image_three_url}
                       alt="Property"
                     />
@@ -353,296 +353,299 @@ export default function UserInformation() {
                   {newData?.map((panel) => (
                     <div key={panel.id}>
                       <div className="px-2 py-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className="w-5 h-5 cursor-pointer"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 320 512"
-                            >
-                              <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                            </svg>
-                            <div className="flex">
-                              <div className="font-bold lg:text-xl text-md">
-                                {formatBudget(panel.budget)}
-                              </div>
+                        <div className="grid lg:grid-cols-3 gap-5 px-2">
+                          <div>
+                            <div className="flex h-1/1 max-w-[400px] relative rounded-md items-center">
+                              {main ? (
+                                <div className="relative w-full">
+                                  <img
+                                    onClick={() => setModal(true)}
+                                    style={{ cursor: "pointer", gap: "10px" }}
+                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                    src={panel.image_one_url || ImageOne}
+                                    alt="Property"
+                                  />
+                                  <div className="absolute top-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
+                                    ID: {panel.id || "N/A"}
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  {imageShow && panel.image_two_url && (
+                                    <div className="relative w-full">
+                                      <img
+                                        onClick={() => setModal(true)}
+                                        style={{
+                                          cursor: "pointer",
+                                          gap: "10px",
+                                        }}
+                                        className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                        src={panel.image_two_url}
+                                        alt="Property"
+                                      />
+                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
+                                        ID: {panel.id || "N/A"}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {imageShowTwo && panel.image_three_url && (
+                                    <div className="relative w-full">
+                                      <img
+                                        onClick={() => setModal(true)}
+                                        style={{
+                                          cursor: "pointer",
+                                          gap: "10px",
+                                        }}
+                                        className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
+                                        src={panel.image_three_url}
+                                        alt="Property"
+                                      />
+                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
+                                        ID: {panel.id || "N/A"}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {imageShowThree && panel.image_four_url && (
+                                    <div className="relative w-full">
+                                      <img
+                                        onClick={() => setModal(true)}
+                                        style={{
+                                          height: "400px",
+                                          width: "400px",
+                                          cursor: "pointer",
+                                          gap: "10px",
+                                        }}
+                                        className="image_slider w-24 cursor-pointer rounded-lg"
+                                        src={panel.image_four_url}
+                                        alt="Property"
+                                      />
+                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
+                                        ID: {panel.id || "N/A"}
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
-                            <div className="font-semibold lg:text-lg ml-2 text-sm">
-                              {panel.sqft > 0
-                                ? ` | ${panel.sqft} ${panel.measureUnit}`
-                                : ""}
-                            </div>
-                          </div>
-                          <div
-                            onClick={() => Navigate("/Property")}
-                            className="p-1 cursor-pointer rounded-md h-10 w-10 bg-red-600 flex justify-center items-center"
-                          >
-                            <svg
-                              fill="white"
-                              className="h-5 w-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              height="1em"
-                              viewBox="0 0 384 512"
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                marginTop: "6px",
+                                gap: "4px",
+                              }}
+                              className="cursor-pointer"
                             >
-                              <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-green-800 font-bold ml-2 mb-2 underline lg:text-xl text-md">
-                        {panel.name}
-                      </div>
-                      <div className="grid lg:grid-cols-3 gap-5 px-2">
-                        <div>
-                          <div className="flex h-1/1 max-w-[400px] relative rounded-md items-center">
-                            {main ? (
-                              <div className="relative w-full">
+                              {panel.image_two_url && (
                                 <img
-                                  onClick={() => setModal(true)}
-                                  style={{ cursor: "pointer", gap: "10px" }}
-                                  className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                  src={panel.image_one_url || ImageOne}
+                                  onClick={handleImageShow}
+                                  style={{
+                                    height: "100px",
+                                    width: "100px",
+                                    cursor: "pointer",
+                                    gap: "10px",
+                                  }}
+                                  className="w-24 cursor-pointer"
+                                  src={panel.image_two_url}
                                   alt="Property"
                                 />
-                                <div className="absolute top-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                                  {panel.id}
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                {imageShow && panel.image_two_url && (
-                                  <div className="relative w-full">
-                                    <img
-                                      onClick={() => setModal(true)}
-                                      style={{ cursor: "pointer", gap: "10px" }}
-                                      className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                      src={panel.image_two_url}
-                                      alt="Property"
-                                    />
-                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                                      {panel.id}
-                                    </div>
-                                  </div>
-                                )}
-                                {imageShowTwo && panel.image_three_url && (
-                                  <div className="relative w-full">
-                                    <img
-                                      onClick={() => setModal(true)}
-                                      style={{ cursor: "pointer", gap: "10px" }}
-                                      className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                      src={panel.image_three_url}
-                                      alt="Property"
-                                    />
-                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                                      {panel.id}
-                                    </div>
-                                  </div>
-                                )}
-                                {imageShowThree && panel.image_four_url && (
-                                  <div className="relative w-full">
-                                    <img
-                                      onClick={() => setModal(true)}
-                                      style={{
-                                        height: "400px",
-                                        width: "400px",
-                                        cursor: "pointer",
-                                        gap: "10px",
-                                      }}
-                                      className="image_slider w-24 cursor-pointer rounded-lg"
-                                      src={panel.image_four_url}
-                                      alt="Property"
-                                    />
-                                    <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                                      {panel.id}
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "row",
-                              marginTop: "6px",
-                              gap: "4px",
-                            }}
-                            className="cursor-pointer"
-                          >
-                            {panel.image_two_url && (
-                              <img
-                                onClick={handleImageShow}
-                                style={{
-                                  height: "100px",
-                                  width: "100px",
-                                  cursor: "pointer",
-                                  gap: "10px",
-                                }}
-                                className="w-24 cursor-pointer"
-                                src={panel.image_two_url}
-                                alt="Property"
-                              />
-                            )}
-                            {panel.image_three_url && (
-                              <img
-                                onClick={handleImageShowTwo}
-                                style={{
-                                  height: "100px",
-                                  width: "100px",
-                                  cursor: "pointer",
-                                  gap: "10px",
-                                }}
-                                className="w-24 cursor-pointer"
-                                src={panel.image_three_url}
-                                alt="Property"
-                              />
-                            )}
-                            {panel.image_four_url && (
-                              <img
-                                onClick={handleImageShowThree}
-                                style={{
-                                  height: "100px",
-                                  width: "100px",
-                                  cursor: "pointer",
-                                  gap: "10px",
-                                }}
-                                className="w-24 cursor-pointer"
-                                src={panel.image_four_url}
-                                alt="Property"
-                              />
-                            )}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1">
-                          <div className="leading-1">
-                            <div className="flex items-center">
-                              <div className="text-lg ml-2 font-leading text-green-800">
-                                {panel.property_type}
-                              </div>
-                              <div className="text-lg text-leading">
-                                /{panel.city}
-                              </div>
-                            </div>
-                            <div className="flex mb-2 items-center p-2 lg:gap-3 gap-3 mt-4">
-                              {panel.bathrooms ? (
-                                <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.bedrooms < 1 ? null : (
-                                    <img
-                                      className="w-6"
-                                      src={Bath}
-                                      alt="Bath"
-                                    />
-                                  )}
-                                  <div className="font-bold">
-                                    {panel.bathrooms} Baths
-                                  </div>
-                                </div>
-                              ) : null}
-                              {panel.bedrooms ? (
-                                <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.bathrooms < 1 ? null : (
-                                    <img className="w-6" src={Bed} alt="Bed" />
-                                  )}
-                                  <div className="font-bold">
-                                    {panel.bedrooms} Beds
-                                  </div>
-                                </div>
-                              ) : null}
-                              {panel.kitchen ? (
-                                <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                  {panel.kitchen < 1 ? null : (
-                                    <img
-                                      className="w-6"
-                                      src={Kitchen}
-                                      alt="Kitchen"
-                                    />
-                                  )}
-                                  <div className="font-bold">
-                                    {panel.kitchen} Kitchen
-                                  </div>
-                                </div>
-                              ) : null}
-                              <div className="flex gap-2 items-center">
-                                {/* <img className="w-5" src={panel.varifed} alt="Verified" /> */}
-                              </div>
-                            </div>
-                            {panel.amenities && (
-                              <>
-                                <div className="font-bold leading-5 mt-4">
-                                  Amenities:
-                                </div>
-                                <div className="flex gap-2 mt-2">
-                                  <div className="text-md leading-2 text-black font-leading">
-                                    <div className="grid grid-cols-2">
-                                      {panel.amenities
-                                        .split("~-~")
-                                        .map((amenity, index) => (
-                                          <div
-                                            className="flex items-center gap-1"
-                                            key={index}
-                                          >
-                                            <svg
-                                              fill="green"
-                                              className="w-2 h-2"
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              viewBox="0 0 512 512"
-                                            >
-                                              <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-                                            </svg>
-                                            <div>{amenity}</div>
-                                          </div>
-                                        ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                            <button
-                              onClick={() => setModalIsOpen(true)}
-                              className="bg-red-600 p-2 mt-4 ml-2 text-white font-bold mb-2 rounded"
-                            >
-                              Contact Owner
-                            </button>
-                          </div>
-                        </div>
-                        <div className="mt-4 mb-4">
-                          <div className="p-2 border rounded-lg">
-                            <div>
-                              <div className="flex gap-2">
-                                <div className="font-semibold">Address:</div>
-                                <div className="font-normal">
-                                  {panel.address}
-                                </div>
-                              </div>
-                              {panel.sqft.length > 0 && (
-                                <div className="flex gap-2 mt-1">
-                                  <div className="font-semibold">Area:</div>
-                                  <div className="font-normal">
-                                    {panel.sqft} {panel.measureUnit}
-                                  </div>
-                                </div>
                               )}
-                              {panel.description.length > 0 && (
-                                <div className="flex mt-3">
-                                  <div className="text-md leading-2 font-normal">
-                                    {show
-                                      ? panel.description
-                                      : panel.description
-                                          .split(" ")
-                                          .slice(0, 20)
-                                          .join(" ")}
-                                    {panel.description.split(" ").length >
-                                      50 && (
-                                      <button
-                                        onClick={handleShowMore}
-                                        className="text-blue-500 ml-2"
-                                      >
-                                        {show ? "Show Less" : "Show More"}
-                                      </button>
+                              {panel.image_three_url && (
+                                <img
+                                  onClick={handleImageShowTwo}
+                                  style={{
+                                    height: "100px",
+                                    width: "100px",
+                                    cursor: "pointer",
+                                    gap: "10px",
+                                  }}
+                                  className="w-24 cursor-pointer"
+                                  src={panel.image_three_url}
+                                  alt="Property"
+                                />
+                              )}
+                              {panel.image_four_url && (
+                                <img
+                                  onClick={handleImageShowThree}
+                                  style={{
+                                    height: "100px",
+                                    width: "100px",
+                                    cursor: "pointer",
+                                    gap: "10px",
+                                  }}
+                                  className="w-24 cursor-pointer"
+                                  src={panel.image_four_url}
+                                  alt="Property"
+                                />
+                              )}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1">
+                            <div className="leading-1">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <svg
+                                    className="w-5 h-5 cursor-pointer"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 320 512"
+                                  >
+                                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                                  </svg>
+                                  <div className="font-bold lg:text-xl text-md">
+                                    {formatBudget(panel.budget)}
+                                  </div>
+                                </div>
+                                <div
+                                  onClick={() => Navigate("/Property")}
+                                  className="p-1 cursor-pointer rounded-md h-10 w-10 bg-red-600 flex justify-center items-center"
+                                >
+                                  <svg
+                                    fill="white"
+                                    className="h-5 w-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    height="1em"
+                                    viewBox="0 0 384 512"
+                                  >
+                                    <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="text-green-800 font-bold ml-2 mt-2 underline lg:text-xl text-md">
+                                {panel.name}
+                              </div>
+                              <div className="flex items-center mt-4">
+                                <div className="text-lg ml-2 font-leading text-green-800">
+                                  {panel.property_type}
+                                </div>
+                                <div className="text-lg text-leading">
+                                  /{panel.city}
+                                </div>
+                              </div>
+                              <div className="flex mb-2 items-center p-2 lg:gap-3 gap-3 mt-4">
+                                {panel.bathrooms ? (
+                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
+                                    {panel.bedrooms < 1 ? null : (
+                                      <img
+                                        className="w-6"
+                                        src={Bath}
+                                        alt="Bath"
+                                      />
                                     )}
+                                    <div className="font-bold">
+                                      {panel.bathrooms} Baths
+                                    </div>
+                                  </div>
+                                ) : null}
+                                {panel.bedrooms ? (
+                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
+                                    {panel.bathrooms < 1 ? null : (
+                                      <img
+                                        className="w-6"
+                                        src={Bed}
+                                        alt="Bed"
+                                      />
+                                    )}
+                                    <div className="font-bold">
+                                      {panel.bedrooms} Beds
+                                    </div>
+                                  </div>
+                                ) : null}
+                                {panel.kitchen ? (
+                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
+                                    {panel.kitchen < 1 ? null : (
+                                      <img
+                                        className="w-6"
+                                        src={Kitchen}
+                                        alt="Kitchen"
+                                      />
+                                    )}
+                                    <div className="font-bold">
+                                      {panel.kitchen} Kitchen
+                                    </div>
+                                  </div>
+                                ) : null}
+                                <div className="flex gap-2 items-center">
+                                  {/* <img className="w-5" src={panel.varifed} alt="Verified" /> */}
+                                </div>
+                              </div>
+                              {panel.amenities && (
+                                <>
+                                  <div className="font-bold leading-5 mt-4">
+                                    Amenities:
+                                  </div>
+                                  <div className="flex gap-2 mt-2">
+                                    <div className="text-md leading-2 text-black font-leading">
+                                      <div className="grid grid-cols-2">
+                                        {panel.amenities
+                                          .split("~-~")
+                                          .map((amenity, index) => (
+                                            <div
+                                              className="flex items-center gap-1"
+                                              key={index}
+                                            >
+                                              <svg
+                                                fill="green"
+                                                className="w-2 h-2"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 512 512"
+                                              >
+                                                <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+                                              </svg>
+                                              <div>{amenity}</div>
+                                            </div>
+                                          ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                              <button
+                                onClick={() => setModalIsOpen(true)}
+                                className="bg-red-600 p-2 mt-4 ml-2 text-white font-bold mb-2 rounded"
+                              >
+                                Contact Owner
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-32 mb-4">
+                            <div className="p-2 border rounded-lg">
+                              <div>
+                                <div className="flex gap-2">
+                                  <div className="font-semibold">Address:</div>
+                                  <div className="font-normal">
+                                    {panel.address}
                                   </div>
                                 </div>
-                              )}
+                                {panel.sqft.length > 0 && (
+                                  <div className="flex gap-2 mt-1">
+                                    <div className="font-semibold">Area:</div>
+                                    <div className="font-normal">
+                                      {panel.sqft} {panel.measureUnit}
+                                    </div>
+                                  </div>
+                                )}
+                                {panel.description.length > 0 && (
+                                  <div className="flex mt-3">
+                                    <div className="text-md leading-2 font-normal">
+                                      {show
+                                        ? panel.description
+                                        : panel.description
+                                            .split(" ")
+                                            .slice(0, 20)
+                                            .join(" ")}
+                                      {panel.description.split(" ").length >
+                                        50 && (
+                                        <button
+                                          onClick={handleShowMore}
+                                          className="text-blue-500 ml-2"
+                                        >
+                                          {show ? "Show Less" : "Show More"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -657,7 +660,7 @@ export default function UserInformation() {
             </div>
           </div>
         </div>
-        <h2 className="lg:text-2xl uppercase text-2xl font-bold text-center text-green-900 mt-3">
+        <h2 className="lg:text-2xl uppercase text-2xl font-bold text-center text-green-800 mt-3">
           <AnimatedText text="Other Similar Properties Near By" />
         </h2>
         <div className="grid lg:grid-cols-3 gap-2 mt-14 md:grid-cols-2">
@@ -680,7 +683,7 @@ export default function UserInformation() {
                   src={check.image_one_url || ImageOne}
                   alt="Property"
                 />
-                <div className="absolute bottom-0  bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
+                <div className="absolute bottom-0 bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
                   {check.id}
                 </div>
               </div>

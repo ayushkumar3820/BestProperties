@@ -103,18 +103,20 @@ button.property-div {
   top: -15px;
   left: -15px;
   background: red;
-  padding: 7px 4px ;
+  padding: 7px 12px;
   border-radius: 58px;
   height: 24px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  width: 103px;
   color: white;
   font-family: "Poppins", Sans-serif !important;
   font-size: 13px !important;
   font-weight: 600 !important;
   line-height: 14px;
+  white-space: nowrap; /* prevents text wrap */
 }
+
 .menu-item {
   font-weight: 500;
 }
