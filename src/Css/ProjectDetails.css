@@ -220,6 +220,7 @@ p{
   
   .property-address p {
     margin: 5px 0;
+    gap: 12px;
   }
   
 
@@ -493,6 +494,7 @@ p{
 .property-address p {
   display: flex;
   margin: 15px 0;
+  gap: 15px;
 }
 
 

@@ -666,7 +666,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 <div className="flex items-center justify-between whitespace-nowrap text-lg  text-red-800 pr-3">
                                   <div className="flex items-center space-x-4">
                                     <span
-                                      className="cursor-pointer"
+                                      className="cursor-pointer font-bold"
                                       onClick={() => {
                                         const modifiedPanelName = (
                                           panel.property_name ||
@@ -723,7 +723,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                           e.target.value
                                         )
                                       }
-                                      className="appearance-none bg-white border  text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                                      className="appearance-none bg-white border  text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
                                       aria-label="Select area unit for property"
                                     >
                                       <option value="sq.ft.">sq.ft.</option>
@@ -762,7 +762,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   <div>
                                     <svg
                                       fill="#15803d"
-                                      className="h-5 w-5 fill-[#303030]"
+                                      className="h-4 w-4 fill-[#303030]"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 576 512"
                                     >
@@ -794,7 +794,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   <div>
                                     <svg
                                       fill="#15803d"
-                                      className="h-5 w-5 fill-[#303030]"
+                                      className="h-4 w-4 fill-[#303030]"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 512 512"
                                     >
@@ -826,7 +826,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   <div>
                                     <svg
                                       fill="#15803d"
-                                      className="h-5 w-5 fill-[#303030]"
+                                      className="h-4 w-4 fill-[#303030]"
                                       xmlns="http://www.w3.org/2000/svg"
                                       viewBox="0 0 384 512"
                                     >
@@ -880,7 +880,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                           alt="Bath icon"
                                         />
                                       )}
-                                    <div className="text-sm font-bold text-green-800">
+                                    <div className="text-sm font-bold text-[#303030]">
                                       {panel.bathrooms != null &&
                                       panel.bathrooms > 0
                                         ? panel.bathrooms

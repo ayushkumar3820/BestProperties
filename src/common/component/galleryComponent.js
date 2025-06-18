@@ -264,8 +264,6 @@ export default function GalleryComponent() {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          // arrows:false,
-          // dots:true
         },
       },
     ],
@@ -354,10 +352,11 @@ export default function GalleryComponent() {
       {loader ? (
         <div className="flex justify-center align-items-center p-2">
           <svg
-            className=" animate-spin h-10 w-10"
-            fill="#014108"
+            className="animate-spin h-10 w-10"
+            fill="#303030"
             xmlns="http://www.w3.org/2000/svg"
-            height="1em"
+            width="40"
+            height="40"
             viewBox="0 0 512 512"
           >
             <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
@@ -379,7 +378,7 @@ export default function GalleryComponent() {
                       const propertyType = panel.type?.toLowerCase();
                       let saleTag = "For Sale";
                       if (propertyType === "flat") {
-                        saleTag = "Luxury Flat  for Sale";
+                        saleTag = "Luxury Flat for Sale";
                       } else if (propertyType === "plot") {
                         saleTag = "Prime Residential Plot for Sale";
                       } else if (
@@ -408,7 +407,7 @@ export default function GalleryComponent() {
                           className="rent-detail-div p-2"
                         >
                           <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
-                            <div className="felx justify-center gap-6 rent-image-div">
+                            <div className="flex justify-center gap-6 rent-image-div">
                               <div className="sale-image-div">
                                 {panel.image_one ? (
                                   <img
@@ -427,7 +426,7 @@ export default function GalleryComponent() {
                               <div className="for-sale-div">{saleTag}</div>
                             </div>
                             <div className="border p-2 rent-inner-div">
-                              <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">
+                              <div className="prperty-heading flex items-center prperty-heading mb-3">
                                 {panel.property_name}
                               </div>
                               <div
@@ -437,26 +436,30 @@ export default function GalleryComponent() {
                                   marginTop: "0",
                                 }}
                               >
-                                <div className="headingStyle text-green-800 font-bold">
+                                <div className="headingStyle ">
                                   {panel.name && (
-                                    <div className="text-sm lg:text-lg ml-0 mt-1">
+                                    <div className="text-sm ml-0 mt-1">
                                       {panel.name}
                                     </div>
                                   )}
                                   <div className="flex items-center">
                                     <svg
-                                      fill="#14532d"
-                                      className="w-5 h-5"
+                                      fill="#303030"
+                                      className="w-5 h-5 "
                                       xmlns="http://www.w3.org/2000/svg"
+                                      width="20"
+                                      height="20"
                                       viewBox="0 0 320 512"
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-                                    <div className="text-sm lg:text-lg ml-2">
-                                      {formatBudget(panel.budget)}
-                                      {panel.sqft > 0
-                                        ? ` | ${panel.sqft} ${panel.measureUnit}`
-                                        : ""}
+                                    <div className="flex items-center space-x-2 text-sm lg:text-lg ml-2">
+                                      <div className="text-red-700">
+                                        {formatBudget(panel.budget)}
+                                      </div>
+                                      {panel.sqft > 0 && (
+                                        <div className="text-sm">| {`${panel.sqft} ${panel.measureUnit}`}</div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -466,8 +469,10 @@ export default function GalleryComponent() {
                                   <svg
                                     className="h-5 w-5"
                                     xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
                                     viewBox="0 0 384 512"
-                                    fill="#14532d"
+                                    fill="#303030"
                                   >
                                     <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                   </svg>
@@ -479,7 +484,7 @@ export default function GalleryComponent() {
                                   {panel.bedrooms ? (
                                     <img className="w-6" src={Bed} alt="" />
                                   ) : null}
-                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                  <div className="font-semibold text-[#303030] inner-rooms-heading">
                                     {panel.bedrooms}
                                   </div>
                                 </div>
@@ -487,7 +492,7 @@ export default function GalleryComponent() {
                                   {panel.bathrooms ? (
                                     <img className="w-6" src={Bath} alt="" />
                                   ) : null}
-                                  <div className="font-semibold text-green-800 inner-rooms-heading">
+                                  <div className="font-semibold text-[#303030] inner-rooms-heading">
                                     {panel.bathrooms}
                                   </div>
                                 </div>
@@ -514,7 +519,7 @@ export default function GalleryComponent() {
                   <div className="home-single">
                     <Slider {...PropertySlider}>
                       {properties.map((item) => {
-                        const imageUrl = getPropertyImageUrl(item); // Get the image URL to pass to SingleProperty
+                        const imageUrl = getPropertyImageUrl(item);
                         return (
                           <div
                             key={item.id}
@@ -538,7 +543,7 @@ export default function GalleryComponent() {
                                 </div>
                               </div>
                               <div className="border p-2 rent-inner-div">
-                                <div className="prperty-heading flex items-center text-green-800 font-bold prperty-heading mb-3">
+                                <div className="prperty-heading flex items-center text-[#303030]  prperty-heading mb-3">
                                   {item.name}
                                 </div>
                                 <div
@@ -548,11 +553,13 @@ export default function GalleryComponent() {
                                     marginTop: "0",
                                   }}
                                 >
-                                  <div className="headingStyle flex items-center text-green-800 font-bold">
+                                  <div className="headingStyle flex items-center text-red-800 font-bold">
                                     <svg
-                                      fill="#14532d"
-                                      className="w-5 h-5"
+                                      fill="#303030"
+                                      className="w-5 h-5 file-[#303030]"
                                       xmlns="http://www.w3.org/2000/svg"
+                                      width="20"
+                                      height="20"
                                       viewBox="0 0 320 512"
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
@@ -570,8 +577,10 @@ export default function GalleryComponent() {
                                     <svg
                                       className="h-5 w-5"
                                       xmlns="http://www.w3.org/2000/svg"
+                                      width="20"
+                                      height="20"
                                       viewBox="0 0 384 512"
-                                      fill="#14532d"
+                                      fill="#303030"
                                     >
                                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
@@ -626,11 +635,11 @@ export default function GalleryComponent() {
                                 />
                               )}
                             </div>
-                            <div className="flex items-center gap-2 justify-center text-green-800 leading-6 font-medium text-md rent-inner-heading">
+                            <div className="flex items-center gap-2 justify-center text-[#303030] leading-6 font-medium text-md rent-inner-heading">
                               <div>{rent.name}</div>
                             </div>
                             <div className="for-rent-div">For Rent</div>
-                            <div className="text-green-800 leading-6 font-medium text-md rent-inner-heading">
+                            <div className="text-[#303030] leading-6 font-medium text-md rent-inner-heading">
                               {rent.name}
                             </div>
                           </div>
@@ -640,12 +649,14 @@ export default function GalleryComponent() {
                                 <svg
                                   className="h-5 w-5"
                                   xmlns="http://www.w3.org/2000/svg"
+                                  width="20"
+                                  height="20"
                                   viewBox="0 0 384 512"
-                                  fill="#14532d"
+                                  fill="#303030"
                                 >
                                   <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                 </svg>
-                                <div className="text-green-800 font-bold text-lg">
+                                <div className="text-[#303030] font-bold text-lg">
                                   {rent.address}
                                 </div>
                               </div>
@@ -661,14 +672,16 @@ export default function GalleryComponent() {
                             >
                               <div className="prize-div flex items-center">
                                 <svg
-                                  fill="#14532d"
+                                  fill="#303030"
                                   className="w-5 h-5"
                                   xmlns="http://www.w3.org/2000/svg"
+                                  width="20"
+                                  height="20"
                                   viewBox="0 0 320 512"
                                 >
                                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                 </svg>
-                                <div className="text-green-800 text-lg font-bold">
+                                <div className="text-red-600 text-lg font-bold">
                                   {formatBudget(rent.budget)} Per Month Rent
                                 </div>
                               </div>
@@ -703,7 +716,7 @@ export default function GalleryComponent() {
                   </h2>
                   <Slider {...ProjectSlider}>
                     {listProjectData.map((data) => {
-                      const imageUrl = getPropertyImageUrl(data); // Use the same image handling logic
+                      const imageUrl = getPropertyImageUrl(data);
                       return (
                         <div className="project-card" key={data.id}>
                           <div
@@ -737,16 +750,22 @@ export default function GalleryComponent() {
                             <p className="project-location">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
                                 viewBox="0 0 384 512"
+                                fill="#303030"
                               >
                                 <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                               </svg>{" "}
                               {data.Address}
                             </p>
-                            <p className="project-price text-green-800 font-bold">
+                            <p className="project-price  font-bold">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
                                 viewBox="0 0 320 512"
+                                fill="#303030"
                               >
                                 <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
                               </svg>

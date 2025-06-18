@@ -165,8 +165,7 @@ button.property-div {
 
 .headingStyle{
   font-family: "Poppins", Sans-serif !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
+  
 }
 .property-address {
   font-family: "Poppins", Sans-serif !important;
@@ -488,7 +487,7 @@ header {
   cursor: pointer;
 }
 .property-address svg {
-  fill: #14532d !important;
+  fill:#303030!important;
   margin-right: 0 !important;
 }
 .property-title, .rent-title {

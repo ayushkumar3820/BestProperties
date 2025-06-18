@@ -1,72 +1,102 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+
 import React, { useEffect, useState } from "react";
-import Navbar from "./navbar";
-import "./ModalPage.css";
-import BottomBar from "./bottomBar";
 import { useNavigate, useParams } from "react-router-dom";
-import ImageOne from "../../assets/img/image-not.jpg";
 import Modal from "react-modal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from "./navbar";
+import BottomBar from "./bottomBar";
 import AnimatedText from "./HeadingAnimation";
+import OurServices from "./ourServices";
+import Searching from "./searching";
 import { liveUrl, token } from "./url";
+import ImageOne from "../../assets/img/image-not.jpg";
 import Bed from "../../assets/img/bed.png";
 import Bath from "../../assets/img/bath.png";
 import Kitchen from "../../assets/img/kitchen.png";
-import OurServices from "./ourServices";
-import Searching from "./searching";
+import "./ModalPage.css";
+
+// Bind modal to app element for accessibility
+Modal.setAppElement("#root");
 
 export default function UserInformation() {
-  const Navigate = useNavigate();
-  let params = useParams();
-  const id = params?.id.split("-")[1];
-  const [newData, setNewData] = useState([]);
-  const [propertyData, setPropertyData] = useState([]);
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const propertyId = id?.split("-")[1];
+
+  // State management
+  const [propertyData, setPropertyData] = useState(null);
+  const [similarProperties, setSimilarProperties] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [modal, setModal] = useState(false);
-  const [imageShow, setImageShow] = useState(false);
-  const [imageShowTwo, setImageShowTwo] = useState(false);
-  const [imageShowThree, setImageShowThree] = useState(false);
-  const [show, setShow] = useState(false);
-  const [main, setMain] = useState(true);
+  const [imageModal, setImageModal] = useState(false);
+  const [activeImage, setActiveImage] = useState("main");
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [showAllDetails, setShowAllDetails] = useState(false);
   const [loader, setLoader] = useState(false);
   const [formData, setFormData] = useState({ firstname: "", phone: "" });
   const [errors, setErrors] = useState({ firstname: "", phone: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleShowMore = () => {
-    setShow(!show);
+  // Modal styles
+  const modalStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      borderRadius: "10px",
+      backgroundColor: "white",
+      padding: "20px",
+      maxWidth: "90vw",
+      maxHeight: "90vh",
+    },
   };
 
-  const handleImageShow = () => {
-    setImageShow(true);
-    setImageShowTwo(false);
-    setImageShowThree(false);
-    setMain(false);
-  };
+  // Fetch property data
+  useEffect(() => {
+    const fetchPropertyData = async () => {
+      if (!propertyId) return;
 
-  const handleImageShowTwo = () => {
-    setImageShowTwo(true);
-    setImageShowThree(false);
-    setImageShow(false);
-    setMain(false);
-  };
+      setLoader(true);
+      try {
+        const response = await fetch(
+          `${liveUrl}api/PropertyDetail/propertyAllDetails`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: propertyId }),
+          }
+        );
 
-  const handleImageShowThree = () => {
-    setImageShowThree(true);
-    setImageShowTwo(false);
-    setImageShow(false);
-    setMain(false);
-  };
+        if (!response.ok) {
+          throw new Error("Failed to fetch property data");
+        }
 
-  const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    return phoneRegex.test(phone);
-  };
+        const data = await response.json();
+        setPropertyData(data?.result?.main_property?.[0] || null);
+        setSimilarProperties(data?.result?.additional_properties || []);
+      } catch (error) {
+        console.error("Error fetching property:", error);
+        toast.error("Failed to load property data");
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    fetchPropertyData();
+    window.scrollTo(0, 0);
+  }, [propertyId]);
+
+  // Form validation
+  const validatePhoneNumber = (phone) => /^[0-9]{10}$/.test(phone);
 
   const validateForm = () => {
-    let isValid = true;
     const newErrors = { firstname: "", phone: "" };
+    let isValid = true;
 
     if (!formData.firstname.trim()) {
       newErrors.firstname = "Please enter your name";
@@ -85,20 +115,10 @@ export default function UserInformation() {
     return isValid;
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: "" });
-  };
-
+  // Form submission
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    if (!validateForm()) {
-      setIsSubmitting(false);
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
@@ -111,634 +131,525 @@ export default function UserInformation() {
       });
 
       const result = await response.json();
-
       if (response.ok) {
         toast.success("Your information has been submitted successfully!");
         setFormData({ firstname: "", phone: "" });
         setModalIsOpen(false);
       } else {
-        toast.error(
-          result.message || "Failed to submit information. Please try again."
-        );
+        toast.error(result.message || "Failed to submit information");
       }
     } catch (error) {
       toast.error("An error occurred. Please try again later.");
       console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleSubmit = () => {
-    setLoader(true);
-    fetch(`${liveUrl}api/PropertyDetail/propertyAllDetails`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setLoader(false);
-        setNewData(data?.result.main_property);
-        setPropertyData(data?.result.additional_properties);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setLoader(false);
-      });
+  // Image handling
+  const handleImageChange = (imageType) => {
+    setActiveImage(imageType);
   };
 
-  useEffect(() => {
-    handleSubmit();
-    window.scrollTo(0, 0);
-  }, []);
-
-  const custom = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
-      backgroundColor: "white",
-      padding: "20px",
-    },
-  };
-
+  // Budget formatting
   const formatBudget = (value) => {
-    const formattedValue = value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    if (value >= 10000000) {
-      return (
-        (value / 10000000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) + " Crore"
-      );
-    } else if (value >= 100000) {
-      return (
-        (value / 100000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) + " Lac"
-      );
-    } else if (value >= 1000) {
-      return (
-        (value / 1000).toLocaleString(undefined, { minimumFractionDigits: 2 }) +
-        " Thousand"
-      );
-    } else {
-      return formattedValue;
+    if (!value) return "N/A";
+    const numValue = Number(value);
+    if (numValue >= 10000000) {
+      return `${(numValue / 10000000).toFixed(2)} Crore`;
+    } else if (numValue >= 100000) {
+      return `${(numValue / 100000).toFixed(2)} Lac`;
+    } else if (numValue >= 1000) {
+      return `${(numValue / 1000).toFixed(2)} Thousand`;
     }
+    return numValue.toLocaleString();
+  };
+
+  // Render property image
+  const renderPropertyImage = () => {
+    const imageMap = {
+      main: propertyData?.image_one_url,
+      two: propertyData?.image_two_url,
+      three: propertyData?.image_three_url,
+      four: propertyData?.image_four_url,
+    };
+
+    return (
+      <div className="relative inline-block w-full sm:w-96 h-80">
+        <img
+          className="w-full h-full object-cover border rounded-lg cursor-pointer"
+          src={imageMap[activeImage] || ImageOne}
+          alt="Property"
+          onClick={() => setImageModal(true)}
+        />
+        <div className="absolute top-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs rounded-br">
+          ID: {propertyData?.id || "N/A"}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div>
+    <div className="min-h-screen">
+      {/* Image Modal */}
       <Modal
-        isOpen={modal}
-        onRequestClose={() => setModal(false)}
-        style={custom}
+        isOpen={imageModal}
+        onRequestClose={() => setImageModal(false)}
+        style={modalStyles}
       >
         <div className="flex justify-end">
           <button
-            onClick={() => setModal(false)}
+            onClick={() => setImageModal(false)}
             className="bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
           >
             <svg
-              fill="white"
-              className="w-5 h-5"
+              className="w-5 h-5 text-white"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 384 512"
             >
-              <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+              <path
+                fill="currentColor"
+                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+              />
             </svg>
           </button>
         </div>
         <div className="flex justify-center max-h-[400px] items-center">
-          {newData.map((panel) => (
-            <div key={panel.id}>
-              {main ? (
-                <img
-                  style={{ cursor: "pointer", gap: "10px" }}
-                  className="image_slider max-h-[400px] bg-cover bg-no-repeat border rounded-lg cursor-pointer"
-                  src={panel.image_one_url || ImageOne}
-                  alt="Property"
-                />
-              ) : (
-                <>
-                  {imageShow && panel.image_two_url && (
-                    <img
-                      style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border rounded-lg cursor-pointer"
-                      src={panel.image_two_url}
-                      alt="Property"
-                    />
-                  )}
-                  {imageShowTwo && panel.image_three_url && (
-                    <img
-                      style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[400px] bg-cover border rounded-lg cursor-pointer"
-                      src={panel.image_three_url}
-                      alt="Property"
-                    />
-                  )}
-                  {imageShowThree && panel.image_four_url && (
-                    <img
-                      style={{ cursor: "pointer", gap: "10px" }}
-                      className="image_slider bg-no-repeat max-h-[400px] bg-cover cursor-pointer"
-                      src={panel.image_four_url}
-                      alt="Property"
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          ))}
+          <img
+            className="h-96 w-full sm:w-96 object-cover rounded-lg"
+            src={
+              activeImage === "main"
+                ? propertyData?.image_one_url
+                : activeImage === "two"
+                ? propertyData?.image_two_url
+                : activeImage === "three"
+                ? propertyData?.image_three_url
+                : propertyData?.image_four_url || ImageOne
+            }
+            alt="Property"
+          />
         </div>
       </Modal>
+
+      {/* Contact Modal */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
-        style={custom}
+        style={modalStyles}
       >
-        <div className="lg:w-[400px] w-full">
-          <div className="flex justify-between items-center">
-            <div className="font-bold text-2xl text-green-800">
-              Contact Owner
-            </div>
+        <div className="w-full sm:w-[400px]">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-2xl text-green-800">
+              Scheduler Booking
+            </h2>
             <button
               onClick={() => setModalIsOpen(false)}
-              className="bg-red-600 w-8 h-8 flex justify-center items-center"
+              className="bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
             >
               <svg
-                fill="white"
+                className="w-5 h-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
-                height="1em"
                 viewBox="0 0 384 512"
               >
-                <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+                <path
+                  fill="currentColor"
+                  d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                />
               </svg>
             </button>
           </div>
-          <form onSubmit={handleSubmitForm} className="mt-4">
-            <div className="w-full">
-              <label className="block tracking-wide text-lg font-bold mb-2">
+          <form onSubmit={handleSubmitForm}>
+            <div className="mb-4">
+              <label className="block text-lg font-bold mb-2 text-gray-800">
                 Your Name*
               </label>
               <input
-                className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                className="w-full h-12 border border-black rounded py-3 px-4 focus:outline-none focus:border-green-500"
                 name="firstname"
                 value={formData.firstname}
-                onChange={handleInputChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstname: e.target.value })
+                }
                 placeholder="Please enter your name"
               />
               {errors.firstname && (
-                <div className="text-red-600">{errors.firstname}</div>
+                <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>
               )}
             </div>
-            <div className="w-full mt-4">
-              <label className="block tracking-wide text-lg font-bold mb-2">
+            <div className="mb-4">
+              <label className="block text-lg font-bold mb-2 text-gray-800">
                 Phone*
               </label>
               <input
-                type="text"
+                type="tel"
                 name="phone"
                 value={formData.phone}
-                onChange={handleInputChange}
-                className="appearance-none outline-none block w-full h-12 border border-black rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="w-full h-12 border border-black rounded py-3 px-4 focus:outline-none focus:border-green-500"
                 placeholder="Please enter your phone number"
               />
               {errors.phone && (
-                <div className="text-red-600">{errors.phone}</div>
+                <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
               )}
             </div>
             <button
               type="submit"
-              className={`bg-red-600 w-full text-white text-lg p-2 ${
-                isSubmitting ? "cursor-not-allowed opacity-50" : ""
-              }`}
-              disabled={isSubmitting}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors"
+              disabled={loader}
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {loader ? "Submitting..." : "Submit"}
             </button>
           </form>
         </div>
       </Modal>
+
       <Navbar />
-      <div className="container mx-auto px-2 mt-5 mb-4">
-        <div className="grid lg:grid-cols-1 lg:px-10 px-4 rounded-md border gap-4">
-          <div className="px-2">
-            <div className="mb-10">
-              {loader ? (
-                <div className="flex justify-center align-items-center p-2">
-                  <svg
-                    className="animate-spin h-10 w-10 mt-4 mb-4"
-                    fill="#014108"
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="1em"
-                    viewBox="0 0 512 512"
-                  >
-                    <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
-                  </svg>
-                </div>
-              ) : (
-                <>
-                  {newData?.map((panel) => (
-                    <div key={panel.id}>
-                      <div className="px-2 py-2">
-                        <div className="grid lg:grid-cols-3 gap-5 px-2">
-                          <div>
-                            <div className="flex h-1/1 max-w-[400px] relative rounded-md items-center">
-                              {main ? (
-                                <div className="relative w-full">
-                                  <img
-                                    onClick={() => setModal(true)}
-                                    style={{ cursor: "pointer", gap: "10px" }}
-                                    className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                    src={panel.image_one_url || ImageOne}
-                                    alt="Property"
-                                  />
-                                  <div className="absolute top-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
-                                    ID: {panel.id || "N/A"}
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  {imageShow && panel.image_two_url && (
-                                    <div className="relative w-full">
-                                      <img
-                                        onClick={() => setModal(true)}
-                                        style={{
-                                          cursor: "pointer",
-                                          gap: "10px",
-                                        }}
-                                        className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                        src={panel.image_two_url}
-                                        alt="Property"
-                                      />
-                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
-                                        ID: {panel.id || "N/A"}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {imageShowTwo && panel.image_three_url && (
-                                    <div className="relative w-full">
-                                      <img
-                                        onClick={() => setModal(true)}
-                                        style={{
-                                          cursor: "pointer",
-                                          gap: "10px",
-                                        }}
-                                        className="image_slider w-1/1 border border-green rounded-lg cursor-pointer"
-                                        src={panel.image_three_url}
-                                        alt="Property"
-                                      />
-                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
-                                        ID: {panel.id || "N/A"}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {imageShowThree && panel.image_four_url && (
-                                    <div className="relative w-full">
-                                      <img
-                                        onClick={() => setModal(true)}
-                                        style={{
-                                          height: "400px",
-                                          width: "400px",
-                                          cursor: "pointer",
-                                          gap: "10px",
-                                        }}
-                                        className="image_slider w-24 cursor-pointer rounded-lg"
-                                        src={panel.image_four_url}
-                                        alt="Property"
-                                      />
-                                      <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
-                                        ID: {panel.id || "N/A"}
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                marginTop: "6px",
-                                gap: "4px",
-                              }}
-                              className="cursor-pointer"
-                            >
-                              {panel.image_two_url && (
-                                <img
-                                  onClick={handleImageShow}
-                                  style={{
-                                    height: "100px",
-                                    width: "100px",
-                                    cursor: "pointer",
-                                    gap: "10px",
-                                  }}
-                                  className="w-24 cursor-pointer"
-                                  src={panel.image_two_url}
-                                  alt="Property"
-                                />
-                              )}
-                              {panel.image_three_url && (
-                                <img
-                                  onClick={handleImageShowTwo}
-                                  style={{
-                                    height: "100px",
-                                    width: "100px",
-                                    cursor: "pointer",
-                                    gap: "10px",
-                                  }}
-                                  className="w-24 cursor-pointer"
-                                  src={panel.image_three_url}
-                                  alt="Property"
-                                />
-                              )}
-                              {panel.image_four_url && (
-                                <img
-                                  onClick={handleImageShowThree}
-                                  style={{
-                                    height: "100px",
-                                    width: "100px",
-                                    cursor: "pointer",
-                                    gap: "10px",
-                                  }}
-                                  className="w-24 cursor-pointer"
-                                  src={panel.image_four_url}
-                                  alt="Property"
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1">
-                            <div className="leading-1">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <svg
-                                    className="w-5 h-5 cursor-pointer"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 320 512"
-                                  >
-                                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                                  </svg>
-                                  <div className="font-bold lg:text-xl text-md">
-                                    {formatBudget(panel.budget)}
-                                  </div>
-                                </div>
-                                <div
-                                  onClick={() => Navigate("/Property")}
-                                  className="p-1 cursor-pointer rounded-md h-10 w-10 bg-red-600 flex justify-center items-center"
-                                >
-                                  <svg
-                                    fill="white"
-                                    className="h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    height="1em"
-                                    viewBox="0 0 384 512"
-                                  >
-                                    <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
-                                  </svg>
-                                </div>
-                              </div>
-                              <div className="text-green-800 font-bold ml-2 mt-2 underline lg:text-xl text-md">
-                                {panel.name}
-                              </div>
-                              <div className="flex items-center mt-4">
-                                <div className="text-lg ml-2 font-leading text-green-800">
-                                  {panel.property_type}
-                                </div>
-                                <div className="text-lg text-leading">
-                                  /{panel.city}
-                                </div>
-                              </div>
-                              <div className="flex mb-2 items-center p-2 lg:gap-3 gap-3 mt-4">
-                                {panel.bathrooms ? (
-                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                    {panel.bedrooms < 1 ? null : (
-                                      <img
-                                        className="w-6"
-                                        src={Bath}
-                                        alt="Bath"
-                                      />
-                                    )}
-                                    <div className="font-bold">
-                                      {panel.bathrooms} Baths
-                                    </div>
-                                  </div>
-                                ) : null}
-                                {panel.bedrooms ? (
-                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                    {panel.bathrooms < 1 ? null : (
-                                      <img
-                                        className="w-6"
-                                        src={Bed}
-                                        alt="Bed"
-                                      />
-                                    )}
-                                    <div className="font-bold">
-                                      {panel.bedrooms} Beds
-                                    </div>
-                                  </div>
-                                ) : null}
-                                {panel.kitchen ? (
-                                  <div className="flex items-center gap-2 bg-slate-200 p-2">
-                                    {panel.kitchen < 1 ? null : (
-                                      <img
-                                        className="w-6"
-                                        src={Kitchen}
-                                        alt="Kitchen"
-                                      />
-                                    )}
-                                    <div className="font-bold">
-                                      {panel.kitchen} Kitchen
-                                    </div>
-                                  </div>
-                                ) : null}
-                                <div className="flex gap-2 items-center">
-                                  {/* <img className="w-5" src={panel.varifed} alt="Verified" /> */}
-                                </div>
-                              </div>
-                              {panel.amenities && (
-                                <>
-                                  <div className="font-bold leading-5 mt-4">
-                                    Amenities:
-                                  </div>
-                                  <div className="flex gap-2 mt-2">
-                                    <div className="text-md leading-2 text-black font-leading">
-                                      <div className="grid grid-cols-2">
-                                        {panel.amenities
-                                          .split("~-~")
-                                          .map((amenity, index) => (
-                                            <div
-                                              className="flex items-center gap-1"
-                                              key={index}
-                                            >
-                                              <svg
-                                                fill="green"
-                                                className="w-2 h-2"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 512 512"
-                                              >
-                                                <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-                                              </svg>
-                                              <div>{amenity}</div>
-                                            </div>
-                                          ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </>
-                              )}
-                              <button
-                                onClick={() => setModalIsOpen(true)}
-                                className="bg-red-600 p-2 mt-4 ml-2 text-white font-bold mb-2 rounded"
-                              >
-                                Contact Owner
-                              </button>
-                            </div>
-                          </div>
-                          <div className="mt-32 mb-4">
-                            <div className="p-2 border rounded-lg">
-                              <div>
-                                <div className="flex gap-2">
-                                  <div className="font-semibold">Address:</div>
-                                  <div className="font-normal">
-                                    {panel.address}
-                                  </div>
-                                </div>
-                                {panel.sqft.length > 0 && (
-                                  <div className="flex gap-2 mt-1">
-                                    <div className="font-semibold">Area:</div>
-                                    <div className="font-normal">
-                                      {panel.sqft} {panel.measureUnit}
-                                    </div>
-                                  </div>
-                                )}
-                                {panel.description.length > 0 && (
-                                  <div className="flex mt-3">
-                                    <div className="text-md leading-2 font-normal">
-                                      {show
-                                        ? panel.description
-                                        : panel.description
-                                            .split(" ")
-                                            .slice(0, 20)
-                                            .join(" ")}
-                                      {panel.description.split(" ").length >
-                                        50 && (
-                                        <button
-                                          onClick={handleShowMore}
-                                          className="text-blue-500 ml-2"
-                                        >
-                                          {show ? "Show Less" : "Show More"}
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {newData.length === 0 && (
-                    <div className="text-center font-bold">No Data Found</div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        <h2 className="lg:text-2xl uppercase text-2xl font-bold text-center text-green-800 mt-3">
-          <AnimatedText text="Other Similar Properties Near By" />
-        </h2>
-        <div className="grid lg:grid-cols-3 gap-2 mt-14 md:grid-cols-2">
-          {propertyData.map((check) => (
-            <div
-              key={check.id}
-              onClick={() => {
-                const modifiedPanelName = check.name
-                  .replace(/\s/g, "")
-                  .replace(/[^\w\s]/g, "");
-                Navigate(`/property/-${check.id}-${modifiedPanelName}`);
-                window.location.reload();
-                window.scrollTo(0, 0);
-              }}
-              className="shadow-lg cursor-pointer px-2 py-2 border border-green bg-white rounded-lg"
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-full">
+        {loader ? (
+          <div className="flex justify-center items-center py-8">
+            <svg
+              className="animate-spin h-10 w-10 text-green-800"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
             >
-              <div className="relative">
-                <img
-                  className="h-52 w-full"
-                  src={check.image_one_url || ImageOne}
-                  alt="Property"
-                />
-                <div className="absolute bottom-0 bg-[#d7dde5] text-green-900 font-bold px-3 py-1 text-lg">
-                  {check.id}
-                </div>
+              <path
+                fill="currentColor"
+                d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
+              />
+            </svg>
+          </div>
+        ) : !propertyData ? (
+          <div className="text-center font-bold text-xl text-gray-800">
+            No Property Data Found
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-4 rounded-lg p-2">
+            {/* Image Section */}
+            <div className="flex-shrink-0 w-full sm:w-96">
+              {renderPropertyImage()}
+              <div className="flex gap-2 mt-2 justify-center sm:justify-start">
+                {propertyData.image_two_url && (
+                  <img
+                    onClick={() => handleImageChange("two")}
+                    className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
+                    src={propertyData.image_two_url}
+                    alt="Thumbnail"
+                  />
+                )}
+                {propertyData.image_three_url && (
+                  <img
+                    onClick={() => handleImageChange("three")}
+                    className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
+                    src={propertyData.image_three_url}
+                    alt="Thumbnail"
+                  />
+                )}
+                {propertyData.image_four_url && (
+                  <img
+                    onClick={() => handleImageChange("four")}
+                    className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
+                    src={propertyData.image_four_url}
+                    alt="Thumbnail"
+                  />
+                )}
               </div>
-              <div className="font-bold text-lg text-green-800">
-                {check.name}
-              </div>
-              <div className="flex items-center">
-                <svg
-                  className="w-3 h-3 cursor-pointer text-green-800"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 320 512"
-                >
-                  <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                </svg>
-                <div className="flex">
-                  <div className="font-bold lg:text-sm text-md text-green-800">
-                    {formatBudget(check.budget)}
+            </div>
+            {/* Property Details */}
+            <div className="flex-1 flex flex-col p-2">
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-6 h-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 320 512"
+                    fill="#303030"
+                  >
+                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                  </svg>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-600">
+                    {formatBudget(propertyData.budget)}
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                <div>
+                <button
+                  onClick={() => navigate("/Property")}
+                  className="p-2 bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                >
                   <svg
-                    className="h-5 w-5 text-green-800"
+                    className="h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
                     viewBox="0 0 384 512"
                   >
-                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                    <path
+                      fill="currentColor"
+                      d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                    />
                   </svg>
-                </div>
-                <div>{check.address}</div>
+                </button>
               </div>
-              <div className="flex items-center lg:gap-3 gap-3 mt-4">
-                <div className="flex items-center gap-2">
-                  {check.bedrooms < 1 ? null : (
-                    <img className="w-6" src={Bath} alt="Bath" />
-                  )}
-                  <div>{check.bathrooms}</div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-600 mb-1">
+                {propertyData.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-1 mb-1 text-base sm:text-lg">
+                <span className="text-gray-600 font-semibold">
+                  {propertyData.property_type}
+                </span>
+                <span className="text-gray-600">•</span>
+                <span className="text-gray-700">{propertyData.city}</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mb-1">
+                {propertyData.bathrooms > 0 && (
+                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                    <img className="w-5 h-5" src={Bath} alt="Bath" />
+                    <span className="font-semibold text-sm">
+                      {propertyData.bathrooms} Baths
+                    </span>
+                  </div>
+                )}
+                {propertyData.bedrooms > 0 && (
+                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                    <img className="w-5 h-5" src={Bed} alt="Bed" />
+                    <span className="font-semibold text-sm">
+                      {propertyData.bedrooms} Beds
+                    </span>
+                  </div>
+                )}
+                {propertyData.kitchen > 0 && (
+                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                    <img className="w-5 h-5" src={Kitchen} alt="Kitchen" />
+                    <span className="font-semibold text-sm">
+                      {propertyData.kitchen} Kitchen
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setModalIsOpen(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors mb-1"
+              >
+                Scheduler Booking
+              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                <div
+                  className={`border border-gray-200 rounded-lg p-1 bg-gray-50 transition-all ${
+                    showAllAmenities ? "min-h-[300px]" : "min-h-[150px]"
+                  }`}
+                >
+                  <h3 className="font-bold text-lg mb-0.5 text-green-800">
+                    Amenities
+                  </h3>
+                  <div className="space-y-0.5">
+                    {propertyData.amenities &&
+                      propertyData.amenities
+                        .split("~-~")
+                        .slice(0, 5)
+                        .map((amenity, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-0.5"
+                          >
+                            <svg
+                              className="w-2 h-2 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 512 512"
+                            >
+                              <path
+                                fill="currentColor"
+                                d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z"
+                              />
+                            </svg>
+                            <span className="text-sm">{amenity.trim()}</span>
+                          </div>
+                        ))}
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      {propertyData.property_for && (
+                        <span>
+                          <strong>Property For:</strong> {propertyData.property_for}
+                        </span>
+                      )}
+                      {propertyData.built && (
+                        <span>
+                          <strong>Built Area:</strong> {propertyData.built}
+                        </span>
+                      )}
+                      {propertyData.land && (
+                        <span>
+                          <strong>Land Area:</strong> {propertyData.land}
+                        </span>
+                      )}
+                      {propertyData.bhk && (
+                        <span>
+                          <strong>BHK:</strong> {propertyData.bhk}
+                        </span>
+                      )}
+                      {propertyData.services && (
+                        <span>
+                          <strong>Services:</strong> {propertyData.services}
+                        </span>
+                      )}
+                    </div>
+                    {propertyData.amenities?.split("~-~").length > 5 && (
+                      <button
+                        onClick={() => setShowAllAmenities(!showAllAmenities)}
+                        className="text-green-600 text-sm font-semibold mt-2 hover:underline"
+                      >
+                        {showAllAmenities ? "Show Less" : "Show More"}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {check.bathrooms < 1 ? null : (
-                    <img className="w-6" src={Bed} alt="Bed" />
+                <div
+                  className={`border border-gray-200 rounded-lg p-1 bg-gray-50 transition-all ${
+                    showAllDetails ? "min-h-[300px]" : "min-h-[150px]"
+                  }`}
+                >
+                  <h3 className="font-bold text-lg mb-0.5 text-green-800">
+                    Property Details
+                  </h3>
+                  <div
+                    className={`space-y-0.5 ${
+                      !showAllDetails ? "max-h-[4.5rem] overflow-hidden" : ""
+                    }`}
+                  >
+                    {propertyData.address && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                          Address:
+                        </h4>
+                        <p className="text-gray-700 text-sm">
+                          {propertyData.address}, {propertyData.city}
+                        </p>
+                      </div>
+                    )}
+                    {propertyData.sqft && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                          Area:
+                        </h4>
+                        <p className="text-gray-700 text-sm">
+                          {propertyData.sqft} {propertyData.measureUnit || ""}
+                        </p>
+                      </div>
+                    )}
+                    {propertyData.description && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                          Description:
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {propertyData.description}
+                        </p>
+                      </div>
+                    )}
+                    {propertyData.property_type && (
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                          Property Type:
+                        </h4>
+                        <p className="text-gray-700 text-sm">
+                          {propertyData.property_type}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {(propertyData.description ||
+                    propertyData.sqft ||
+                    propertyData.address ||
+                    propertyData.property_type) && (
+                    <button
+                      onClick={() => setShowAllDetails(!showAllDetails)}
+                      className="text-green-600 text-sm font-semibold mt-2 hover:underline"
+                    >
+                      {showAllDetails ? "Show Less" : "Show More"}
+                    </button>
                   )}
-                  <div>{check.bedrooms}</div>
-                </div>
-                <div className="flex gap-2 items-center">
-                  {/* <img className="w-5" src={check.varifed} alt="Verified" /> */}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+        {/* Similar Properties Section */}
+        {similarProperties.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl sm:text-2xl uppercase font-bold text-center text-green-800">
+              <AnimatedText text="Other Similar Properties Near By" />
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+              {similarProperties.map((property) => (
+                <div
+                  key={property.id}
+                  onClick={() => {
+                    const modifiedName = property.name
+                      ?.replace(/\s/g, "")
+                      .replace(/[^\w\s]/g, "") || "";
+                    navigate(`/property/-${property.id}-${modifiedName}`);
+                    window.location.reload();
+                    window.scrollTo(0, 0);
+                  }}
+                  className="shadow-lg cursor-pointer p-4 border bg-white rounded-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="relative">
+                    <img
+                      className="h-52 w-full object-cover rounded-lg"
+                      src={property.image_one_url || ImageOne}
+                      alt="Property"
+                    />
+                    <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
+                      ID: {property.id || "N/A"}
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <h3 className="font-bold text-base sm:text-lg text-green-800">
+                      {property.name || "N/A"}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      <svg
+                        className="w-4 h-4 text-green-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512"
+                        fill="currentColor"
+                      >
+                        <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                      </svg>
+                      <span className="font-bold text-sm text-green-600">
+                        {formatBudget(property.budget)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <svg
+                        className="h-4 w-4 text-green-800"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        viewBox="0 0 384 512"
+                      >
+                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                      </svg>
+                      <span className="text-sm text-gray-700">
+                        {property.address || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-2">
+                      {property.bathrooms > 0 && (
+                        <div className="flex items-center gap-1">
+                          <img className="w-5 h-5" src={Bath} alt="Bath" />
+                          <span className="text-sm">{property.bathrooms}</span>
+                        </div>
+                      )}
+                      {property.bedrooms > 0 && (
+                        <div className="flex items-center gap-1">
+                          <img className="w-5 h-5" src={Bed} alt="Bed" />
+                          <span className="text-sm">{property.bedrooms}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
       <OurServices />
       <Searching />
       <ToastContainer />

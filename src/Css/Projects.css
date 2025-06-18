@@ -227,7 +227,7 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0 0 10px;
-    color:	#166534;
+    color:	#303030;
 }
 
 .project-developer {
@@ -239,7 +239,7 @@
 .project-location,
 .project-price {
     font-size: 0.9rem;
-    color: #555;
+    color: red;
     margin: 0 0 10px;
     display: flex;
     align-items: center;
@@ -248,7 +248,7 @@
 .project-details svg{
     width: 20px;
     margin-right: 10px;
-    fill:  rgb(22 101 52 );
+    fill:  #303030;
 }
 p.project-address
 .icon {
@@ -291,14 +291,14 @@ p.project-address
 
 .project-price {
     font-size: 16px;
-    
-    color: #166534 !important; 
+    color: red !important;
+    font-size: bold !important;
+ 
 }
 
 .project-price svg {
     height: 18px;
-    /* padding-right: 10px; */
-}
+color: #303030;}
 p.project-address svg {
     height: 20px;
     padding-right: 10px;
