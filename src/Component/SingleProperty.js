@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useEffect, useState } from "react";
-import Navbar from "../common/component/navbar";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { liveUrl, token } from "../common/component/url";
+import Navbar from "../common/component/navbar";
 import OurServices from "../common/component/ourServices";
 import BottomBar from "../common/component/bottomBar";
 import Searching from "../common/component/searching";
+import { liveUrl, token } from "../common/component/url";
 import "../Css/SingleProperty.css";
 import PlotImage from "../../src/assets/img/Plot.jpg";
 import RectangleImage from "../../src/assets/img/kothi-image2.jpg";
@@ -14,9 +14,10 @@ import NoImage from "../../src/assets/img/image-not.jpg";
 const SingleProperty = () => {
   const { id } = useParams();
   const location = useLocation();
-  const { imageUrl: passedImageUrl } = location.state || {}; // Get the imageUrl passed from GalleryComponent
+  const { imageUrl: passedImageUrl } = location.state || {};
   const [singleDetail, setSingleDetail] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAllDetails, setShowAllDetails] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -36,6 +37,7 @@ const SingleProperty = () => {
           ...item,
           type: item.property_type || item.type || "Unknown",
           Image_URLs: item.Image_URLs || item.image_one || null,
+          amenities: Array.isArray(item.amenities) ? item.amenities.join(", ") : item.amenities || "No amenities listed",
         }));
         console.log("Normalized singleDetail data:", normalizedData);
         setSingleDetail(normalizedData);
@@ -76,9 +78,9 @@ const SingleProperty = () => {
     }
   };
 
-  const getImageUrl = (item) => {
+  const getImageUrl = (item, index = 0) => {
     const propertyType = item.type || item.property_type || "Unknown";
-    const baseUrl = liveUrl; // Replace with actual base URL if needed
+    const baseUrl = liveUrl;
 
     console.log(
       `SingleProperty - Checking image for Property ID: ${item.id}, Type: ${propertyType}, Image_URLs:`,
@@ -87,31 +89,27 @@ const SingleProperty = () => {
       passedImageUrl
     );
 
-    // First, check if we have a passed image URL from GalleryComponent
-    if (passedImageUrl) {
+    if (passedImageUrl && index === 0) {
       console.log(`Using passed image URL from GalleryComponent: ${passedImageUrl}`);
       return passedImageUrl;
     }
 
-    // If no passed image URL, try to use Image_URLs from the API
     if (item.Image_URLs) {
-      if (typeof item.Image_URLs === "string" && item.Image_URLs.trim() !== "") {
+      if (Array.isArray(item.Image_URLs) && item.Image_URLs.length > index) {
+        const imageUrl = item.Image_URLs[index].startsWith("http")
+          ? item.Image_URLs[index]
+          : `${baseUrl}${item.Image_URLs[index]}`;
+        console.log(`Using Image_URLs array item ${index}: ${imageUrl}`);
+        return imageUrl;
+      } else if (typeof item.Image_URLs === "string" && item.Image_URLs.trim() !== "") {
         const imageUrl = item.Image_URLs.startsWith("http")
           ? item.Image_URLs
           : `${baseUrl}${item.Image_URLs}`;
         console.log(`Using Image_URLs string: ${imageUrl}`);
         return imageUrl;
       }
-      if (Array.isArray(item.Image_URLs) && item.Image_URLs.length > 0) {
-        const imageUrl = item.Image_URLs[0].startsWith("http")
-          ? item.Image_URLs[0]
-          : `${baseUrl}${item.Image_URLs[0]}`;
-        console.log(`Using Image_URLs array first item: ${imageUrl}`);
-        return imageUrl;
-      }
     }
 
-    // Fallback to default image based on property type
     console.log(`Using fallback image for type: ${propertyType}`);
     if (propertyType.toLowerCase() === "flat") {
       return NoImage;
@@ -146,7 +144,7 @@ const SingleProperty = () => {
     <>
       <Navbar />
       {loading ? (
-        <div className="flex justify-center align-items-center p-2">
+        <div className="flex justify-center items-center p-2">
           <svg
             className="animate-spin h-10 w-10"
             fill="#014108"
@@ -164,25 +162,10 @@ const SingleProperty = () => {
                 <div key={item.id} className="mb-10">
                   <div className="px-2 py-2">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <div className="flex items-center">
-                          <svg
-                            className="w-5 h-5 cursor-pointer text-green-800"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 320 512"
-                            fill="currentColor"
-                          >
-                            <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
-                          </svg>
-                          <div className="font-bold text-lg sm:text-xl ml-2">
-                            {formatBudget(item.budget)}
-                          </div>
+                      <div className="flex items-center">
+                        <div className="font-bold text-lg sm:text-xl">
+                          ₹ {formatBudget(item.budget)}
                         </div>
-                        {item.sqft && (
-                          <div className="font-semibold text-sm sm:text-lg ml-2">
-                            | {item.sqft}
-                          </div>
-                        )}
                       </div>
                       <Link to="/">
                         <div className="p-1 rounded-md h-10 w-10 bg-red-600 flex justify-center items-center">
@@ -198,40 +181,50 @@ const SingleProperty = () => {
                       </Link>
                     </div>
                   </div>
-                  <div className="text-green-800 font-bold ml-2 mb-4 underline text-lg sm:text-xl">
+                  <div className="text-green-800 font-bold text-lg sm:text-xl mb-4">
                     {item.name}
+                  </div>
+                  <div className="text-gray-600 text-sm mb-2">
+                    {item.type} - {item.city}
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 px-2">
                     <div>
-                      <div className="flex w-full max-w-md relative rounded-md items-center">
-                        <div className="sale-image-div">
+                      <div className="relative">
+                        <img
+                          className="w-full h-52 object-cover rounded-md cursor-pointer"
+                          src={getImageUrl(item)}
+                          alt={`${item.type || item.property_type || "Property"} Image`}
+                          onError={(e) => handleImageError(e, item)}
+                          onLoad={() =>
+                            console.log(
+                              `SingleProperty - Image loaded successfully for Property ID: ${item.id}`
+                            )
+                          }
+                        />
+                        {/* <div className="absolute top-0 left-0 bg-gray-200 text-gray-800 px-2 py-1 text-xs rounded-br">
+                          ID: {item.id}
+                        </div> */}
+                      </div>
+                      <div className="flex gap-2 mt-2 justify-center">
+                        {item.Image_URLs && Array.isArray(item.Image_URLs) && item.Image_URLs.length > 1 && item.Image_URLs.slice(1).map((_, index) => (
                           <img
-                            className="rounded-t-md cursor-pointer h-52 w-full object-cover"
-                            src={getImageUrl(item)}
-                            alt={`${(item.type || item.property_type || "Property")} Image`}
+                            key={index + 1}
+                            className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
+                            src={getImageUrl(item, index + 1)}
+                            alt={`${item.type || item.property_type || "Property"} Thumbnail ${index + 1}`}
                             onError={(e) => handleImageError(e, item)}
-                            onLoad={() =>
-                              console.log(
-                                `SingleProperty - Image loaded successfully for Property ID: ${item.id}`
-                              )
-                            }
                           />
-                        </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1">
-                      <div className="leading-1">
-                        <div className="flex items-center">
-                          <div className="text-lg ml-2 font-leading text-green-800">
-                            {item.type || item.property_type || "Property"}
-                          </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <div className="font-bold text-lg text-green-800 mb-2">
+                          Amenities
                         </div>
-                        <div className="font-bold leading-5 mt-4">
-                          Amenities:
-                        </div>
-                        <div className="flex gap-2 mt-2 pb-8">
-                          <div className="grid grid-cols-1 sm:grid-cols-2">
-                            <div className="flex items-center gap-1">
+                        <div className="space-y-1">
+                          {item.amenities && item.amenities.split(", ").map((amenity, index) => (
+                            <div key={index} className="flex items-center gap-1">
                               <svg
                                 fill="green"
                                 className="w-2 h-2"
@@ -240,40 +233,74 @@ const SingleProperty = () => {
                               >
                                 <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
                               </svg>
-                              <div className="text-sm">
-                                {item.amenities || "No amenities listed"}
-                              </div>
+                              <span className="text-sm">{amenity.trim()}</span>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                        <div>
-                          <button>
-                            <Link
-                              to="/contact"
-                              className="bg-red-600 p-2 mt-4 ml-2 text-white font-bold rounded-md hover:bg-red-700 transition"
-                            >
-                              Contact Owner
-                            </Link>
-                          </button>
-                        </div>
+                      </div>
+                      <div>
+                        <button className="bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition mt-2">
+                          <Link to="/contact">Schedule a Visit</Link>
+                        </button>
                       </div>
                     </div>
                     <div className="address">
-                      <div className="p-4 border rounded-md">
-                        <div>
-                          <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
-                              <div className="font-semibold">Address:</div>
-                              <div className="font-normal">{item.address}</div>
-                            </div>
-                            {item.sqft && (
-                              <div className="flex gap-2">
-                                <div className="font-semibold">Area:</div>
-                                <div className="font-normal">{item.sqft}</div>
-                              </div>
-                            )}
-                          </div>
+                      <div className="p-4 border rounded-md bg-gray-50">
+                        <div className="font-bold text-lg text-green-800 mb-2">
+                          Property Details
                         </div>
+                        <div className={`space-y-1 ${!showAllDetails ? "max-h-20 overflow-hidden" : ""}`}>
+                          {item.address && (
+                            <div>
+                              <span className="font-semibold">Address:</span>
+                              <span className="ml-1">{item.address}</span>
+                            </div>
+                          )}
+                          {item.property_for && (
+                            <div>
+                              <span className="font-semibold">Property For:</span>
+                              <span className="ml-1">{item.property_for}</span>
+                            </div>
+                          )}
+                          {item.built && (
+                            <div>
+                              <span className="font-semibold">Built Area:</span>
+                              <span className="ml-1">{item.built}</span>
+                            </div>
+                          )}
+                          {item.land && (
+                            <div>
+                              <span className="font-semibold">Land Area:</span>
+                              <span className="ml-1">{item.land}</span>
+                            </div>
+                          )}
+                          {item.services && (
+                            <div>
+                              <span className="font-semibold">Services:</span>
+                              <span className="ml-1">{item.services}</span>
+                            </div>
+                          )}
+                          {item.type && (
+                            <div>
+                              <span className="font-semibold">Type:</span>
+                              <span className="ml-1">{item.type}</span>
+                            </div>
+                          )}
+                          {item.status && (
+                            <div>
+                              <span className="font-semibold">Status:</span>
+                              <span className="ml-1">{item.status}</span>
+                            </div>
+                          )}
+                        </div>
+                        {(item.address || item.property_for || item.built || item.land || item.services || item.type || item.status) && (
+                          <button
+                            onClick={() => setShowAllDetails(!showAllDetails)}
+                            className="text-green-600 text-sm font-semibold mt-2 hover:underline"
+                          >
+                            {showAllDetails ? "Show Less" : "Show More"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

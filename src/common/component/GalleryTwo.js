@@ -180,24 +180,28 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     return `₹${pricePerSqft.toLocaleString()}/sqft`;
   };
 
+  // Check if area value is valid
+  const isValidArea = (area) => area && !isNaN(area) && area > 0;
+
   // Convert area based on selected unit
-  const convertArea = (sqft, unit, panelId) => {
-    const effectiveSqft = sqft && !isNaN(sqft) && sqft > 0 ? sqft : 100;
+  const convertArea = (area, unit, panelId, areaType) => {
+    if (!isValidArea(area)) return null; // Return null if area is invalid
+    const effectiveArea = area;
     const conversions = {
-      "sq.ft.": effectiveSqft,
-      "sq.m.": effectiveSqft * 0.092903,
-      "sq.yards": effectiveSqft / 9,
-      hectares: effectiveSqft / 107639,
+      "sq.ft.": effectiveArea,
+      "sq.m.": effectiveArea * 0.092903,
+      "sq.yards": effectiveArea / 9,
+      hectares: effectiveArea / 107639,
     };
-    const convertedValue = conversions[unit] || effectiveSqft;
+    const convertedValue = conversions[unit] || effectiveArea;
     return `${Math.round(convertedValue).toLocaleString()} ${unit}`;
   };
 
-  // Handle unit change for a specific property
-  const handleUnitChange = (panelId, unit) => {
+  // Handle unit change for a specific property and area type
+  const handleUnitChange = (panelId, unit, areaType) => {
     setUnitSelections((prev) => ({
       ...prev,
-      [panelId]: unit,
+      [`${panelId}-${areaType}`]: unit,
     }));
   };
 
@@ -282,11 +286,13 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         const properties = data.result || [];
         setNewData(properties);
 
-        // Extract and save the required data (budget, sqft, property type, property name)
+        // Extract and save the required data (budget, sqft, built_up_area, land_area, property type, property name)
         const extractedData = properties.map((item) => ({
           id: item.id || "N/A",
           budget: item.budget || "N/A",
-          sqft: item.sqft || 100, // Updated default to 100
+          sqft: item.sqft || 100,
+          built_up_area: item.built_up_area || null,
+          land_area: item.land_area || null,
           property_type: item.property_type || "N/A",
           property_name: item.property_name || item.name || "N/A",
         }));
@@ -295,7 +301,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
         properties.forEach((item, index) => {
           console.log(
-            `Property ${index}: sqft=${item.sqft}, budget=${item.budget}`
+            `Property ${index}: sqft=${item.sqft}, built_up_area=${item.built_up_area}, land_area=${item.land_area}, budget=${item.budget}`
           );
         });
         setLoader(false);
@@ -657,13 +663,13 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   alt="No Image Available"
                                 />
                               )}
-                              <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030]  px-2 py-1 text-xs">
-                                ID: {panel.id || "N/A"}
+                              <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
+                                ID: {panel.unique_id || "N/A"}
                               </div>
                             </div>
                             <div className="flex-grow text-left bg-white border border-t leading-4 p-3">
                               <div className="mr-2">
-                                <div className="flex items-center justify-between whitespace-nowrap text-lg  text-red-800 pr-3">
+                                <div className="flex items-center justify-between whitespace-nowrap text-lg text-red-800 pr-3">
                                   <div className="flex items-center space-x-4">
                                     <span
                                       className="cursor-pointer font-bold"
@@ -685,8 +691,79 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                     >
                                       {formatBudget(panel.budget)}
                                     </span>
+                                    {isValidArea(panel.sqft) && (
+                                      <div className="flex items-center space-x-2">
+                                        <span
+                                          className="text-[#303030] text-sm cursor-pointer"
+                                          onClick={() => {
+                                            const modifiedPanelName = (
+                                              panel.property_name ||
+                                              panel.name ||
+                                              "property"
+                                            )
+                                              .replace(/\s/g, "-")
+                                              .replace(/[^\w\s]/g, "-")
+                                              .toLowerCase();
+                                            navigate(
+                                              `/property/-${
+                                                panel.id || index
+                                              }-${modifiedPanelName}`
+                                            );
+                                          }}
+                                        >
+                                          {convertArea(
+                                            panel.sqft,
+                                            unitSelections[
+                                              `${panel.id || index}-main`
+                                            ] || "sq.ft.",
+                                            panel.id || index,
+                                            "main"
+                                          )}
+                                        </span>
+                                        <div className="relative">
+                                          <select
+                                            value={
+                                              unitSelections[
+                                                `${panel.id || index}-main`
+                                              ] || "sq.ft."
+                                            }
+                                            onChange={(e) =>
+                                              handleUnitChange(
+                                                panel.id || index,
+                                                e.target.value,
+                                                "main"
+                                              )
+                                            }
+                                            className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
+                                            aria-label="Select area unit for main area"
+                                          >
+                                            <option value="sq.ft.">
+                                              sq.ft.
+                                            </option>
+                                            <option value="sq.m.">
+                                              sq.m.
+                                            </option>
+                                            <option value="sq.yards">
+                                              sq.yards
+                                            </option>
+                                          </select>
+                                          <svg
+                                            fill="black"
+                                            className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 512 512"
+                                          >
+                                            <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                                          </svg>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {isValidArea(panel.built_up_area) && (
+                                  <div className="flex items-center space-x-2 mt-2">
                                     <span
-                                      className="text-[#303030] text-sm  cursor-pointer"
+                                      className="text-[#303030] text-sm cursor-pointer"
                                       onClick={() => {
                                         const modifiedPanelName = (
                                           panel.property_name ||
@@ -703,44 +780,114 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                         );
                                       }}
                                     >
+                                      Built-Up:{" "}
                                       {convertArea(
-                                        panel.sqft,
-                                        unitSelections[panel.id || index] ||
-                                          "sq.ft.",
-                                        panel.id || index
+                                        panel.built_up_area,
+                                        unitSelections[
+                                          `${panel.id || index}-built`
+                                        ] || "sq.ft.",
+                                        panel.id || index,
+                                        "built"
                                       )}
                                     </span>
+                                    <div className="relative">
+                                      <select
+                                        value={
+                                          unitSelections[
+                                            `${panel.id || index}-built`
+                                          ] || "sq.ft."
+                                        }
+                                        onChange={(e) =>
+                                          handleUnitChange(
+                                            panel.id || index,
+                                            e.target.value,
+                                            "built"
+                                          )
+                                        }
+                                        className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
+                                        aria-label="Select area unit for built-up area"
+                                      >
+                                        <option value="sq.ft.">sq.ft.</option>
+                                        <option value="sq.m.">sq.m.</option>
+                                        <option value="sq.yards">
+                                          sq.yards
+                                        </option>
+                                      </select>
+                                      <svg
+                                        fill="black"
+                                        className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 512 512"
+                                      >
+                                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </div>
                                   </div>
-                                  <div className="relative">
-                                    <select
-                                      value={
-                                        unitSelections[panel.id || index] ||
-                                        "sq.ft."
-                                      }
-                                      onChange={(e) =>
-                                        handleUnitChange(
-                                          panel.id || index,
-                                          e.target.value
+                                )}
+                                {isValidArea(panel.land_area) && (
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    <span
+                                      className="text-[#303030] text-sm cursor-pointer"
+                                      onClick={() => {
+                                        const modifiedPanelName = (
+                                          panel.property_name ||
+                                          panel.name ||
+                                          "property"
                                         )
-                                      }
-                                      className="appearance-none bg-white border  text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
-                                      aria-label="Select area unit for property"
+                                          .replace(/\s/g, "-")
+                                          .replace(/[^\w\s]/g, "-")
+                                          .toLowerCase();
+                                        navigate(
+                                          `/property/-${
+                                            panel.id || index
+                                          }-${modifiedPanelName}`
+                                        );
+                                      }}
                                     >
-                                      <option value="sq.ft.">sq.ft.</option>
-                                      <option value="sq.m.">sq.m.</option>
-                                      <option value="sq.yards">sq.yards</option>
-                                      {/* <option value="hectares">hectares</option> */}
-                                    </select>
-                                    <svg
-                                      fill="black"
-                                      className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 512 512"
-                                    >
-                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-                                    </svg>
+                                      Land Area:{" "}
+                                      {convertArea(
+                                        panel.land_area,
+                                        unitSelections[
+                                          `${panel.id || index}-land`
+                                        ] || "sq.ft.",
+                                        panel.id || index,
+                                        "land"
+                                      )}
+                                    </span>
+                                    <div className="relative">
+                                      <select
+                                        value={
+                                          unitSelections[
+                                            `${panel.id || index}-land`
+                                          ] || "sq.ft."
+                                        }
+                                        onChange={(e) =>
+                                          handleUnitChange(
+                                            panel.id || index,
+                                            e.target.value,
+                                            "land"
+                                          )
+                                        }
+                                        className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
+                                        aria-label="Select area unit for land area"
+                                      >
+                                        <option value="sq.ft.">sq.ft.</option>
+                                        <option value="sq.m.">sq.m.</option>
+                                        <option value="sq.yards">
+                                          sq.yards
+                                        </option>
+                                      </select>
+                                      <svg
+                                        fill="black"
+                                        className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 512 512"
+                                      >
+                                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                                      </svg>
+                                    </div>
                                   </div>
-                                </div>
+                                )}
                                 <div
                                   className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
                                   onClick={() => {
@@ -769,7 +916,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                       <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 88.4c0 8-1.5 15.8-4.5 23.1l-88 0c-2.9 0-5.6-.6-8-1.7l-191-95c-5.6-2.8-9.2-8.3-9.8-14.3l-4-160.2c0-17.7 14.3-32 32-32l31.1 0 0-80.2c0-26.5 21.5-48 48-48l32 0 0-63.9c0-8.7 3.5-17 10-23.6c6.4-6.6 15.2-10.3 24.2-10.3l96 0c9.1 0 17.8 3.7 24.2 10.3c6.5 6.6 10 14.9 10 23.6l0 63.9 32 0c26.5 0 48 21.5 48 48l0 80.2 0 31.9zM272 192a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm-48 256l0-112 96 48 0 112-96-48z" />
                                     </svg>
                                   </div>
-                                  <div className="leading-6  text-[#303030] text-sm truncate">
+                                  <div className="leading-6 text-[#303030] text-sm truncate">
                                     {panel.property_name || panel.name || "N/A"}
                                   </div>
                                 </div>
@@ -801,7 +948,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                       <path d="M32 32C14.3 32 0 46.3 0 64V448c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H32zM160 160c0-17.7 14.3-32 32-32H320c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V160zM288 352c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V288c0-17.7 14.3-32 32-32H256c17.7 0 32 14.3 32 32v64z" />
                                     </svg>
                                   </div>
-                                  <div className="leading-6  text-[#303030] text-sm truncate">
+                                  <div className="leading-6 text-[#303030] text-sm truncate">
                                     {panel.property_type || "N/A"}
                                   </div>
                                 </div>
@@ -833,7 +980,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                       <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
                                   </div>
-                                  <div className="leading-6  text-[#303030]  text-sm truncate">
+                                  <div className="leading-6 text-[#303030] text-sm truncate">
                                     {panel.address || "N/A"}
                                   </div>
                                 </div>

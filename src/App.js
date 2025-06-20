@@ -77,7 +77,7 @@ export default function App() {
         <Route path="search" element={<Search />} />
         <Route path="for-rent/" element={<Rent />} />
         <Route path="rentdetails/:id" element={<RentDetails />} />
-        <Route path="diclaimer" element={<Disclaimer />} />
+        <Route path="disclaimer" element={<Disclaimer />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

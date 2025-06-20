@@ -231,9 +231,7 @@ const ProjectDetails = () => {
               </div>
             </Slider>
           </div>
-          <div className="video-section">
-            <div dangerouslySetInnerHTML={{ __html: data.Video_u }}></div>
-          </div>
+         
         </div>
       ))}
 

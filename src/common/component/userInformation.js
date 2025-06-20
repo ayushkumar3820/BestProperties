@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -56,7 +57,11 @@ export default function UserInformation() {
   // Fetch property data
   useEffect(() => {
     const fetchPropertyData = async () => {
-      if (!propertyId) return;
+      if (!propertyId) {
+        toast.error("Invalid property ID");
+        setLoader(false);
+        return;
+      }
 
       setLoader(true);
       try {
@@ -73,12 +78,15 @@ export default function UserInformation() {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch property data");
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log("API Response:", data); // Debug: Log API response
         setPropertyData(data?.result?.main_property?.[0] || null);
-        setSimilarProperties(data?.result?.additional_properties || []);
+        const additionalProperties = data?.result?.additional_properties || [];
+        setSimilarProperties(additionalProperties);
+        console.log("Similar Properties:", additionalProperties); // Debug: Log similar properties
       } catch (error) {
         console.error("Error fetching property:", error);
         toast.error("Failed to load property data");
@@ -188,7 +196,7 @@ export default function UserInformation() {
   };
 
   return (
-    <div className="min-h-screen">
+  <>
       {/* Image Modal */}
       <Modal
         isOpen={imageModal}
@@ -258,11 +266,11 @@ export default function UserInformation() {
           </div>
           <form onSubmit={handleSubmitForm}>
             <div className="mb-4">
-              <label className="block text-lg font-bold mb-2 text-gray-800">
+              <label className="text-lg font-semibold mb-2 block text-gray-800">
                 Your Name*
               </label>
               <input
-                className="w-full h-12 border border-black rounded py-3 px-4 focus:outline-none focus:border-green-500"
+                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
                 name="firstname"
                 value={formData.firstname}
                 onChange={(e) =>
@@ -275,7 +283,7 @@ export default function UserInformation() {
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-bold mb-2 text-gray-800">
+              <label className="text-lg font-semibold mb-2 block text-gray-800">
                 Phone*
               </label>
               <input
@@ -285,7 +293,7 @@ export default function UserInformation() {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                className="w-full h-12 border border-black rounded py-3 px-4 focus:outline-none focus:border-green-500"
+                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-gray-500"
                 placeholder="Please enter your phone number"
               />
               {errors.phone && (
@@ -294,7 +302,7 @@ export default function UserInformation() {
             </div>
             <button
               type="submit"
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors"
               disabled={loader}
             >
               {loader ? "Submitting..." : "Submit"}
@@ -305,26 +313,26 @@ export default function UserInformation() {
 
       <Navbar />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
         {loader ? (
           <div className="flex justify-center items-center py-8">
             <svg
-              className="animate-spin h-10 w-10 text-green-800"
+              className="animate-spin h-10 w-10 text-gray-600"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
             >
               <path
                 fill="currentColor"
-                d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
+                d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM304 464a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
               />
             </svg>
           </div>
         ) : !propertyData ? (
-          <div className="text-center font-bold text-xl text-gray-800">
+          <div className="text-center font-semibold text-xl text-gray-800">
             No Property Data Found
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row gap-4 rounded-lg p-2">
+          <div className="flex flex-col sm:flex-row gap-4 rounded-lg p-4 bg-white shadow-sm">
             {/* Image Section */}
             <div className="flex-shrink-0 w-full sm:w-96">
               {renderPropertyImage()}
@@ -334,7 +342,7 @@ export default function UserInformation() {
                     onClick={() => handleImageChange("two")}
                     className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
                     src={propertyData.image_two_url}
-                    alt="Thumbnail"
+                    alt="Thumbnail Two"
                   />
                 )}
                 {propertyData.image_three_url && (
@@ -342,7 +350,7 @@ export default function UserInformation() {
                     onClick={() => handleImageChange("three")}
                     className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
                     src={propertyData.image_three_url}
-                    alt="Thumbnail"
+                    alt="Thumbnail Three"
                   />
                 )}
                 {propertyData.image_four_url && (
@@ -350,24 +358,24 @@ export default function UserInformation() {
                     onClick={() => handleImageChange("four")}
                     className="h-16 w-16 object-cover border border-gray-300 rounded cursor-pointer hover:border-green-500"
                     src={propertyData.image_four_url}
-                    alt="Thumbnail"
+                    alt="Thumbnail Four"
                   />
                 )}
               </div>
             </div>
             {/* Property Details */}
-            <div className="flex-1 flex flex-col p-2">
-              <div className="flex items-start justify-between mb-1">
+            <div className="flex-1 flex flex-col p-4">
+              <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <svg
-                    className="w-6 h-6"
+                    className="w-6 h-6 text-gray-600"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 320 512"
-                    fill="#303030"
+                    fill="currentColor"
                   >
                     <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                   </svg>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-600">
+                  <div className="text-xl sm:text-2xl font-semibold text-gray-600">
                     {formatBudget(propertyData.budget)}
                   </div>
                 </div>
@@ -387,19 +395,19 @@ export default function UserInformation() {
                   </svg>
                 </button>
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-600 mb-1">
-                {propertyData.name}
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-600 mb-2">
+                {propertyData.name || "N/A"}
               </h1>
-              <div className="flex flex-wrap items-center gap-1 mb-1 text-base sm:text-lg">
+              <div className="flex flex-wrap items-center gap-2 mb-2 text-base sm:text-lg">
                 <span className="text-gray-600 font-semibold">
-                  {propertyData.property_type}
+                  {propertyData.property_type || "N/A"}
                 </span>
                 <span className="text-gray-600">•</span>
-                <span className="text-gray-700">{propertyData.city}</span>
+                <span className="text-gray-700">{propertyData.city || "N/A"}</span>
               </div>
-              <div className="flex flex-wrap gap-1 mb-1">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {propertyData.bathrooms > 0 && (
-                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                     <img className="w-5 h-5" src={Bath} alt="Bath" />
                     <span className="font-semibold text-sm">
                       {propertyData.bathrooms} Baths
@@ -407,7 +415,7 @@ export default function UserInformation() {
                   </div>
                 )}
                 {propertyData.bedrooms > 0 && (
-                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                     <img className="w-5 h-5" src={Bed} alt="Bed" />
                     <span className="font-semibold text-sm">
                       {propertyData.bedrooms} Beds
@@ -415,7 +423,7 @@ export default function UserInformation() {
                   </div>
                 )}
                 {propertyData.kitchen > 0 && (
-                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg">
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                     <img className="w-5 h-5" src={Kitchen} alt="Kitchen" />
                     <span className="font-semibold text-sm">
                       {propertyData.kitchen} Kitchen
@@ -425,28 +433,28 @@ export default function UserInformation() {
               </div>
               <button
                 onClick={() => setModalIsOpen(true)}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors mb-1"
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
               >
-                Scheduler Booking
+                Schedule Booking
               </button>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div
-                  className={`border border-gray-200 rounded-lg p-1 bg-gray-50 transition-all ${
+                  className={`border border-gray-200 rounded-lg p-4 bg-gray-50 transition-all ${
                     showAllAmenities ? "min-h-[300px]" : "min-h-[150px]"
                   }`}
                 >
-                  <h3 className="font-bold text-lg mb-0.5 text-green-800">
+                  <h3 className="font-semibold text-lg mb-2 text-green-800">
                     Amenities
                   </h3>
-                  <div className="space-y-0.5">
-                    {propertyData.amenities &&
+                  <div className="space-y-1">
+                    {propertyData.amenities ? (
                       propertyData.amenities
                         .split("~-~")
-                        .slice(0, 5)
+                        .slice(0, showAllAmenities ? undefined : 5)
                         .map((amenity, index) => (
                           <div
                             key={index}
-                            className="flex items-center gap-0.5"
+                            className="flex items-center gap-2"
                           >
                             <svg
                               className="w-2 h-2 text-green-600"
@@ -460,8 +468,11 @@ export default function UserInformation() {
                             </svg>
                             <span className="text-sm">{amenity.trim()}</span>
                           </div>
-                        ))}
-                    <div className="flex flex-wrap gap-2 text-sm">
+                        ))
+                    ) : (
+                      <p className="text-sm text-gray-600">No amenities listed</p>
+                    )}
+                    <div className="flex flex-wrap gap-2 text-sm mt-2">
                       {propertyData.property_for && (
                         <span>
                           <strong>Property For:</strong> {propertyData.property_for}
@@ -499,21 +510,21 @@ export default function UserInformation() {
                   </div>
                 </div>
                 <div
-                  className={`border border-gray-200 rounded-lg p-1 bg-gray-50 transition-all ${
+                  className={`border border-gray-200 rounded-lg p-4 bg-gray-50 transition-all ${
                     showAllDetails ? "min-h-[300px]" : "min-h-[150px]"
                   }`}
                 >
-                  <h3 className="font-bold text-lg mb-0.5 text-green-800">
+                  <h3 className="font-semibold text-lg mb-2 text-green-800">
                     Property Details
                   </h3>
                   <div
-                    className={`space-y-0.5 ${
+                    className={`space-y-2 ${
                       !showAllDetails ? "max-h-[4.5rem] overflow-hidden" : ""
                     }`}
                   >
                     {propertyData.address && (
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                        <h4 className="font-semibold text-gray-800 mb-1">
                           Address:
                         </h4>
                         <p className="text-gray-700 text-sm">
@@ -523,7 +534,7 @@ export default function UserInformation() {
                     )}
                     {propertyData.sqft && (
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                        <h4 className="font-semibold text-gray-800 mb-1">
                           Area:
                         </h4>
                         <p className="text-gray-700 text-sm">
@@ -533,7 +544,7 @@ export default function UserInformation() {
                     )}
                     {propertyData.description && (
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                        <h4 className="font-semibold text-gray-800 mb-1">
                           Description:
                         </h4>
                         <p className="text-gray-700 text-sm leading-relaxed">
@@ -543,7 +554,7 @@ export default function UserInformation() {
                     )}
                     {propertyData.property_type && (
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-0.5">
+                        <h4 className="font-semibold text-gray-800 mb-1">
                           Property Type:
                         </h4>
                         <p className="text-gray-700 text-sm">
@@ -569,11 +580,24 @@ export default function UserInformation() {
           </div>
         )}
         {/* Similar Properties Section */}
-        {similarProperties.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl sm:text-2xl uppercase font-bold text-center text-green-800">
-              <AnimatedText text="Other Similar Properties Near By" />
-            </h2>
+        <div className="mt-8">
+          <h2 className="text-xl sm:text-2xl uppercase font-semibold text-center text-green-800">
+            <AnimatedText text="Other Similar Properties Near By" />
+          </h2>
+          {loader ? (
+            <div className="flex justify-center items-center py-8">
+              <svg
+                className="animate-spin h-10 w-10 text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM304 464a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
+                />
+              </svg>
+            </div>
+          ) : similarProperties.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {similarProperties.map((property) => (
                 <div
@@ -583,7 +607,6 @@ export default function UserInformation() {
                       ?.replace(/\s/g, "")
                       .replace(/[^\w\s]/g, "") || "";
                     navigate(`/property/-${property.id}-${modifiedName}`);
-                    window.location.reload();
                     window.scrollTo(0, 0);
                   }}
                   className="shadow-lg cursor-pointer p-4 border bg-white rounded-lg hover:shadow-xl transition-shadow"
@@ -592,17 +615,17 @@ export default function UserInformation() {
                     <img
                       className="h-52 w-full object-cover rounded-lg"
                       src={property.image_one_url || ImageOne}
-                      alt="Property"
+                      alt={property.name || "Property"}
                     />
                     <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
                       ID: {property.id || "N/A"}
                     </div>
                   </div>
                   <div className="mt-2">
-                    <h3 className="font-bold text-base sm:text-lg text-green-800">
+                    <h3 className="font-semibold text-base sm:text-lg text-green-800">
                       {property.name || "N/A"}
                     </h3>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <svg
                         className="w-4 h-4 text-green-600"
                         xmlns="http://www.w3.org/2000/svg"
@@ -611,18 +634,18 @@ export default function UserInformation() {
                       >
                         <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                       </svg>
-                      <span className="font-bold text-sm text-green-600">
+                      <span className="font-semibold text-sm text-green-600">
                         {formatBudget(property.budget)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-2 mt-1">
                       <svg
                         className="h-4 w-4 text-green-800"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
                         viewBox="0 0 384 512"
                       >
-                        <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                        <path d="M215.7 499.2C267 435 384 64 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                       </svg>
                       <span className="text-sm text-gray-700">
                         {property.address || "N/A"}
@@ -630,15 +653,24 @@ export default function UserInformation() {
                     </div>
                     <div className="flex items-center gap-3 mt-2">
                       {property.bathrooms > 0 && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                           <img className="w-5 h-5" src={Bath} alt="Bath" />
                           <span className="text-sm">{property.bathrooms}</span>
                         </div>
                       )}
                       {property.bedrooms > 0 && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                           <img className="w-5 h-5" src={Bed} alt="Bed" />
                           <span className="text-sm">{property.bedrooms}</span>
+                        </div>
+                      )}
+                      {property.varifed && (
+                        <div className="flex items-center gap-2">
+                          <img
+                            className="w-5 h-5"
+                            src={property.varifed}
+                            alt="Verified"
+                          />
                         </div>
                       )}
                     </div>
@@ -646,14 +678,17 @@ export default function UserInformation() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-
+          ) : (
+            <div className="text-center mt-6 text-sm text-gray-600">
+              No similar properties found.
+            </div>
+          )}
+        </div>
+</div>
       <OurServices />
       <Searching />
       <ToastContainer />
       <BottomBar />
-    </div>
+  </>
   );
 }

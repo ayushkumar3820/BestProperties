@@ -39,7 +39,7 @@ export default function BottomBar() {
     navigate("/disclaimer");
   };
 
-  const newLocal = "/diclaimer";
+  const newLocal = "/disclaimer";
   return (
     <div className="relative">
       {isScrolled && (

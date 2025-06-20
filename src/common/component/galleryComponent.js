@@ -28,33 +28,40 @@ export default function GalleryComponent() {
   const [showData, setShowData] = useState("");
   const [properties, setProperties] = useState([]);
 
-  // Define dynamic tags for each property type
-  const flatTags = ["Luxury Flat for Sale", "Modern Flat for Sale", "Prime Flat for Sale"];
-  const plotTags = ["Hot Property for Sale", "Investment Deal for Sale", "Ready Plot for Sale"];
-  const kothiTags = ["Luxury Kothi", "Classic Kothi", "Designer Kothi"];
+  // Define tag arrays
+  const kothiTags = [
+    "Luxury Kothi",
+    "Classic Kothi",
+    "Designer Kothi",
+    "Premium Kothi",
+    "Elite Kothi",
+  ];
+  const flatTags = ["Modern Flat", "Luxury Flat", "Prime Flat"];
+  const plotTags = ["Prime Plot", "Hot Plot Deal", "Investment Plot"];
+  const defaultTags = ["Property for Sale", "Exclusive Property", "Prime Property"];
 
-  // Function to get a random tag from an array
-  const getRandomTag = (tags) => {
-    return tags[Math.floor(Math.random() * tags.length)];
-  };
+  // Modified function to assign fixed tags based on panel.name
+const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
+  propertyType = (propertyType || "").toLowerCase().trim();
+  panelName = (panelName || "").toLowerCase().trim();
+  console.log(`getDynamicSaleTag - Property Type: ${propertyType}, Name: ${panelName}, Index: ${index}`);
 
-  // Function to get dynamic tag based on property type
-  const getDynamicSaleTag = (propertyType) => {
-    propertyType = propertyType?.toLowerCase();
-    if (propertyType === "flat") {
-      return getRandomTag(flatTags);
-    } else if (propertyType === "plot") {
-      return getRandomTag(plotTags);
-    } else if (propertyType === "kothi" || propertyType === "house") {
-      return getRandomTag(kothiTags);
-    } else if (propertyType === "villa") {
-      return "Exclusive Villa Now on Sale";
-    } else if (propertyType === "commercial") {
-      return "Commercial Property Available";
-    } else {
-      return "For Sale";
-    }
-  };
+  // Check panel.name for specific keywords and assign rotating tags
+  if (panelName.includes("kothi")) {
+    return kothiTags[index % kothiTags.length]; // Rotate through kothi tags
+  } else if (
+    panelName.includes("plot") ||
+    panelName.includes("polt") ||
+    panelName.includes("poly")
+  ) {
+    return plotTags[index % plotTags.length]; // Rotate through plot tags
+  } else if (panelName.includes("flat")) {
+    return flatTags[index % flatTags.length]; // Rotate through flat tags
+  }
+
+  // Fallback to default tag for other cases
+  return defaultTags[index % defaultTags.length]; // Rotate through default tags
+};
 
   const handleShowMore = () => {
     setShowCount(showCount + 8);
@@ -402,10 +409,8 @@ export default function GalleryComponent() {
                     <AnimatedText text="HOT DEALS" />
                   </h2>
                   <Slider {...oneSlider}>
-                    {newData.slice(0, showCount).map((panel) => {
-                      // Use the dynamic tag function
-                      const saleTag = getDynamicSaleTag(panel.type);
-
+                    {newData.slice(0, showCount).map((panel,index) => {
+                      const saleTag = getDynamicSaleTag(panel.type, panel.name,index);
                       return (
                         <div
                           key={panel.id}
@@ -468,7 +473,7 @@ export default function GalleryComponent() {
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
                                     <div className="flex items-center space-x-2 text-sm lg:text-lg ml-2">
-                                      <div className="text-red-700">
+                                      <div className="text-red-900 font-bold">
                                         {formatBudget(panel.budget)}
                                       </div>
                                       {panel.sqft > 0 && (
@@ -543,7 +548,7 @@ export default function GalleryComponent() {
                             className="rent-detail-div p-2"
                           >
                             <div className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out">
-                              <div className="felx justify-center gap-6 rent-image-div">
+                              <div className="flex justify-center gap-6 rent-image-div">
                                 <div className="sale-image-div">
                                   <img
                                     className="rounded-t-md cursor-pointer h-52 w-full"
@@ -632,7 +637,7 @@ export default function GalleryComponent() {
                           }}
                           className="border rounded-md cursor-pointer shadow-lg transition duration-300 ease-in-out"
                         >
-                          <div className="felx justify-center gap-6 rent-image-div">
+                          <div className="flex justify-center gap-6 rent-image-div">
                             <div className="sale-image-div">
                               {rent.image_one ? (
                                 <img
@@ -695,7 +700,7 @@ export default function GalleryComponent() {
                                 >
                                   <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                 </svg>
-                                <div className="text-red-600 text-lg font-bold">
+                                <div className="text-red-900 text-lg font-bold">
                                   {formatBudget(rent.budget)} Per Month Rent
                                 </div>
                               </div>
@@ -788,7 +793,7 @@ export default function GalleryComponent() {
                               {formatBudget(data.Max_Budget)}
                             </p>
                           </div>
-                        </div>
+                      </div>
                       );
                     })}
                   </Slider>
@@ -808,7 +813,7 @@ export default function GalleryComponent() {
             </div>
           )}
         </>
-      )}
-    </div>
-  );
+  )}
+</div>
+);
 }
