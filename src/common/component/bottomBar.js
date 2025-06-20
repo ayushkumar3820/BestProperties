@@ -31,7 +31,7 @@ export default function BottomBar() {
     userContactNumber
   )}`;
 
-  const disclaimerText = `Disclaimer: Best Properties Realty Services Limited is only an intermediary offering its platform to advertise properties of Seller for  `;
+  const disclaimerText = `Disclaimer: Best Properties Mohali is only an intermediary offering its platform to advertise properties of Seller for  `;
 
   const initialLines = disclaimerText.split(" ").slice(0, 20).join(" ") + "...";
 
@@ -100,6 +100,27 @@ export default function BottomBar() {
             </svg>
           </button>
         </a>
+        <a
+  href="https://www.youtube.com/@bestpropertiesmohali"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <button>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      height="32"
+      width="32"
+      viewBox="0 0 576 512"
+      className="md:h-10 md:w-10"
+    >
+      <path
+        fill="#FF0000"
+        d="M549.655 124.083c-6.281-23.725-24.861-42.34-48.588-48.641C456.688 64 288 64 288 64s-168.688 0-213.067 11.442c-23.726 6.3-42.306 24.916-48.588 48.641C16 168.552 16 256 16 256s0 87.448 10.345 131.917c6.281 23.725 24.861 42.34 48.588 48.641C119.312 448 288 448 288 448s168.688 0 213.067-11.442c23.726-6.3 42.306-24.916 48.588-48.641C560 343.448 560 256 560 256s0-87.448-10.345-131.917zM232 336V176l142.857 80L232 336z"
+      />
+    </svg>
+  </button>
+</a>
+
       </div>
 
       <div className="bg-[#002C35] shadow dark:bg-gray-900 w-full">

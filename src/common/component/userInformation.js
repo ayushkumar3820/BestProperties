@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "react-modal";
@@ -54,6 +53,33 @@ export default function UserInformation() {
     },
   };
 
+  // Fetch random properties as fallback
+  const fetchRandomProperties = async () => {
+    try {
+      const response = await fetch(`${liveUrl}api/Reactjs/gallery`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      const properties = data?.result || [];
+      // Filter out the current property and select up to 3 random properties
+      const filteredProperties = properties
+        .filter((prop) => prop.id !== propertyId)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      setSimilarProperties(filteredProperties);
+      console.log("Random Properties:", filteredProperties);
+    } catch (error) {
+      console.error("Error fetching random properties:", error);
+      toast.error("Failed to load random properties");
+    }
+  };
+
   // Fetch property data
   useEffect(() => {
     const fetchPropertyData = async () => {
@@ -82,14 +108,25 @@ export default function UserInformation() {
         }
 
         const data = await response.json();
-        console.log("API Response:", data); // Debug: Log API response
+        console.log("API Response:", data);
         setPropertyData(data?.result?.main_property?.[0] || null);
         const additionalProperties = data?.result?.additional_properties || [];
-        setSimilarProperties(additionalProperties);
-        console.log("Similar Properties:", additionalProperties); // Debug: Log similar properties
+
+        if (additionalProperties.length > 0) {
+          setSimilarProperties(additionalProperties);
+          console.log("Similar Properties:", additionalProperties);
+        } else {
+          // Fetch random properties if no similar properties are found
+          console.log(
+            "No similar properties found, fetching random properties..."
+          );
+          await fetchRandomProperties();
+        }
       } catch (error) {
         console.error("Error fetching property:", error);
         toast.error("Failed to load property data");
+        // Attempt to fetch random properties as a fallback
+        await fetchRandomProperties();
       } finally {
         setLoader(false);
       }
@@ -189,14 +226,14 @@ export default function UserInformation() {
           onClick={() => setImageModal(true)}
         />
         <div className="absolute top-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs rounded-br">
-          ID: {propertyData?.id || "N/A"}
+          ID: {propertyData?.unique_id || "N/A"}
         </div>
       </div>
     );
   };
 
   return (
-  <>
+    <>
       {/* Image Modal */}
       <Modal
         isOpen={imageModal}
@@ -215,7 +252,7 @@ export default function UserInformation() {
             >
               <path
                 fill="currentColor"
-                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0 s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
               />
             </svg>
           </button>
@@ -224,12 +261,12 @@ export default function UserInformation() {
           <img
             className="h-96 w-full sm:w-96 object-cover rounded-lg"
             src={
-              activeImage === "main"
-                ? propertyData?.image_one_url
-                : activeImage === "two"
-                ? propertyData?.image_two_url
-                : activeImage === "three"
-                ? propertyData?.image_three_url
+              activeImage === "main" && propertyData?.image_one_url
+                ? propertyData.image_one_url
+                : activeImage === "two" && propertyData?.image_two_url
+                ? propertyData.image_two_url
+                : activeImage === "three" && propertyData?.image_three_url
+                ? propertyData.image_three_url
                 : propertyData?.image_four_url || ImageOne
             }
             alt="Property"
@@ -259,7 +296,7 @@ export default function UserInformation() {
               >
                 <path
                   fill="currentColor"
-                  d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                  d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.441 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
                 />
               </svg>
             </button>
@@ -373,9 +410,9 @@ export default function UserInformation() {
                     viewBox="0 0 320 512"
                     fill="currentColor"
                   >
-                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3 48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32c-17.7 0-32-14.3-32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                   </svg>
-                  <div className="text-xl sm:text-2xl font-semibold text-gray-600">
+                  <div className="text-xl sm:text-2xl font-semibold text-gray-800">
                     {formatBudget(propertyData.budget)}
                   </div>
                 </div>
@@ -403,7 +440,9 @@ export default function UserInformation() {
                   {propertyData.property_type || "N/A"}
                 </span>
                 <span className="text-gray-600">•</span>
-                <span className="text-gray-700">{propertyData.city || "N/A"}</span>
+                <span className="text-gray-700">
+                  {propertyData.city || "N/A"}
+                </span>
               </div>
               <div className="flex flex-wrap gap-2 mb-2">
                 {propertyData.bathrooms > 0 && (
@@ -435,7 +474,7 @@ export default function UserInformation() {
                 onClick={() => setModalIsOpen(true)}
                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
               >
-                Schedule Booking
+                Schedule a Visit
               </button>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div
@@ -452,10 +491,7 @@ export default function UserInformation() {
                         .split("~-~")
                         .slice(0, showAllAmenities ? undefined : 5)
                         .map((amenity, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center gap-2"
-                          >
+                          <div key={index} className="flex items-center gap-2">
                             <svg
                               className="w-2 h-2 text-green-600"
                               xmlns="http://www.w3.org/2000/svg"
@@ -470,12 +506,15 @@ export default function UserInformation() {
                           </div>
                         ))
                     ) : (
-                      <p className="text-sm text-gray-600">No amenities listed</p>
+                      <p className="text-sm text-gray-600">
+                        No amenities listed
+                      </p>
                     )}
                     <div className="flex flex-wrap gap-2 text-sm mt-2">
                       {propertyData.property_for && (
                         <span>
-                          <strong>Property For:</strong> {propertyData.property_for}
+                          <strong>Property For:</strong>{" "}
+                          {propertyData.property_for}
                         </span>
                       )}
                       {propertyData.built && (
@@ -603,9 +642,10 @@ export default function UserInformation() {
                 <div
                   key={property.id}
                   onClick={() => {
-                    const modifiedName = property.name
-                      ?.replace(/\s/g, "")
-                      .replace(/[^\w\s]/g, "") || "";
+                    const modifiedName =
+                      property.name
+                        ?.replace(/\s/g, "")
+                        .replace(/[^\w\s]/g, "") || "";
                     navigate(`/property/-${property.id}-${modifiedName}`);
                     window.scrollTo(0, 0);
                   }}
@@ -618,7 +658,7 @@ export default function UserInformation() {
                       alt={property.name || "Property"}
                     />
                     <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
-                      ID: {property.id || "N/A"}
+                      ID: {property.unique_id || "N/A"}
                     </div>
                   </div>
                   <div className="mt-2">
@@ -680,15 +720,15 @@ export default function UserInformation() {
             </div>
           ) : (
             <div className="text-center mt-6 text-sm text-gray-600">
-              No similar properties found.
+              No properties found.
             </div>
           )}
         </div>
-</div>
+      </div>
       <OurServices />
       <Searching />
       <ToastContainer />
       <BottomBar />
-  </>
+    </>
   );
 }
