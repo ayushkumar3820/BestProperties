@@ -28,6 +28,34 @@ export default function GalleryComponent() {
   const [showData, setShowData] = useState("");
   const [properties, setProperties] = useState([]);
 
+  // Define dynamic tags for each property type
+  const flatTags = ["Luxury Flat for Sale", "Modern Flat for Sale", "Prime Flat for Sale"];
+  const plotTags = ["Hot Property for Sale", "Investment Deal for Sale", "Ready Plot for Sale"];
+  const kothiTags = ["Luxury Kothi", "Classic Kothi", "Designer Kothi"];
+
+  // Function to get a random tag from an array
+  const getRandomTag = (tags) => {
+    return tags[Math.floor(Math.random() * tags.length)];
+  };
+
+  // Function to get dynamic tag based on property type
+  const getDynamicSaleTag = (propertyType) => {
+    propertyType = propertyType?.toLowerCase();
+    if (propertyType === "flat") {
+      return getRandomTag(flatTags);
+    } else if (propertyType === "plot") {
+      return getRandomTag(plotTags);
+    } else if (propertyType === "kothi" || propertyType === "house") {
+      return getRandomTag(kothiTags);
+    } else if (propertyType === "villa") {
+      return "Exclusive Villa Now on Sale";
+    } else if (propertyType === "commercial") {
+      return "Commercial Property Available";
+    } else {
+      return "For Sale";
+    }
+  };
+
   const handleShowMore = () => {
     setShowCount(showCount + 8);
   };
@@ -375,22 +403,8 @@ export default function GalleryComponent() {
                   </h2>
                   <Slider {...oneSlider}>
                     {newData.slice(0, showCount).map((panel) => {
-                      const propertyType = panel.type?.toLowerCase();
-                      let saleTag = "For Sale";
-                      if (propertyType === "flat") {
-                        saleTag = "Luxury Flat for Sale";
-                      } else if (propertyType === "plot") {
-                        saleTag = "Prime Residential Plot for Sale";
-                      } else if (
-                        propertyType === "kothi" ||
-                        propertyType === "house"
-                      ) {
-                        saleTag = "Spacious Kothi/House for Sale";
-                      } else if (propertyType === "villa") {
-                        saleTag = "Exclusive Villa Now on Sale";
-                      } else if (propertyType === "commercial") {
-                        saleTag = "Commercial Property Available";
-                      }
+                      // Use the dynamic tag function
+                      const saleTag = getDynamicSaleTag(panel.type);
 
                       return (
                         <div
@@ -654,7 +668,7 @@ export default function GalleryComponent() {
                                   viewBox="0 0 384 512"
                                   fill="#303030"
                                 >
-                                  <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                  <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 192a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                 </svg>
                                 <div className="text-[#303030] font-bold text-lg">
                                   {rent.address}
