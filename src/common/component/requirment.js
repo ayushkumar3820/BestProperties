@@ -97,7 +97,7 @@
           
           if (data.status === "done" || data.status === "success" || data.success === true) {
             console.log("Success! Navigating to /success");
-            Navigate("/success");
+            Navigate("/about-property");
           } else {
             console.log("API call unsuccessful. Response:", data);
             alert("Something went wrong. Please try again.");
@@ -109,7 +109,7 @@
           
           // For now, let's navigate anyway to test if the route works
           console.log("API failed, but navigating to test route...");
-          Navigate("/success");
+          Navigate("/about-property");
           
           // Uncomment this line if you want to show error instead of navigating:
           // alert("Network error. Please check your connection and try again.");

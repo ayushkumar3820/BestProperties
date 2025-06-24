@@ -60,6 +60,7 @@ button.property-div {
 
 .sale-image-div {
   overflow: hidden !important;
+  width:100%;
 }
 .sale-image-div img{
   width: 100% ;

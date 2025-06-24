@@ -479,7 +479,7 @@ export default function UserInformation() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div
                   className={`border border-gray-200 rounded-lg p-4 bg-gray-50 transition-all ${
-                    showAllAmenities ? "min-h-[300px]" : "min-h-[150px]"
+                    showAllAmenities ? "min-h-[400px]" : "min-h-[150px]"
                   }`}
                 >
                   <h3 className="font-semibold text-lg mb-2 text-green-800">
@@ -558,7 +558,7 @@ export default function UserInformation() {
                   </h3>
                   <div
                     className={`space-y-2 ${
-                      !showAllDetails ? "max-h-[4.5rem] overflow-hidden" : ""
+                      !showAllDetails ? "max-h-[5.5rem] overflow-hidden" : ""
                     }`}
                   >
                     {propertyData.address && (
