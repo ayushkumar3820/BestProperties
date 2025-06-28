@@ -1,7 +1,7 @@
-import React from "react";
+// import React from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
-import AnimatedText from "./HeadingAnimation";
+// import AnimatedText from "./HeadingAnimation";
 import GalleryComponentTwo from "./GalleryTwo";
 import Searching from "./searching";
 

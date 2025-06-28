@@ -27,23 +27,23 @@ export default function Main() {
       clearInterval(intervalId);
     };
   }, []);
-  
+
   function getRandomColor() {
     const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00"];
     return colors[Math.floor(Math.random() * colors.length)];
   }
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const handleSubmit = () => {
     fetch(`${liveUrl}api/Reactjs/slider`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     })
       .then((response) => response.json())
       .then((data) => {
@@ -57,11 +57,11 @@ export default function Main() {
 
   const handleData = () => {
     fetch(`${liveUrl}api/Services/services/`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     })
       .then((response) => response.json())
       .then((data) => {
@@ -83,8 +83,7 @@ export default function Main() {
       <Navbar />
 
       <div className="  mb-2    ">
-        <div className="relative">
-        </div>
+        <div className="relative"></div>
         {/* <Search /> */}
         <Form />
       </div>

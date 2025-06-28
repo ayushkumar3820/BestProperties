@@ -38,30 +38,36 @@ export default function GalleryComponent() {
   ];
   const flatTags = ["Modern Flat", "Luxury Flat", "Prime Flat"];
   const plotTags = ["Prime Plot", "Hot Plot Deal", "Investment Plot"];
-  const defaultTags = ["Property for Sale", "Exclusive Property", "Prime Property"];
+  const defaultTags = [
+    "Property for Sale",
+    "Exclusive Property",
+    "Prime Property",
+  ];
 
   // Modified function to assign fixed tags based on panel.name
-const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
-  propertyType = (propertyType || "").toLowerCase().trim();
-  panelName = (panelName || "").toLowerCase().trim();
-  console.log(`getDynamicSaleTag - Property Type: ${propertyType}, Name: ${panelName}, Index: ${index}`);
+  const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
+    propertyType = (propertyType || "").toLowerCase().trim();
+    panelName = (panelName || "").toLowerCase().trim();
+    console.log(
+      `getDynamicSaleTag - Property Type: ${propertyType}, Name: ${panelName}, Index: ${index}`
+    );
 
-  // Check panel.name for specific keywords and assign rotating tags
-  if (panelName.includes("kothi")) {
-    return kothiTags[index % kothiTags.length]; // Rotate through kothi tags
-  } else if (
-    panelName.includes("plot") ||
-    panelName.includes("polt") ||
-    panelName.includes("poly")
-  ) {
-    return plotTags[index % plotTags.length]; // Rotate through plot tags
-  } else if (panelName.includes("flat")) {
-    return flatTags[index % flatTags.length]; // Rotate through flat tags
-  }
+    // Check panel.name for specific keywords and assign rotating tags
+    if (panelName.includes("kothi")) {
+      return kothiTags[index % kothiTags.length]; // Rotate through kothi tags
+    } else if (
+      panelName.includes("plot") ||
+      panelName.includes("polt") ||
+      panelName.includes("poly")
+    ) {
+      return plotTags[index % plotTags.length]; // Rotate through plot tags
+    } else if (panelName.includes("flat")) {
+      return flatTags[index % flatTags.length]; // Rotate through flat tags
+    }
 
-  // Fallback to default tag for other cases
-  return defaultTags[index % defaultTags.length]; // Rotate through default tags
-};
+    // Fallback to default tag for other cases
+    return defaultTags[index % defaultTags.length]; // Rotate through default tags
+  };
 
   const handleShowMore = () => {
     setShowCount(showCount + 8);
@@ -409,8 +415,12 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                     <AnimatedText text="HOT DEALS" />
                   </h2>
                   <Slider {...oneSlider}>
-                    {newData.slice(0, showCount).map((panel,index) => {
-                      const saleTag = getDynamicSaleTag(panel.type, panel.name,index);
+                    {newData.slice(0, showCount).map((panel, index) => {
+                      const saleTag = getDynamicSaleTag(
+                        panel.type,
+                        panel.name,
+                        index
+                      );
                       return (
                         <div
                           key={panel.id}
@@ -477,27 +487,29 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                                         {formatBudget(panel.budget)}
                                       </div>
                                       {panel.sqft > 0 && (
-                                        <div className="text-sm">| {`${panel.sqft} ${panel.measureUnit}`}</div>
+                                        <div className="text-sm">
+                                          |{" "}
+                                          {`${panel.sqft} ${panel.measureUnit} sq.ft.`}
+                                        </div>
                                       )}
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex gap-2 items-center content-center mb-3">
-                                <div className="flex gap-2">
-                                  <svg
-                                    className="h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 384 512"
-                                    fill="#303030"
-                                  >
-                                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                  </svg>
-                                  <div>{panel.address}</div>
+                              <div className="flex items-start gap-2 mb-3">
+                                <svg
+                                  className="w-4 h-4 shrink-0 mt-0"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 384 512"
+                                  fill="#303030"
+                                >
+                                  <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                </svg>
+                                <div className="text-sm leading-snug">
+                                  {panel.address}
                                 </div>
                               </div>
+
                               <div className="flex items-center lg:gap-3 gap-3 mt-1">
                                 <div className="flex items-center gap-2">
                                   {panel.bedrooms ? (
@@ -591,19 +603,17 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex gap-2 items-center content-center mb-3">
-                                  <div className="flex gap-2">
-                                    <svg
-                                      className="h-5 w-5"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="20"
-                                      height="20"
-                                      viewBox="0 0 384 512"
-                                      fill="#303030"
-                                    >
-                                      <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                    </svg>
-                                    <div>{item.address}</div>
+                                <div className="flex items-start gap-2 mb-3">
+                                  <svg
+                                    className="w-4 h-4 shrink-0 mt-0"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 384 512"
+                                    fill="#303030"
+                                  >
+                                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                                  </svg>
+                                  <div className="text-sm leading-snug">
+                                    {item.address}
                                   </div>
                                 </div>
                               </div>
@@ -666,7 +676,7 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                             <div className="flex gap-2 items-center content-center">
                               <div className="flex gap-2">
                                 <svg
-                                  className="h-5 w-5"
+                                  className="h-4 w-4 mt-1"
                                   xmlns="http://www.w3.org/2000/svg"
                                   width="20"
                                   height="20"
@@ -692,7 +702,7 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                               <div className="prize-div flex items-center">
                                 <svg
                                   fill="#303030"
-                                  className="w-5 h-5"
+                                  className="w-4 h-4 mb-0"
                                   xmlns="http://www.w3.org/2000/svg"
                                   width="20"
                                   height="20"
@@ -793,7 +803,7 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
                               {formatBudget(data.Max_Budget)}
                             </p>
                           </div>
-                      </div>
+                        </div>
                       );
                     })}
                   </Slider>
@@ -813,7 +823,7 @@ const getDynamicSaleTag = (propertyType, panelName, index = 0) => {
             </div>
           )}
         </>
-  )}
-</div>
-);
+      )}
+    </div>
+  );
 }

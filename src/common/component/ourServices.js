@@ -9,7 +9,7 @@ export default function OurServices() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [newData, setNewData] = useState([]);
   const [serviceData, setServiceData] = useState([]);
-  
+
   const handleSubmit = () => {
     // Old Data Fetch
     // fetch(`${liveUrl}api/Services/services/`, {
@@ -31,7 +31,7 @@ export default function OurServices() {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-      }
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -46,22 +46,21 @@ export default function OurServices() {
       .catch((error) => {
         console.error("Error:", error);
       });
-
   };
   useEffect(() => {
     handleSubmit();
   }, []);
 
-
   useEffect(() => {
     // Automatically change the image index every 3 seconds
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % serviceData[0].images.length);
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex + 1) % serviceData[0].images.length
+      );
     }, 3000); // Change image every 3 seconds
 
     return () => clearInterval(interval); // Cleanup on component unmount
   }, [serviceData]);
-
 
   return (
     <>
@@ -77,13 +76,14 @@ export default function OurServices() {
                 <div
                   key={id}
                   onClick={() => {
-                    navigate(`/property-type/${panel.our_services.replace(/\s/g, "-")}`);
+                    navigate(
+                      `/property-type/${panel.our_services.replace(/\s/g, "-")}`
+                    );
                     window.scrollTo(0, 0);
                   }}
                   className="relative cursor-pointer border  overflow-hidden bg-white shadow-lg rounded-lg"
                 >
-                  <div
-                  >
+                  <div>
                     <img
                       className="w-full h-[230px] object-cover"
                       src={panel.images[currentImageIndex]}
@@ -102,11 +102,6 @@ export default function OurServices() {
             <></>
           )}
         </div>
-
-
-
-
-
 
         {/* <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 justify-center gap-5   mt-4 mb-4">
         {newData.length > 0 ? (
@@ -144,7 +139,5 @@ export default function OurServices() {
       </div> */}
       </div>
     </>
-
-
   );
 }

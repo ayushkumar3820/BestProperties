@@ -116,7 +116,8 @@ export default function BuyerTwo() {
       if (data.status === "done") {
         setLoader(false);
         // CHANGE: Don't clear localStorage here, we need mobile number for next pages
-        // localStorage.removeItem("buyerFormData"); // REMOVE THIS LINE
+        // localStorage.removeItem("buyerFormData"); // REMOVE THIS 
+        localStorage.setItem("userType",user);
         navigate("/budget");
         console.log(data);
       } else {

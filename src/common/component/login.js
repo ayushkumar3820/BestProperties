@@ -230,7 +230,9 @@ export default function Login() {
       .then((data) => {
         console.log("Login API Response:", data);
         if (data.status === "done") {
-          // localStorage.setItem("token", data.token);
+          localStorage.setItem("token", data.token);
+          // localStorage.setItem("phone Number",data.phone);
+          localStorage.setItem("phone", newData.phone);
           toast.success("Login successful");
           setTimeout(() => {
             setLoader(false);
@@ -512,3 +514,4 @@ export default function Login() {
     </>
   );
 }
+    

@@ -10,7 +10,7 @@ import Login from "./common/component/login";
 import OtpScreen from "./common/component/otpScreen";
 import AboutProperty from "./common/component/aboutProperty";
 // import Buyer from "./common/component/Buyer";
-import LoactionPage from "./common/component/loaction";
+// import LoactionPage from "./common/component/loaction";
 import Budget from "./common/component/budget";
 import Requirment from "./common/component/requirment";
 import "../src/App.css";
@@ -33,8 +33,9 @@ import AgentProperties from "./Component/AgentProperties";
 import AgentPropertiesDetails from "./Component/AgentPropertiesDetails";
 import EMICalculator from "./Component/EMICalculator";
 import FAQ from "./Component/Faq";
-import DataDeletion from "./common/dataDeletion ";
+// import DataDeletion from "./common/dataDeletion ";
 import Disclaimer from "./Component/Disclaimer";
+import SellWithUsModal from "./common/component/SellWithUsModal";
 
 export default function App() {
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function App() {
         <Route path="contact/" element={<Contact />} />
         <Route path="faq/" element={<FAQ />} />
         <Route path="privacy-policy/" element={<PrivacyPolicy />} />
-        <Route path="data-deletion/" element={<DataDeletion />} />
+        {/* <Route path="data-deletion/" element={<DataDeletion />} /> */}
         <Route path="/single-property/:id" element={<SingleProperty />} />
         <Route path="/project-details/:id" element={<ProjectDetails />} />
         <Route path="/projects" element={<Projects />} />
@@ -65,7 +66,7 @@ export default function App() {
         <Route path="otpscreen/" element={<OtpScreen />} />
         <Route path="about-property/" element={<AboutProperty />} />
         {/* <Route path="buyer/" element={<Buyer />} /> */}
-        <Route path="loaction/" element={<LoactionPage />} />
+        {/* <Route path="loaction/" element={<LoactionPage />} /> */}
         <Route path="budget/" element={<Budget />} />
         <Route path="requirment/" element={<Requirment />} />
         <Route path="buyer-data/" element={<BuyerTwo />} />
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="rentdetails/:id" element={<RentDetails />} />
         <Route path="disclaimer" element={<Disclaimer />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="sell-with-us" element={<SellWithUsModal />} />
       </Routes>
     </BrowserRouter>
   );

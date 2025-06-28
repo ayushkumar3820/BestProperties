@@ -7,7 +7,7 @@ import Navbar from "../common/component/navbar";
 import { liveUrl, token } from "../common/component/url";
 import BottomBar from "../common/component/bottomBar";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Added for toast styling
+import "react-toastify/dist/ReactToastify.css";
 import Slider from "react-slick";
 import Searching from "../common/component/searching";
 import BgImage from "../Images/nirwana-heights03.jpg";
@@ -18,14 +18,12 @@ const ProjectDetails = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [activeTab, setActiveTab] = useState("2BHK");
   const [projectDetails, setProjectDetails] = useState([]);
-  const [formData, setFormData] = useState({ name: "", phone: "" }); // Added for form inputs
-  const [errors, setErrors] = useState({ name: "", phone: "" }); // Added for error messages
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added to manage submit state
+  const [formData, setFormData] = useState({ firstname: "", phone: "" });
+  const [errors, setErrors] = useState({ firstname: "", phone: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Extract the project ID from the URL (last part after the hyphen)
   const projectId = id.split("-").pop();
 
-  // Fetch project details using the projectId
   useEffect(() => {
     window.scrollTo(0, 0);
     fetch(`${liveUrl}project-detail`, {
@@ -41,9 +39,7 @@ const ProjectDetails = () => {
         setProjectDetails(data.result);
         console.log(data.result);
       })
-      .catch((error) =>
-        console.error("Error fetching project details:", error)
-      );
+      .catch((error) => console.error("Error fetching project details:", error));
   }, [projectId]);
 
   console.log(projectDetails, "Getting Single Data");
@@ -102,10 +98,10 @@ const ProjectDetails = () => {
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { name: "", phone: "" };
+    const newErrors = { firstname: "", phone: "" };
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Please enter your name";
+    if (!formData.firstname.trim()) {
+      newErrors.firstname = "Please enter your name";
       isValid = false;
     }
 
@@ -130,6 +126,12 @@ const ProjectDetails = () => {
       return;
     }
 
+    if (projectId === "17") {
+      toast.error("This project (ID 17) is already booked. Please choose another project.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
         method: "POST",
@@ -137,14 +139,20 @@ const ProjectDetails = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstname: formData.firstname,
+          phone: formData.phone,
+          property_id: projectId,
+          project_name: projectDetails.length > 0 ? projectDetails[0].Project_Name || "N/A" : "N/A",
+          type: "project", // Added type as "project"
+        }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
         toast.success("Your information has been submitted successfully!");
-        setFormData({ name: "", phone: "" });
+        setFormData({ firstname: "", phone: "" });
       } else {
         toast.error(
           result.message || "Failed to submit information. Please try again."
@@ -158,7 +166,6 @@ const ProjectDetails = () => {
     }
   };
 
-  // Mobile-responsive slider settings
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -231,7 +238,6 @@ const ProjectDetails = () => {
               </div>
             </Slider>
           </div>
-         
         </div>
       ))}
 
@@ -373,7 +379,6 @@ const ProjectDetails = () => {
             </div> */}
           </div>
 
-          {/* Emalites */}
           <div className="container">
             <div className="amenities-container">
               <div className="amenities-content">
@@ -413,18 +418,18 @@ const ProjectDetails = () => {
               </label>
               <input
                 type="text"
-                name="name"
+                name="firstname"
                 placeholder="Enter Your Name"
                 className="form-input"
-                value={formData.name}
+                value={formData.firstname}
                 onChange={handleInputChange}
               />
-              {errors.name && (
+              {errors.firstname && (
                 <p
                   className="error-message"
                   style={{ color: "red", fontSize: "14px" }}
                 >
-                  {errors.name}
+                  {errors.firstname}
                 </p>
               )}
               <label className="block tracking-wide text-lg font-bold mb-2">

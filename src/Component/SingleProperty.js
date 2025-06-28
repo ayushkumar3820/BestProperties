@@ -240,7 +240,7 @@ const SingleProperty = () => {
                       </div>
                       <div>
                         <button className="bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition mt-2">
-                          <Link to="/contact">Schedule a Visit</Link>
+                          <Link to="/contact">Contact Us</Link>
                         </button>
                       </div>
                     </div>

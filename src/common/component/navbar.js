@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { liveUrl, token } from "./url";
@@ -7,23 +7,16 @@ const generateRandomNumber = () => Math.floor(Math.random() * 20);
 const generateRandomOperation = () => (Math.random() > 0.5 ? "+" : "-");
 
 export default function Navbar() {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
   const [click, setClick] = useState(false);
-  const [modals, setModals] = useState(false);
-  const [activeButton, setActiveButton] = useState("");
-  const [activeCommercial, setActiveCommercial] = useState("");
-  const [active, setActive] = useState("");
-  const [selectedOption, setSelectedOption] = useState("residential");
-  const [showData, setShowData] = useState(false);
+  const [visibleModal, setVisibleModal] = useState(false);
   const [loader, setLoader] = useState(false);
   const [message, setMessage] = useState("");
-  const [num1, setNum1] = React.useState(generateRandomNumber());
-  const [num2, setNum2] = React.useState(generateRandomNumber());
-  const [operation, setOperation] = React.useState(generateRandomOperation());
-  const [answer, setAnswer] = React.useState("");
-  const [visibleModal, setVisibleModal] = useState(false);
-  const [storedata, setStoreData] = useState({ phone: "" });
+  const [num1, setNum1] = useState(generateRandomNumber());
+  const [num2, setNum2] = useState(generateRandomNumber());
+  const [operation, setOperation] = useState(generateRandomOperation());
+  const [answer, setAnswer] = useState("");
   const [loanData, setLoanData] = useState({
     name: "",
     loanAmount: "",
@@ -31,6 +24,48 @@ export default function Navbar() {
     description: "",
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkLoginStatus();
+
+    const handleStorageChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Add this useEffect to close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  const checkLoginStatus = () => {
+    const retrievedToken = localStorage.getItem("token");
+    const isValid = isValidToken(retrievedToken);
+    setIsLoggedIn(isValid);
+
+    if (!isValid && retrievedToken) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("panelTitle");
+      localStorage.removeItem("responseData");
+    }
+  };
+
+  const isValidToken = (token) => {
+    if (!token) return false;
+    if (
+      token === "undefined" ||
+      token === "null" ||
+      token.trim() === "" ||
+      token.length === 0
+    ) {
+      return false;
+    }
+    return true;
+  };
 
   const checkAnswer = () => {
     const expectedAnswer = operation === "+" ? num1 + num2 : num1 - num2;
@@ -50,74 +85,9 @@ export default function Navbar() {
     setLoanData({ ...loanData, [e.target.name]: e.target.value });
   };
 
-  const handleNewData = (e) => {
-    setStoreData({ ...storedata, [e.target.name]: e.target.value });
-  };
-
-  const storedTitleFromLocalStorage = localStorage.getItem("panelTitle");
-  const retrievedToken = localStorage.getItem("token");
-
-  const isValidToken = () => {
-    return (
-      retrievedToken &&
-      retrievedToken !== "undefined" &&
-      retrievedToken !== "null" &&
-      retrievedToken.trim() !== "" &&
-      retrievedToken.length > 0
-    );
-  };
-
-  const handleSubmit = () => {
-    setClick(true);
-    if (!storedata.phone || storedata.phone.length !== 10) {
-      setMessage("Please enter a valid 10-digit phone number");
-      return;
-    }
-    if (!active) {
-      setMessage("Please select a property action (Sell/Rent)");
-      return;
-    }
-    if (selectedOption === "residential" && !activeButton) {
-      setMessage("Please select a residential property type");
-      return;
-    }
-    if (selectedOption === "commercial" && !activeCommercial) {
-      setMessage("Please select a commercial property type");
-      return;
-    }
-
-    fetch(`${liveUrl}api/Seller/addSeller`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...storedata,
-        propertyType: active,
-        residential: activeButton,
-        commercial: activeCommercial,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setMessage(data.message);
-        localStorage.setItem("responseData", JSON.stringify(data.result));
-        if (data.status === "done") {
-          Navigate("/about-property");
-        } else {
-          setMessage(data.message || "Registration failed. Please try again.");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setMessage("An error occurred. Please try again.");
-      });
-  };
-
   const handleLoans = () => {
     setClick(true);
-    setLoader (true);
+    setLoader(true);
     if (!loanData.name || !loanData.loanAmount || !loanData.mobile || !answer) {
       setMessage("Please fill all required fields");
       setLoader(false);
@@ -139,21 +109,28 @@ export default function Navbar() {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        ...loanData,
-      }),
+      body: JSON.stringify(loanData),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 401) {
+          handleLogout();
+          throw new Error("Unauthorized");
+        }
+        return response.json();
+      })
       .then((data) => {
         setMessage(data.message);
         localStorage.setItem("responseData", JSON.stringify(data.result));
         if (data.status === "done") {
-          Navigate("/success");
+          navigate("/success");
+          setVisibleModal(false);
         }
       })
       .catch((error) => {
-        console.error(error);
-        setMessage("An error occurred. Please try again.");
+        console.error("Error in handleLoans:", error);
+        if (error.message !== "Unauthorized") {
+          setMessage("An error occurred. Please try again.");
+        }
       })
       .finally(() => setLoader(false));
   };
@@ -161,34 +138,12 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("panelTitle");
-    Navigate("/login");
-    window.location.reload();
+    localStorage.removeItem("responseData");
+    setIsLoggedIn(false);
+    navigate("/login");
   };
 
-  const handleClick = (span) => setActiveButton(span);
-  const handleCommercial = (span) => setActiveCommercial(span);
-  const handleClickButton = (div) => setActive(div);
-  const handleOptionChange = (event) => setSelectedOption(event.target.value);
-  const datashow = () => setShowData(true);
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-  const customStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
-      zIndex: "999999",
-      width: "90%",
-      maxWidth: "700px",
-      maxHeight: "500px",
-      padding: "20px",
-      overflowY: "auto",
-    },
-  };
 
   const loanStyle = {
     content: {
@@ -210,396 +165,6 @@ export default function Navbar() {
 
   return (
     <div className="relative">
-      <Modal
-        isOpen={modals}
-        onRequestClose={() => setModals(false)}
-        style={customStyles}
-      >
-        <div className="w-full p-4">
-          <div className="text-red-600 text-center mb-4">{message}</div>
-          <div className="flex justify-between items-center">
-            <h6 className="text-2xl font-semibold text-green-600">
-              Posting your property is free, so get started.
-            </h6>
-            <div
-              onClick={() => setModals(false)}
-              className="bg-red-600 w-9 h-9 cursor-pointer flex justify-center items-center absolute top-0 right-0"
-            >
-              <svg
-                fill="white"
-                xmlns="http://www.w3.org/2000/svg"
-                height="1em"
-                viewBox="0 0 448 512"
-              >
-                <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
-              </svg>
-            </div>
-          </div>
-          <div>
-            <p className="mt-3 text-lg font-semibold">
-              Provide a few fundamental details
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-3">
-            <button
-              style={{
-                border: "2px solid #D3D3D3",
-                borderRadius: "10px",
-                backgroundColor: "white",
-                height: "45px",
-                cursor: "pointer",
-              }}
-              onClick={() => handleClickButton("sale") || datashow()}
-              className={
-                active === "sale" ? "activess btn btn-solid" : "btn btn-solid"
-              }
-            >
-              Sell
-            </button>
-            <button
-              style={{
-                border: "2px solid #D3D3D3",
-                borderRadius: "10px",
-                backgroundColor: "white",
-                height: "45px",
-                cursor: "pointer",
-              }}
-              onClick={() => handleClickButton("Rent/Lease") || datashow()}
-              className={
-                active === "Rent/Lease"
-                  ? "activess btn btn-solid"
-                  : "btn btn-solid"
-              }
-            >
-              Rent/Lease
-            </button>
-          </div>
-          {click && active === "" ? (
-            <div className="text-red-600 mt-2">Select any one option</div>
-          ) : null}
-          {showData ? (
-            <>
-              <div className="flex gap-5 mt-4">
-                <label className="flex items-center">
-                  <input
-                    className="w-5 h-5 mr-2"
-                    type="radio"
-                    name="residential"
-                    value="residential"
-                    checked={selectedOption === "residential"}
-                    onChange={handleOptionChange}
-                  />
-                  Residential
-                </label>
-                <label className="flex items-center">
-                  <input
-                    className="w-5 h-5 mr-2"
-                    type="radio"
-                    name="commercial"
-                    value="commercial"
-                    checked={selectedOption === "commercial"}
-                    onChange={handleOptionChange}
-                  />
-                  Commercial
-                </label>
-              </div>
-              {selectedOption === "residential" ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2 mt-5">
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("Flat/Apartment")}
-                      className={
-                        activeButton === "Flat/Apartment"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Flat/Apartment
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("IndePendentHouse/villa")}
-                      className={
-                        activeButton === "IndePendentHouse/villa"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Independent House/villa
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("Independent/Builder Floor")}
-                      className={
-                        activeButton === "Independent/Builder Floor"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Independent/ Builder Floor
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("plot")}
-                      className={
-                        activeButton === "plot"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Plot/Land
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("1RK/Studio Apartment")}
-                      className={
-                        activeButton === "1RK/Studio Apartment"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      1RK/Studio Apartment
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("Serviced Apartment")}
-                      className={
-                        activeButton === "Serviced Apartment"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Serviced Apartment
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("Farmhouse")}
-                      className={
-                        activeButton === "Farmhouse"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Farmhouse
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                      }}
-                      onClick={() => handleClick("Other")}
-                      className={
-                        activeButton === "Other"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Other
-                    </button>
-                  </div>
-                  {click && activeButton === "" ? (
-                    <div className="text-red-600 mt-2">Select any one option</div>
-                  ) : null}
-                </>
-              ) : null}
-              {selectedOption === "commercial" ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Office")}
-                      className={
-                        activeCommercial === "Office"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Office
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Retail")}
-                      className={
-                        activeCommercial === "Retail"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Retail
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Plot/Land")}
-                      className={
-                        activeCommercial === "Plot/Land"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Plot/Land
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Storage")}
-                      className={
-                        activeCommercial === "Storage"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Storage
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Industry")}
-                      className={
-                        activeCommercial === "Industry"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Industry
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Hospitality")}
-                      className={
-                        activeCommercial === "Hospitality"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Hospitality
-                    </button>
-                    <button
-                      style={{
-                        border: "2px solid #D3D3D3",
-                        borderRadius: "10px",
-                        backgroundColor: "white",
-                        fontSize: "15px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleCommercial("Other")}
-                      className={
-                        activeCommercial === "Other"
-                          ? "activess btn btn-solid w-full p-2 text-center"
-                          : "btn btn-solid w-full p-2 text-center"
-                      }
-                    >
-                      Other
-                    </button>
-                  </div>
-                  {click && activeCommercial === "" ? (
-                    <div className="text-red-600 mt-2">Select any one option</div>
-                  ) : null}
-                </>
-              ) : null}
-            </>
-          ) : null}
-          <div>
-            <h6 className="mt-3 text-lg font-bold">
-              Your contact information so the buyer can get in touch with you
-            </h6>
-          </div>
-          <div className="mt-3">
-            <input
-              value={storedata.phone}
-              name="phone"
-              onChange={handleNewData}
-              className="h-10 rounded p-2 border border-black w-full"
-              type="number"
-              pattern="[0-9]*"
-              placeholder="Phone Number"
-              maxLength={10}
-            />
-          </div>
-          {click && storedata.phone.length !== 10 ? (
-            <div className="text-red-600 mt-2">
-              Please enter a valid 10-digit phone number
-            </div>
-          ) : null}
-          {!isValidToken() && (
-            <p className="mt-2 font-bold">
-              Are you a registered user?{" "}
-              <Link to="/login" className="text-green-600">
-                Login
-              </Link>
-            </p>
-          )}
-          <button
-            onClick={handleSubmit}
-            className="bg-red-600 w-full p-2 mt-5 rounded flex justify-center items-center text-white font-bold"
-          >
-            Submit
-          </button>
-        </div>
-      </Modal>
       <Modal
         isOpen={visibleModal}
         onRequestClose={() => setVisibleModal(false)}
@@ -633,9 +198,9 @@ export default function Navbar() {
             type="text"
             className="border border-green-800 p-2 w-full rounded-md"
           />
-          {click && loanData.name === "" ? (
+          {click && loanData.name === "" && (
             <div className="text-red-600 mt-2">Required to fill name</div>
-          ) : null}
+          )}
           <div className="mt-2 mb-2 font-bold">Enter Loan Amount</div>
           <input
             onChange={handleLoan}
@@ -644,9 +209,9 @@ export default function Navbar() {
             type="number"
             className="border border-green-800 p-2 w-full rounded-md"
           />
-          {click && loanData.loanAmount === "" ? (
+          {click && loanData.loanAmount === "" && (
             <div className="text-red-600 mt-2">Required to fill loan amount</div>
-          ) : null}
+          )}
           <div className="mt-2 mb-2 font-bold">Mobile Number</div>
           <input
             onChange={handleLoan}
@@ -689,9 +254,9 @@ export default function Navbar() {
             >
               Regenerate
             </button>
-            {click && answer.length <= 0 ? (
+            {click && answer.length <= 0 && (
               <div className="text-red-600 mt-2">Required to fill the captcha</div>
-            ) : null}
+            )}
           </div>
           <button
             onClick={handleLoans}
@@ -765,8 +330,8 @@ export default function Navbar() {
               </div>
               <div className="hidden lg:flex lg:ml-2 mb-2 mt-2 lg:gap-5 justify-center items-center nav-items-div">
                 <button
-                  onClick={() => Navigate("/property")}
-                  className={`menu-item text-black-bold rounded-sm p-1 lg:px-1 ${
+                  onClick={() => navigate("/property")}
+                  className={`menu-item text-black font-semibold rounded-sm p-1 lg:px-1 ${
                     location.pathname === "/property"
                       ? "bg-green-600 text-white"
                       : ""
@@ -776,7 +341,7 @@ export default function Navbar() {
                 </button>
                 <Link
                   to="/buyer-data"
-                  className={`menu-item rounded-sm text-black-bold p-1 lg:px-1 ${
+                  className={`menu-item text-black font-semibold rounded-sm p-1 lg:px-1 ${
                     location.pathname === "/buyer-data"
                       ? "bg-green-600 rounded-md text-white"
                       : ""
@@ -785,8 +350,8 @@ export default function Navbar() {
                   Buy
                 </Link>
                 <button
-                  onClick={() => Navigate("/for-rent")}
-                  className={`menu-item rounded-sm text-black font-semibold p-1 lg:px-1 ${
+                  onClick={() => navigate("/for-rent")}
+                  className={`menu-item text-black font-semibold rounded-sm p-1 lg:px-1 ${
                     location.pathname === "/for-rent"
                       ? "bg-green-600 rounded-md text-white"
                       : ""
@@ -795,8 +360,8 @@ export default function Navbar() {
                   For Rent
                 </button>
                 <button
-                  onClick={() => Navigate("/projects")}
-                  className={`menu-item rounded-sm text-black font-semibold p-1 lg:px-1 ${
+                  onClick={() => navigate("/projects")}
+                  className={`menu-item text-black font-semibold rounded-sm p-1 lg:px-1 ${
                     location.pathname === "/projects"
                       ? "bg-green-600 rounded-md text-white"
                       : ""
@@ -804,50 +369,50 @@ export default function Navbar() {
                 >
                   Projects
                 </button>
-                <Link
-                  onClick={() => setModals(true)}
-                  className={`menu-item text-black-bold p-1 lg:px-1 ${
-                    location.pathname === "" ? "bg-green-600" : ""
+                <button
+                  onClick={() => navigate("/sell-with-us")}
+                  className={`menu-item text-black font-semibold p-1 lg:px-1 ${
+                    location.pathname === "/sell-with-us"
+                      ? "bg-green-600 text-white"
+                      : ""
                   }`}
                 >
                   Sell With Us
-                </Link>
-                {isValidToken() ? (
+                </button>
+                
+                {/* Home Loan button - always visible */}
+                <button
+                  onClick={() => setVisibleModal(true)}
+                  className="menu-item text-black font-semibold p-1 lg:px-1"
+                >
+                  Home Loan
+                </button>
+
+                {isLoggedIn ? (
                   <>
-                    <div
-                      onClick={() => Navigate("/Agent")}
-                      className="text-black-bold lg:block hidden cursor-pointer font-leading"
-                    >
-                      {storedTitleFromLocalStorage}
-                    </div>
+                    
                     <button
-                      className="menu-item text-red-600 font-semibold"
+                      className="menu-item text-red-600 font-semibold p-1 lg:px-1"
                       onClick={handleLogout}
                     >
                       Logout
                     </button>
                   </>
                 ) : (
-                  <div
-                    onClick={() => setVisibleModal(true)}
-                    className="menu-item cursor-pointer text-black font-semibold"
+                  <button
+                    className="menu-item text-red-600 font-semibold p-1 lg:px-1"
+                    onClick={() => navigate("/login")}
                   >
-                    Home Loan
-                  </div>
+                    Login
+                  </button>
                 )}
-                <button
-                  className="menu-item text-red-600 font-semibold"
-                  onClick={() => Navigate("/login")}
-                >
-                  Login
-                </button>
               </div>
             </div>
             {isMenuOpen && (
               <div className="lg:hidden flex flex-col bg-white text-center shadow-md absolute top-full left-0 w-full z-50">
                 <button
                   onClick={() => {
-                    Navigate("/property");
+                    navigate("/property");
                     setIsMenuOpen(false);
                   }}
                   className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
@@ -871,7 +436,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={() => {
-                    Navigate("/for-rent");
+                    navigate("/for-rent");
                     setIsMenuOpen(false);
                   }}
                   className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
@@ -884,7 +449,7 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => {
-                    Navigate("/projects");
+                    navigate("/projects");
                     setIsMenuOpen(false);
                   }}
                   className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
@@ -895,30 +460,38 @@ export default function Navbar() {
                 >
                   Projects
                 </button>
-                <Link
+                <button
                   onClick={() => {
-                    setModals(true);
+                    navigate("/sell-with-us");
                     setIsMenuOpen(false);
                   }}
                   className={`menu-item text-black font-semibold p-3 border-b border-gray-200 ${
-                    location.pathname === "" ? "bg-green-600" : ""
+                    location.pathname === "/sell-with-us"
+                      ? "bg-green-600 text-white"
+                      : ""
                   }`}
                 >
                   Sell With Us
-                </Link>
-                {isValidToken() ? (
+                </button>
+                
+                {/* Home Loan button in mobile menu - always visible */}
+                <button
+                  onClick={() => {
+                    setVisibleModal(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="menu-item text-black font-semibold p-3 border-b border-gray-200"
+                >
+                  Home Loan
+                </button>
+
+                {isLoggedIn ? (
                   <>
-                    <div
-                      onClick={() => {
-                        Navigate("/Agent");
-                        setIsMenuOpen(false);
-                      }}
-                      className="text-black font-semibold p-3 border-b border-gray-200 cursor-pointer"
-                    >
-                      {storedTitleFromLocalStorage}
-                    </div>
+
+                      {/* {localStorage.getItem("panelTitle") || "Profile"} */}
+                   
                     <button
-                      className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200"
+                      className="menu-item text-red-600 font-semibold p-3"
                       onClick={() => {
                         handleLogout();
                         setIsMenuOpen(false);
@@ -928,25 +501,16 @@ export default function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <div
+                  <button
+                    className="menu-item text-red-600 font-semibold p-3"
                     onClick={() => {
-                      setVisibleModal(true);
+                      navigate("/login");
                       setIsMenuOpen(false);
                     }}
-                    className="menu-item text-black font-semibold p-3 border-b border-gray-200 cursor-pointer"
                   >
-                    Home Loan
-                  </div>
+                    Login
+                  </button>
                 )}
-                <button
-                  className="menu-item text-red-600 font-semibold p-3"
-                  onClick={() => {
-                    Navigate("/login");
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Login
-                </button>
               </div>
             )}
           </div>

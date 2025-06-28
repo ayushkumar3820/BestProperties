@@ -15,7 +15,6 @@ import { WhatsappShareButton } from "react-share";
 import Varified from "../assets/img/varified.png";
 import Modal from "react-modal";
 import { ToastContainer, toast } from "react-toastify";
-import Ads from "../assets/img/proprty .jpg";
 
 export default function Rent() {
   const Navigate = useNavigate();

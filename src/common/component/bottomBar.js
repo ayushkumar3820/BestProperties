@@ -45,7 +45,7 @@ export default function BottomBar() {
       {isScrolled && (
         <button
           onClick={scrollToTop}
-          className="bg-green-600 fixed bottom-16 right-4 rounded-full z-30 h-12 w-12 md:h-14 md:w-14 hover:bg-red-600 flex justify-center items-center p-2 text-2xl text-white font-bold"
+          className="bg-green-600 fixed bottom-16 right-4 rounded-full z-30 h-14 w-14 md:h-14 md:w-14 hover:bg-red-600 flex justify-center items-center p-2 text-2xl text-white font-bold mb-4"
         >
           <svg
             className="h-8 w-8 md:h-10 md:w-12"

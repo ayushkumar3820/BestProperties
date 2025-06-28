@@ -35,6 +35,8 @@ export default function UserInformation() {
   const [loader, setLoader] = useState(false);
   const [formData, setFormData] = useState({ firstname: "", phone: "" });
   const [errors, setErrors] = useState({ firstname: "", phone: "" });
+  // Store bookings as an object mapping user phone to property IDs
+  const [userBookings, setUserBookings] = useState({}); // e.g., { "1234567890": ["17"], "0987654321": ["18"] }
 
   // Modal styles
   const modalStyles = {
@@ -139,12 +141,17 @@ export default function UserInformation() {
   // Form validation
   const validatePhoneNumber = (phone) => /^[0-9]{10}$/.test(phone);
 
+  const validateName = (firstname) => /^[a-zA-Z\s]{2,}$/.test(firstname.trim());
+
   const validateForm = () => {
     const newErrors = { firstname: "", phone: "" };
     let isValid = true;
 
     if (!formData.firstname.trim()) {
       newErrors.firstname = "Please enter your name";
+      isValid = false;
+    } else if (!validateName(formData.firstname)) {
+      newErrors.firstname = "Name must contain only letters and be at least 2 characters long";
       isValid = false;
     }
 
@@ -156,6 +163,12 @@ export default function UserInformation() {
       isValid = false;
     }
 
+    // Check if the current user has already booked this property
+    if (userBookings[formData.phone]?.includes(propertyId)) {
+      toast.error("You have already booked this property.");
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -163,7 +176,12 @@ export default function UserInformation() {
   // Form submission
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setLoader(true);
+
+    if (!validateForm()) {
+      setLoader(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
@@ -172,20 +190,43 @@ export default function UserInformation() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstname: formData.firstname,
+          phone: formData.phone,
+          property_id: propertyId,
+          property_name: propertyData?.name || "N/A",
+          type:"properties"
+        }),
       });
 
       const result = await response.json();
       if (response.ok) {
+        // Update userBookings state
+        setUserBookings((prev) => ({
+          ...prev,
+          [formData.phone]: [...(prev[formData.phone] || []), propertyId],
+        }));
         toast.success("Your information has been submitted successfully!");
         setFormData({ firstname: "", phone: "" });
         setModalIsOpen(false);
       } else {
-        toast.error(result.message || "Failed to submit information");
+        // Check if error is due to existing booking
+        if (result.message?.includes("already booked")) {
+          toast.error("You have already booked this property.");
+          // Update local state if backend confirms booking exists
+          setUserBookings((prev) => ({
+            ...prev,
+            [formData.phone]: [...(prev[formData.phone] || []), propertyId],
+          }));
+        } else {
+          toast.error(result.message || "Failed to submit information");
+        }
       }
     } catch (error) {
       toast.error("An error occurred. Please try again later.");
       console.error("Error submitting form:", error);
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -252,13 +293,13 @@ export default function UserInformation() {
             >
               <path
                 fill="currentColor"
-                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0 s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
               />
             </svg>
           </button>
         </div>
         <div className="flex justify-center max-h-[400px] items-center">
-          <img
+          <img Six
             className="h-96 w-full sm:w-96 object-cover rounded-lg"
             src={
               activeImage === "main" && propertyData?.image_one_url
@@ -283,7 +324,7 @@ export default function UserInformation() {
         <div className="w-full sm:w-[400px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-2xl text-green-800">
-              Scheduler Booking
+              Schedule a Visit
             </h2>
             <button
               onClick={() => setModalIsOpen(false)}
@@ -314,6 +355,7 @@ export default function UserInformation() {
                   setFormData({ ...formData, firstname: e.target.value })
                 }
                 placeholder="Please enter your name"
+                disabled={loader}
               />
               {errors.firstname && (
                 <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>
@@ -332,6 +374,7 @@ export default function UserInformation() {
                 }
                 className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-gray-500"
                 placeholder="Please enter your phone number"
+                disabled={loader}
               />
               {errors.phone && (
                 <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
@@ -339,7 +382,9 @@ export default function UserInformation() {
             </div>
             <button
               type="submit"
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              className={`w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors ${
+                loader ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={loader}
             >
               {loader ? "Submitting..." : "Submit"}
@@ -410,7 +455,7 @@ export default function UserInformation() {
                     viewBox="0 0 320 512"
                     fill="currentColor"
                   >
-                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3 48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32c-17.7 0-32-14.3-32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
+                    <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                   </svg>
                   <div className="text-xl sm:text-2xl font-semibold text-gray-800">
                     {formatBudget(propertyData.budget)}

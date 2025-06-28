@@ -18,7 +18,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const location = useLocation();
   const dropdownRef = useRef(null);
   const [newData, setNewData] = useState([]);
-  const [savedProperties, setSavedProperties] = useState([]);
+  const [setSavedProperties] = useState([]);
   const [showCount, setShowCount] = useState(12);
   const [loader, setLoader] = useState(false);
   const [amenities, setAmenities] = useState([]);

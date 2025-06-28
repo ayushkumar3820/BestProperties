@@ -40,7 +40,7 @@ export default function Contact() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!store.firstname || store.firstname.length <3) {
+    if (!store.firstname || store.firstname.length < 3) {
       newErrors.firstname =
         "Name is required and must be at least 3 characters long.";
     }
