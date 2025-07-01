@@ -36,6 +36,9 @@ import FAQ from "./Component/Faq";
 // import DataDeletion from "./common/dataDeletion ";
 import Disclaimer from "./Component/Disclaimer";
 import SellWithUsModal from "./common/component/SellWithUsModal";
+import ForgetPassword from "./common/component/forgetPassword";
+import HomeLoan from "./common/component/HomeLoan";
+import WishlistPage from "./common/component/wishList";
 
 export default function App() {
   useEffect(() => {
@@ -81,6 +84,9 @@ export default function App() {
         <Route path="disclaimer" element={<Disclaimer />} />
         <Route path="*" element={<NotFound />} />
         <Route path="sell-with-us" element={<SellWithUsModal />} />
+        <Route path="forget-password" element={<ForgetPassword />} />
+        <Route path="home-loan" element={<HomeLoan></HomeLoan>}/>
+        <Route path="wishlist" element={<WishlistPage/>}/>
       </Routes>
     </BrowserRouter>
   );

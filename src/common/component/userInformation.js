@@ -4,6 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Modal from "react-modal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import DatePicker from "react-datepicker"; // Import react-datepicker
+import "react-datepicker/dist/react-datepicker.css"; // Import datepicker styles
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
 import AnimatedText from "./HeadingAnimation";
@@ -33,10 +35,16 @@ export default function UserInformation() {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showAllDetails, setShowAllDetails] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [formData, setFormData] = useState({ firstname: "", phone: "" });
-  const [errors, setErrors] = useState({ firstname: "", phone: "" });
-  // Store bookings as an object mapping user phone to property IDs
-  const [userBookings, setUserBookings] = useState({}); // e.g., { "1234567890": ["17"], "0987654321": ["18"] }
+  const [formData, setFormData] = useState({ 
+    firstname: "", 
+    phone: "",
+    visitDate: null, // New state for selected date
+    visitTime: null // New state for selected time
+  });
+  const [errors, setErrors] = useState({ firstname: "", phone: "", visitDate: "", visitTime: "" });
+  const [userBookings, setUserBookings] = useState({});
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
+  const [userInfo, setUserInfo] = useState({ firstname: "", phone: "" }); // Store user info
 
   // Modal styles
   const modalStyles = {
@@ -55,6 +63,25 @@ export default function UserInformation() {
     },
   };
 
+  // Check if user is logged in (example: using localStorage or token)
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken"); // Adjust based on your auth method
+    if (storedToken) {
+      // Simulate fetching user info from an API or localStorage
+      const storedUser = JSON.parse(localStorage.getItem("userInfo")) || {
+        firstname: "John Doe",
+        phone: "1234567890",
+      };
+      setIsLoggedIn(true);
+      setUserInfo(storedUser);
+      setFormData((prev) => ({
+        ...prev,
+        firstname: storedUser.firstname,
+        phone: storedUser.phone,
+      }));
+    }
+  }, []);
+
   // Fetch random properties as fallback
   const fetchRandomProperties = async () => {
     try {
@@ -69,13 +96,11 @@ export default function UserInformation() {
       }
       const data = await response.json();
       const properties = data?.result || [];
-      // Filter out the current property and select up to 3 random properties
       const filteredProperties = properties
         .filter((prop) => prop.id !== propertyId)
         .sort(() => Math.random() - 0.5)
         .slice(0, 3);
       setSimilarProperties(filteredProperties);
-      console.log("Random Properties:", filteredProperties);
     } catch (error) {
       console.error("Error fetching random properties:", error);
       toast.error("Failed to load random properties");
@@ -110,24 +135,17 @@ export default function UserInformation() {
         }
 
         const data = await response.json();
-        console.log("API Response:", data);
         setPropertyData(data?.result?.main_property?.[0] || null);
         const additionalProperties = data?.result?.additional_properties || [];
 
         if (additionalProperties.length > 0) {
           setSimilarProperties(additionalProperties);
-          console.log("Similar Properties:", additionalProperties);
         } else {
-          // Fetch random properties if no similar properties are found
-          console.log(
-            "No similar properties found, fetching random properties..."
-          );
           await fetchRandomProperties();
         }
       } catch (error) {
         console.error("Error fetching property:", error);
         toast.error("Failed to load property data");
-        // Attempt to fetch random properties as a fallback
         await fetchRandomProperties();
       } finally {
         setLoader(false);
@@ -144,26 +162,42 @@ export default function UserInformation() {
   const validateName = (firstname) => /^[a-zA-Z\s]{2,}$/.test(firstname.trim());
 
   const validateForm = () => {
-    const newErrors = { firstname: "", phone: "" };
+    const newErrors = { firstname: "", phone: "", visitDate: "", visitTime: "" };
     let isValid = true;
 
-    if (!formData.firstname.trim()) {
-      newErrors.firstname = "Please enter your name";
-      isValid = false;
-    } else if (!validateName(formData.firstname)) {
-      newErrors.firstname = "Name must contain only letters and be at least 2 characters long";
-      isValid = false;
+    if (!isLoggedIn) {
+      // Validate name and phone only for non-logged-in users
+      if (!formData.firstname.trim()) {
+        newErrors.firstname = "Please enter your name";
+        isValid = false;
+      } else if (!validateName(formData.firstname)) {
+        newErrors.firstname =
+          "Name must contain only letters and be at least 2 characters long";
+        isValid = false;
+      }
+
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Please enter your phone number";
+        isValid = false;
+      } else if (!validatePhoneNumber(formData.phone)) {
+        newErrors.phone = "Please enter a valid 10-digit phone number";
+        isValid = false;
+      }
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Please enter your phone number";
-      isValid = false;
-    } else if (!validatePhoneNumber(formData.phone)) {
-      newErrors.phone = "Please enter a valid 10-digit phone number";
-      isValid = false;
+    // Validate date and time for logged-in users
+    if (isLoggedIn) {
+      if (!formData.visitDate) {
+        newErrors.visitDate = "Please select a visit date";
+        isValid = false;
+      }
+      if (!formData.visitTime) {
+        newErrors.visitTime = "Please select a visit time";
+        isValid = false;
+      }
     }
 
-    // Check if the current user has already booked this property
+    // Check if the user has already booked this property
     if (userBookings[formData.phone]?.includes(propertyId)) {
       toast.error("You have already booked this property.");
       isValid = false;
@@ -184,42 +218,52 @@ export default function UserInformation() {
     }
 
     try {
+      const payload = {
+        firstname: formData.firstname,
+        phone: formData.phone,
+        property_id: propertyId,
+        property_name: propertyData?.name || "N/A",
+        type: "properties",
+      };
+
+      // Include visit date and time for logged-in users
+      if (isLoggedIn) {
+        payload.visitDate = formData.visitDate?.toISOString();
+        payload.visitTime = formData.visitTime?.toISOString();
+      }
+
       const response = await fetch(`${liveUrl}api/Contact/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          firstname: formData.firstname,
-          phone: formData.phone,
-          property_id: propertyId,
-          property_name: propertyData?.name || "N/A",
-          type:"properties"
-        }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
       if (response.ok) {
-        // Update userBookings state
         setUserBookings((prev) => ({
           ...prev,
           [formData.phone]: [...(prev[formData.phone] || []), propertyId],
         }));
-        toast.success("Your information has been submitted successfully!");
-        setFormData({ firstname: "", phone: "" });
+        toast.success("Your visit has been scheduled successfully!");
+        setFormData({ 
+          firstname: isLoggedIn ? userInfo.firstname : "", 
+          phone: isLoggedIn ? userInfo.phone : "",
+          visitDate: null,
+          visitTime: null
+        });
         setModalIsOpen(false);
       } else {
-        // Check if error is due to existing booking
         if (result.message?.includes("already booked")) {
           toast.error("You have already booked this property.");
-          // Update local state if backend confirms booking exists
           setUserBookings((prev) => ({
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
           }));
         } else {
-          toast.error(result.message || "Failed to submit information");
+          toast.error(result.message || "Failed to schedule visit");
         }
       }
     } catch (error) {
@@ -299,7 +343,7 @@ export default function UserInformation() {
           </button>
         </div>
         <div className="flex justify-center max-h-[400px] items-center">
-          <img Six
+          <img
             className="h-96 w-full sm:w-96 object-cover rounded-lg"
             src={
               activeImage === "main" && propertyData?.image_one_url
@@ -343,43 +387,109 @@ export default function UserInformation() {
             </button>
           </div>
           <form onSubmit={handleSubmitForm}>
-            <div className="mb-4">
-              <label className="text-lg font-semibold mb-2 block text-gray-800">
-                Your Name*
-              </label>
-              <input
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
-                name="firstname"
-                value={formData.firstname}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstname: e.target.value })
-                }
-                placeholder="Please enter your name"
-                disabled={loader}
-              />
-              {errors.firstname && (
-                <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label className="text-lg font-semibold mb-2 block text-gray-800">
-                Phone*
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-gray-500"
-                placeholder="Please enter your phone number"
-                disabled={loader}
-              />
-              {errors.phone && (
-                <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
-              )}
-            </div>
+            {!isLoggedIn ? (
+              <>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Your Name*
+                  </label>
+                  <input
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    name="firstname"
+                    value={formData.firstname}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstname: e.target.value })
+                    }
+                    placeholder="Please enter your name"
+                    disabled={loader}
+                  />
+                  {errors.firstname && (
+                    <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Phone*
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-gray-500"
+                    placeholder="Please enter your phone number"
+                    disabled={loader}
+                  />
+                  {errors.phone && (
+                    <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Your Name
+                  </label>
+                  <input
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 bg-gray-100"
+                    name="firstname"
+                    value={formData.firstname}
+                    disabled
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 bg-gray-100"
+                    disabled
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Visit Date*
+                  </label>
+                  <DatePicker
+                    selected={formData.visitDate}
+                    onChange={(date) => setFormData({ ...formData, visitDate: date })}
+                    minDate={new Date()} // Prevent past dates
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    placeholderText="Select a date"
+                    disabled={loader}
+                  />
+                  {errors.visitDate && (
+                    <p className="text-red-600 text-sm mt-1">{errors.visitDate}</p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Visit Time*
+                  </label>
+                  <DatePicker
+                    selected={formData.visitTime}
+                    onChange={(time) => setFormData({ ...formData, visitTime: time })}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={30} // 30-minute intervals
+                    timeCaption="Time"
+                    dateFormat="h:mm aa"
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    placeholderText="Select a time"
+                    disabled={loader}
+                  />
+                  {errors.visitTime && (
+                    <p className="text-red-600 text-sm mt-1">{errors.visitTime}</p>
+                  )}
+                </div>
+              </>
+            )}
             <button
               type="submit"
               className={`w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors ${

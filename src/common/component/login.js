@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
 import Modal from "react-modal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
@@ -11,7 +11,8 @@ import Searching from "./searching";
 import Logo from "../../assets/img/password.webp";
 
 export default function Login() {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeButton, setActiveButton] = useState("option1");
   const [click, setClick] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -35,6 +36,9 @@ export default function Login() {
     setForgot({ ...forgot, [e.target.name]: e.target.value });
   };
 
+  const handleForgotPassword = () => {
+    navigate("/forget-password");
+  };
   const fireForgot = () => {
     setClick(true);
     console.log("Forgot Password Clicked:", forgot);
@@ -47,7 +51,6 @@ export default function Login() {
       return;
     }
 
-    // Simulate API call for forgot password (adjust URL and payload as needed)
     fetch(`${liveUrl}api/User/forgotPassword`, {
       method: "POST",
       headers: {
@@ -60,7 +63,7 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Forgot Password API Response:", data); // Debug
+        console.log("Forgot Password API Response:", data);
         if (data.status === "done") {
           toast.success("Password reset link sent to your email");
           setModals(false);
@@ -115,7 +118,6 @@ export default function Login() {
     setLoader(true);
     console.log("Register Clicked:", store);
 
-    // Validation checks
     if (!store.name) {
       console.log("Validation Failed: No name");
       toast.error("Please enter your name");
@@ -169,12 +171,13 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Register API Response:", data); // Debug
+        console.log("Register API Response:", data);
         if (data.status === "done") {
+          localStorage.setItem("Name", data.data.name);
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
-            Navigate("/login");
+            navigate("/login");
             window.location.reload();
           }, 2000);
         } else {
@@ -231,12 +234,15 @@ export default function Login() {
         console.log("Login API Response:", data);
         if (data.status === "done") {
           localStorage.setItem("token", data.token);
-          // localStorage.setItem("phone Number",data.phone);
           localStorage.setItem("phone", newData.phone);
+          localStorage.setItem("password", newData.password);
+
           toast.success("Login successful");
+          // Redirect to the previous page or default to '/sell-with-us'
+          const redirectTo = location.state?.from || "/sell-with-us";
           setTimeout(() => {
             setLoader(false);
-            Navigate("/contact");
+            navigate(redirectTo);
           }, 1000);
         } else {
           if (data.message.includes("password")) {
@@ -402,7 +408,8 @@ export default function Login() {
                           fontWeight: "500",
                           textDecoration: "underline",
                         }}
-                        onClick={() => setModals(true)}
+                        // onClick={() => setModals(true)}
+                        onClick={handleForgotPassword}
                       >
                         Forgot Password?
                       </button>
@@ -466,7 +473,6 @@ export default function Login() {
                         className="w-full p-2 border h-10 rounded-md"
                       />
                     </div>
-                    <div></div>
                     <div>
                       <div className="mt-2 text-lg text-black">Mobile</div>
                       <input
@@ -514,4 +520,3 @@ export default function Login() {
     </>
   );
 }
-    

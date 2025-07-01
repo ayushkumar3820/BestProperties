@@ -28,6 +28,16 @@ export default function GalleryComponent() {
   const [showData, setShowData] = useState("");
   const [properties, setProperties] = useState([]);
 
+  // Function to generate a URL-friendly slug
+  const generateSlug = (text, separator = "-") => {
+    return text
+      ? text
+          .toLowerCase()
+          .replace(/\s+/g, separator)
+          .replace(/[^\w-]+/g, "")
+      : "";
+  };
+
   // Define tag arrays
   const kothiTags = [
     "Luxury Kothi",
@@ -205,8 +215,11 @@ export default function GalleryComponent() {
     navigate(`/single-property/${projectId}`, { state: { imageUrl } });
   };
 
-  const handleProjectClicks = (projectId, imageUrl) => {
-    navigate(`/project-details/${projectId}`, { state: { imageUrl } });
+  const handleProjectClicks = (projectId, imageUrl, Project_Name) => {
+    const slug = generateSlug(Project_Name || `project-${projectId}`);
+    navigate(`/project-details/${slug}-${projectId}`, {
+      state: { imageUrl: imageUrl },
+    });
   };
 
   const customStyles = {
@@ -746,35 +759,24 @@ export default function GalleryComponent() {
                   <Slider {...ProjectSlider}>
                     {listProjectData.map((data) => {
                       const imageUrl = getPropertyImageUrl(data);
+                      const projectName = data.Project_Name || data.project_name || `Project-${data.id}`;
                       return (
                         <div className="project-card" key={data.id}>
-                          <div
-                            onClick={() =>
-                              handleProjectClicks(data.id, imageUrl)
-                            }
-                          >
+                          <div onClick={() => handleProjectClicks(data.id, imageUrl, projectName)}>
                             <div className="project-home-page">
                               <div className="project-image-container">
                                 <img
                                   src={imageUrl}
-                                  alt={data.Project_Name || "Project Image"}
+                                  alt={projectName || "Project Image"}
                                   className="project-image"
-                                  onError={(e) =>
-                                    handlePropertyImageError(e, data)
-                                  }
+                                  onError={(e) => handlePropertyImageError(e, data)}
                                 />
                               </div>
                             </div>
                           </div>
                           <div className="project-details">
-                            <div
-                              onClick={() =>
-                                handleProjectClicks(data.id, imageUrl)
-                              }
-                            >
-                              <h5 className="project-title">
-                                {data.Project_Name}
-                              </h5>
+                            <div onClick={() => handleProjectClicks(data.id, imageUrl, projectName)}>
+                              <h5 className="project-title">{projectName}</h5>
                             </div>
                             <p className="project-location">
                               <svg

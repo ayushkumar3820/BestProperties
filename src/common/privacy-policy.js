@@ -245,7 +245,7 @@ export default function PrivacyPolicy() {
           We use third-party advertising companies to serve ads when you visit
           or use our Sites or Services. These companies may use information
           (excluding your name, address, email address or telephone number or
-          any personally identifiable information) about your visits or use to
+          any personally identifiablde information) about your visits or use to
           particular website, mobile application or services, in order to
           provide advertisements about goods and services of interest to you.
           bestpropertiesmohali also allows advertisers and creators to serve
