@@ -822,7 +822,7 @@ const step3Fields = [
     placeholder: "property description",
   },
   {
-    name: "demandedPrice",
+    name: "demandPrice",
     label: "Demand Price",
     type: "text",
     placeholder: "Enter the correct price",
@@ -906,7 +906,7 @@ export default function SellWithUs() {
   useEffect(() => {
     const authToken = localStorage.getItem("token");
     if (!authToken) {
-      navigate("/sucess");
+      navigate("/success");
     } else {
       const phone = localStorage.getItem("phone");
       if (phone && phone.length === 10) {
