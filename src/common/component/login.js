@@ -118,6 +118,7 @@ export default function Login() {
     setLoader(true);
     console.log("Register Clicked:", store);
 
+    // Validation checks
     if (!store.name) {
       console.log("Validation Failed: No name");
       toast.error("Please enter your name");
@@ -171,9 +172,8 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Register API Response:", data);
+        console.log("Register API Response:", data); // Debug
         if (data.status === "done") {
-          localStorage.setItem("Name", data.data.name);
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
@@ -191,7 +191,6 @@ export default function Login() {
         setLoader(false);
       });
   };
-
   const handleLogin = () => {
     setClick(true);
     setLoader(true);

@@ -1,139 +1,172 @@
-// src/components/WishlistPage.js
 import React, { useEffect, useState } from "react";
-import Navbar from "./navbar";
+import { useNavigate } from "react-router-dom";
+import Bed from "../../assets/img/bed.png";
+import Bath from "../../assets/img/bath.png";
+import NoImage from "../../assets/img/image-not.jpg";
 import OurServices from "./ourServices";
+import Navbar from "./navbar";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 
 export default function WishlistPage() {
-  const [properties, setProperties] = useState([]);
+  const navigate = useNavigate();
   const [wishlist, setWishlist] = useState([]);
 
-  // Dummy API
-  const fetchProperties = () =>
-    new Promise((resolve) =>
-      setTimeout(() => {
-        resolve([
-          {
-            id: 1,
-            name: "3BHK Luxury Flat",
-            location: "Mohali",
-            price: 5200000,
-            image: "https://via.placeholder.com/300x200?text=3BHK+Flat",
-            type: "Flat",
-          },
-          {
-            id: 2,
-            name: "Independent Villa",
-            location: "Chandigarh",
-            price: 9500000,
-            image: "https://via.placeholder.com/300x200?text=Villa",
-            type: "Villa",
-          },
-          {
-            id: 3,
-            name: "Residential Plot",
-            location: "Kharar",
-            price: 3000000,
-            image: "https://via.placeholder.com/300x200?text=Plot",
-            type: "Plot",
-          },
-        ]);
-      }, 1000)
-    );
-
   useEffect(() => {
-    fetchProperties().then((data) => setProperties(data));
-    const saved = localStorage.getItem("wishlist");
-    if (saved) setWishlist(JSON.parse(saved));
+    // Load wishlist from localStorage
+    const savedWishlist = localStorage.getItem("wishlist");
+    if (savedWishlist) {
+      setWishlist(JSON.parse(savedWishlist));
+    }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+  const removeFromWishlist = (propertyId) => {
+    const updatedWishlist = wishlist.filter((item) => item.id !== propertyId);
+    setWishlist(updatedWishlist);
+    localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+  };
 
-  const isWished = (id) => wishlist.some((item) => item.id === id);
-
-  const toggleWishlist = (property) => {
-    if (isWished(property.id)) {
-      setWishlist(wishlist.filter((item) => item.id !== property.id));
+  const formatBudget = (value) => {
+    if (!value || isNaN(value)) return "N/A";
+    if (value >= 10000000) {
+      return (
+        "₹" +
+        (value / 10000000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) +
+        " Cr"
+      );
+    } else if (value >= 100000) {
+      return (
+        "₹" +
+        (value / 100000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) +
+        " Lac"
+      );
     } else {
-      setWishlist([...wishlist, property]);
+      return (
+        "₹" +
+        (value / 1000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        }) +
+        " Thousand"
+      );
     }
   };
 
   return (
     <>
-      <Navbar />
-      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-        <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>
-          🏠 Available Properties
-        </h2>
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          {properties.map((property) => (
-            <div
-              key={property.id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                width: "300px",
-                borderRadius: "8px",
-                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-              }}
-            >
-              <img
-                src={property.image}
-                alt={property.name}
-                style={{ width: "100%", borderRadius: "4px" }}
-              />
-              <h3>{property.name}</h3>
-              <p>
-                <strong>📍 Location:</strong> {property.location}
-              </p>
-              <p>
-                <strong>🏷 Type:</strong> {property.type}
-              </p>
-              <p>
-                <strong>💰 Price:</strong> ₹
-                {property.price.toLocaleString("en-IN")}
-              </p>
-              <button
-                style={{
-                  background: isWished(property.id) ? "#dc2626" : "#16a34a",
-                  color: "#fff",
-                  padding: "8px 12px",
-                  border: "none",
-                  marginTop: "10px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-                onClick={() => toggleWishlist(property)}
-              >
-                {isWished(property.id)
-                  ? "Remove from Wishlist"
-                  : "Add to Wishlist"}
-              </button>
-            </div>
-          ))}
+    <Navbar/>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-green-800">My Wishlist</h1>
+          <div className="bg-green-100 text-green-800 font-semibold py-2 px-4 rounded-md">
+            {wishlist.length} {wishlist.length === 1 ? "Property" : "Properties"}
+          </div>
         </div>
 
-        <h2 style={{ marginTop: "40px", fontSize: "22px" }}>❤️ My Wishlist</h2>
         {wishlist.length === 0 ? (
-          <p>No properties added to wishlist yet.</p>
+          <div className="text-center py-20">
+            <svg
+              className="mx-auto h-16 w-16 text-gray-400 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            <p className="text-xl text-gray-600 mb-4">Your wishlist is empty</p>
+            <button
+              onClick={() => navigate("/property")}
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            >
+              Browse Properties
+            </button>
+          </div>
         ) : (
-          <ul>
-            {wishlist.map((item) => (
-              <li key={item.id}>
-                {item.name} in {item.location} – ₹
-                {item.price.toLocaleString("en-IN")}
-              </li>
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
+            {wishlist.map((property) => (
+              <div
+                key={property.id}
+                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="relative">
+                  <img
+                    src={property.image || NoImage}
+                    alt={property.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <button
+                    onClick={() => removeFromWishlist(property.id)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {property.name || "N/A"}
+                  </h3>
+                  <p className="text-green-600 font-bold text-xl mb-2">
+                    {formatBudget(property.price)}
+                  </p>
+                  <p className="text-gray-600 mb-2">
+                    📍 {property.location || "N/A"}
+                  </p>
+                  <p className="text-gray-600 mb-4">
+                    🏠 {property.type || "N/A"}
+                  </p>
+                  
+                  <div className="flex justify-between items-center">
+                    <button
+                      onClick={() => {
+                        const modifiedName = (property.name || "property")
+                          .replace(/\s/g, "-")
+                          .replace(/[^\w\s]/g, "-")
+                          .toLowerCase();
+                        navigate(`/property/-${property.id}-${modifiedName}`);
+                      }}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => removeFromWishlist(property.id)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
       <OurServices />
-      <Searching />
-      <BottomBar />
+      <Searching/>
+      <BottomBar/>
     </>
   );
 }

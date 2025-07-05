@@ -39,6 +39,7 @@ import SellWithUsModal from "./common/component/SellWithUsModal";
 import ForgetPassword from "./common/component/forgetPassword";
 import HomeLoan from "./common/component/HomeLoan";
 import WishlistPage from "./common/component/wishList";
+import Dashboards from "./common/component/dashboards";
 
 export default function App() {
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function App() {
         <Route path="forget-password" element={<ForgetPassword />} />
         <Route path="home-loan" element={<HomeLoan></HomeLoan>}/>
         <Route path="wishlist" element={<WishlistPage/>}/>
+        <Route path="dashboards" element={<Dashboards/>}/>
       </Routes>
     </BrowserRouter>
   );

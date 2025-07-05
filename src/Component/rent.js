@@ -81,7 +81,9 @@ export default function Rent() {
     const normalizedMain = main.trim().toLowerCase();
     if (selectedPropertyType.includes(normalizedMain)) {
       setSelectedPropertType(
-        selectedPropertyType.filter((item) => item.toLowerCase() !== normalizedMain)
+        selectedPropertyType.filter(
+          (item) => item.toLowerCase() !== normalizedMain
+        )
       );
     } else {
       setSelectedPropertType([...selectedPropertyType, normalizedMain]);
@@ -428,7 +430,9 @@ export default function Rent() {
         </div>
         <button
           onClick={() => HandleApi()}
-          className={`bg-red-600 w-full text-white text-lg p-2 ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
+          className={`bg-red-600 w-full text-white text-lg p-2 ${
+            isLoading ? "cursor-not-allowed opacity-50" : ""
+          }`}
           disabled={isLoading}
         >
           {isLoading ? "Submitting..." : "Submit"}
@@ -456,123 +460,132 @@ export default function Rent() {
           </div>
 
           <div className="container mx-auto">
-           <div className=" bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap ">
-  
-  {/* Search Input - Full Width */}
-  <div className="relative w-full min-w-[150px] lg:flex-1">
-    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-      🔍
-    </span>
-    <input
-      placeholder="Search by name, address, or sector..."
-      className="border-2 border-green-600 p-3 pl-10 text-lg rounded-md h-11 w-full"
-      value={searchQuery}
-      onChange={handleSearchChange}
-    />
-  </div>
+            <div className=" bg-white p-2 lg:shadow-md flex flex-col lg:flex-row items-center gap-2 flex-wrap ">
+              {/* Search Input - Full Width */}
+              <div className="relative w-full min-w-[150px] lg:flex-1">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  🔍
+                </span>
+                <input
+                  placeholder="Search by name, address, or sector..."
+                  className="border-2 border-green-600 p-3 pl-10 text-lg rounded-md h-11 w-full"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </div>
 
-  {/* Mobile: Property + Sort in one row, Desktop: separate */}
-  <div className="flex gap-4 w-full lg:w-auto lg:contents">
-    {/* Property Selector */}
-    <div className="rent-class checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-1/2 lg:w-[200px] relative">
-      <button
-        onClick={handleToggleDropdown}
-        className="w-full h-full text-left flex items-center justify-between px-2"
-      >
-        <div className="truncate text-base
-         lg:text-base">
-          {selectedPropertyType.length > 0
-            ? selectedPropertyType.join(", ")
-            : "Select Property"}
-        </div>
-        <svg
-          fill="black"
-          className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 512 512"
-        >
-          <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-        </svg>
-      </button>
-      {isOpen && (
-        <div className="absolute top-full left-0 bg-white border border-green-600 rounded-md mt-1 z-10 w-full max-h-60 overflow-y-auto">
-          {visibleData.map((main) => (
-            <div
-              className="flex cursor-pointer gap-4 px-2 py-1 hover:bg-gray-100"
-              key={main}
-            >
-              <input
-                type="checkbox"
-                id={main}
-                checked={selectedPropertyType.includes(main.toLowerCase())}
-                onChange={() => handleChange(main)}
-                className="h-4 w-4"
-              />
-              <label className="seach-label cursor-pointer" htmlFor={main}>
-                {main}
-              </label>
-            </div>
-          ))}
-          {!showMore && propertyType.length > 6 && (
-            <button
-              className="text-blue-600 px-2 py-1 w-full text-left"
-              onClick={() => setShowMore(true)}
-            >
-              Show More
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+              {/* Mobile: Property + Sort in one row, Desktop: separate */}
+              <div className="flex gap-4 w-full lg:w-auto lg:contents">
+                {/* Property Selector */}
+                <div className="rent-class checkbox-dropdown bg-white border-2 border-green-600 p-3 text-lg rounded-md h-11 w-1/2 lg:w-[200px] relative">
+                  <button
+                    onClick={handleToggleDropdown}
+                    className="w-full h-full text-left flex items-center justify-between px-2"
+                  >
+                    <div
+                      className="truncate text-base
+         lg:text-base"
+                    >
+                      {selectedPropertyType.length > 0
+                        ? selectedPropertyType.join(", ")
+                        : "Select Property"}
+                    </div>
+                    <svg
+                      fill="black"
+                      className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                    >
+                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                    </svg>
+                  </button>
+                  {isOpen && (
+                    <div className="absolute top-full left-0 bg-white border border-green-600 rounded-md mt-1 z-10 w-full max-h-60 overflow-y-auto">
+                      {visibleData.map((main) => (
+                        <div
+                          className="flex cursor-pointer gap-4 px-2 py-1 hover:bg-gray-100"
+                          key={main}
+                        >
+                          <input
+                            type="checkbox"
+                            id={main}
+                            checked={selectedPropertyType.includes(
+                              main.toLowerCase()
+                            )}
+                            onChange={() => handleChange(main)}
+                            className="h-4 w-4"
+                          />
+                          <label
+                            className="seach-label cursor-pointer"
+                            htmlFor={main}
+                          >
+                            {main}
+                          </label>
+                        </div>
+                      ))}
+                      {!showMore && propertyType.length > 6 && (
+                        <button
+                          className="text-blue-600 px-2 py-1 w-full text-left"
+                          onClick={() => setShowMore(true)}
+                        >
+                          Show More
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-    {/* Sort By */}
-    <select
-      className="rent_class_point bg-white border-2 border-green-600 p-1 text-base lg:text-base rounded-md h-11 w-1/2 lg:w-[200px]"
-      value={sortBy}
-      onChange={handleSortChange}
-    >
-      <option value="">Sort By:</option>
-      <option value="lowToHigh">Low to High</option>
-      <option value="highToLow">High to Low</option>
-    </select>
-  </div>
+                {/* Sort By */}
+                <select
+                  className="rent_class_point bg-white border-2 border-green-600 p-1 text-base lg:text-base rounded-md h-11 w-1/2 lg:w-[200px]"
+                  value={sortBy}
+                  onChange={handleSortChange}
+                >
+                  <option value="">Sort By:</option>
+                  <option value="lowToHigh">Low to High</option>
+                  <option value="highToLow">High to Low</option>
+                </select>
+              </div>
 
-  {/* Mobile: Location + Clear in one row, Desktop: separate */}
-  <div className="flex gap-2 w-full lg:w-auto lg:contents">
-    {/* Location */}
-    <select
+              {/* Mobile: Location + Clear in one row, Desktop: separate */}
+              <div className="flex gap-2 w-full lg:w-auto lg:contents">
+                {/* Location */}
+                <select
                   className="rent_class_point bg-white border-2 border-green-600 p-2 text-base rounded-md h-11 w-full lg:w-1/4 min-w-[200px]"
-      value={selectedLocation}
-      onChange={handleLocationChange}
-    >
+                  value={selectedLocation}
+                  onChange={handleLocationChange}
+                >
                   <option value="">Select Location</option>
-      <option value="Mohali">Mohali</option>
-      <option value="Zirakpur">Zirakpur</option>
-      <option value="Kharar">Kharar</option>
-      <option value="Chandigarh">Chandigarh</option>
-    </select>
+                  <option value="Mohali">Mohali</option>
+                  <option value="Zirakpur">Zirakpur</option>
+                  <option value="Kharar">Kharar</option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Panchkula">Panchkula</option>
+                </select>
 
-    {/* Clear Button */}
-    {areFiltersApplied && (
-      <button
-        onClick={clearFilters}
+                {/* Clear Button */}
+                {areFiltersApplied && (
+                  <button
+                    onClick={clearFilters}
                     className="clear-button bg-red-600 d-flex justify-center align-middle text-white p-3 text-lg rounded-md h-11 w-full lg:w-auto min-w-[100px] px-4"
-      >
-        Clear
-      </button>
-    )}
-  </div>
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
               <div className="w-14 flex justify-center lg:ml-auto">
-    <div
-      className={`${
-        activeView === "grid"
-          ? "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
-          : "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
-      }`}
-      onClick={() =>
-        handleSwitchView(activeView === "grid" ? "list" : "grid")
-      }
-    >
+                <div
+                  className={`${
+                    activeView === "grid"
+                      ? "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
+                      : "bg-[#e2e2e2] rounded-md p-2 cursor-pointer"
+                  }`}
+                  onClick={() =>
+                    handleSwitchView(activeView === "grid" ? "list" : "grid")
+                  }
+                >
                   {activeView === "grid" ? (
                     <svg
                       fill="green"
@@ -592,9 +605,9 @@ export default function Rent() {
                       <path d="M448 96V224H288V96H448zm0 192V416H288V288H448zM224 224H64V96H224V224zM64 288H224V416H64V288zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64z" />
                     </svg>
                   )}
-    </div>
-  </div>
-</div>
+                </div>
+              </div>
+            </div>
 
             <div className="flex w-full justify-center gap-4 mb-10 p-2 items-start">
               <div className="w-1/4 lg:block hidden">
@@ -632,7 +645,9 @@ export default function Rent() {
                     {visibleData.map((main) => (
                       <div key={main} className="flex gap-2">
                         <input
-                          checked={selectedPropertyType.includes(main.toLowerCase())}
+                          checked={selectedPropertyType.includes(
+                            main.toLowerCase()
+                          )}
                           onChange={() => handleChange(main)}
                           className="h-4 w-4"
                           type="checkbox"
@@ -871,7 +886,8 @@ export default function Rent() {
                               </div>
                             </div>
                           ))}
-                        {newData.filter(filterPanelsByBudget).length > showCount && (
+                        {newData.filter(filterPanelsByBudget).length >
+                          showCount && (
                           <div className="flex justify-center mt-4">
                             <button
                               onClick={() => setShowCount(showCount + 8)} // Increment by 8
@@ -1019,7 +1035,8 @@ export default function Rent() {
                               </div>
                             </div>
                           ))}
-                        {newData.filter(filterPanelsByBudget).length > showCount && (
+                        {newData.filter(filterPanelsByBudget).length >
+                          showCount && (
                           <div className="flex justify-center mt-4 col-span-full">
                             <button
                               onClick={() => setShowCount(showCount + 8)} // Increment by 8
