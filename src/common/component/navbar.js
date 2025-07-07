@@ -121,7 +121,8 @@ export default function Navbar() {
       ]
     : [
         { path: "/login", label: "Login", state: { from: location.pathname } },
-        { path: "/forget-password", label: "Forget Password" },
+         { path: "/wishlist", label: "My Properties" },
+        // { path: "/forget-password", label: "Forget Password" },
       ];
 
   return (

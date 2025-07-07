@@ -463,15 +463,17 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
           </div>
         ) : (
           <>
-            <div className="flex justify-center items-center my-4 gap-4">
-              <div className="font-bold text-xl uppercase text-center text-green-800">
-                <AnimatedText text={dynamicHeading} />
+            {searchQuery && (
+              <div className="flex justify-center items-center my-4 gap-4">
+                <div className="font-bold text-xl uppercase text-center text-green-800">
+                  <AnimatedText text={dynamicHeading} />
+                </div>
+                <div className="inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 rounded-md">
+                  {filteredData.length}{" "}
+                  {filteredData.length === 1 ? "Property" : "Properties"} Found
+                </div>
               </div>
-              <div className="inline-block bg-green-100 text-green-800 font-semibold py-2 px-4 rounded-md">
-                {filteredData.length}{" "}
-                {filteredData.length === 1 ? "Property" : "Properties"} Found
-              </div>
-            </div>
+            )}
             <div className="w-full bg-white shadow-md p-4 mb-4 flex flex-wrap justify-start items-center gap-4">
               <div className="max-w-[400px] w-full relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -711,8 +713,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                               <svg
                                 className={`h-6 w-6 cursor-pointer transition duration-300 transform ${
                                   isWishlist(panel.id)
-                                    ? "fill-red-500 scale-110"
-                                    : "fill-gray-300 "
+                                    ? "fill-red-600 scale-110"
+                                    : "fill-black"
                                 }`}
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -1073,10 +1075,10 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                 onChange={handleItemsPerPageChange}
                 aria-label="Select items per page"
               >
-                <option value="9">9 per page</option>
-                <option value="18">18 per page</option>
-                <option value="36">36 per page</option>
-                <option value="100">100 per page</option>
+                <option value="9">9 page</option>
+                <option value="18">18 page</option>
+                <option value="36">36 page</option>
+                <option value="100">100 page</option>
               </select>
             </div>
           </>

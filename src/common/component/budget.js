@@ -99,10 +99,16 @@ export default function Budget() {
       });
 
       // Store in localStorage
-      localStorage.setItem("minBudget", selectedRange.min);
-      localStorage.setItem("maxBudget", selectedRange.max);
+     localStorage.setItem("minBudget", selectedRange.min);
+localStorage.setItem("maxBudget", selectedRange.max);
+localStorage.setItem("location", e.target.value); // on location change
+
     }
   };
+  useEffect(() => {
+  localStorage.setItem("city", city);
+}, [city]);
+
 
   const handleLocationChange = (e) => {
     setLocation(e.target.value);

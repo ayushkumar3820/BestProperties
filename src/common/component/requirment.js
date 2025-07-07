@@ -28,7 +28,6 @@ const propertyConfig = {
             "5+1BHK",
             "Other",
           ],
-          required: true,
         },
       ],
     },
@@ -200,8 +199,8 @@ const propertyConfig = {
         {
           name: "road_width",
           label: "Road Width",
-          type: "select",
-          options: ["20ft", "30ft", "40ft", "50ft+"],
+          type: "selectOrText",
+          option: ["20ft", "30ft", "40ft", "50ft+"],
         },
         {
           name: "carpet",
@@ -273,13 +272,6 @@ const propertyConfig = {
 
 const step3Fields = [
   {
-    name: "requirement",
-    label: "Any Specific Requirements ",
-    type: "textarea",
-    placeholder: "Specify any specific requirements (max 200 characters)",
-    maxLength: 200,
-  },
-  {
     name: "timeline",
     label: "Timeline",
     type: "select",
@@ -293,26 +285,30 @@ const step3Fields = [
       "6+ Months",
     ],
   },
+  {
+    name: "requirement",
+    label: "Any Specific Requirements",
+    type: "textarea",
+    placeholder: "Specify any specific requirements (max 200 characters)",
+    maxLength: 200,
+  },
 ];
 
 export default function BuyProperty() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState("residential");
   const [activeButton, setActiveButton] = useState("");
   const [activeCommercial, setActiveCommercial] = useState("");
   const [currentCategory, setCurrentCategory] = useState("");
   const [message, setMessage] = useState("");
   const [errorModal, setErrorModal] = useState({ isOpen: false, messages: [] });
-  const [storedata, setStoreData] = useState({
-    phone: "",
-    person: "",
-    email: "",
-  });
-  const [selectedFiles] = useState([]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [showBackButton, setShowBackButton] = useState(false);
+  const [storedata, setStoreData] = useState({
+    userMobile: "",
+    person: "",
+  });
 
   const [propertyDetails, setPropertyDetails] = useState({
     bhk: "",
@@ -320,40 +316,37 @@ export default function BuyProperty() {
     floor_no: "",
     total_floors: "",
     land: "",
+    land_unit: "",
     built: "",
+    built_unit: "",
     additional: "",
+    additional_unit: "",
     furnishing_status: "",
     carpet: "",
+    carpet_unit: "",
     property_type: "",
-    property_age: "",
     sqft: "",
+    sqft_unit: "",
     width_length: "",
     road_width: "",
-    roof_height: "",
-    city: "",
+    road_width_unit: "",
     address: "",
-    preferred_location: "",
-
-    budget: "",
-    max_budget: "",
-    home_loan: "",
     requirement: "",
-    source: "",
-
     timeline: "",
   });
 
-  const isLoggedIn = !!localStorage.getItem("token");
-
   useEffect(() => {
-    const authToken = localStorage.getItem("token");
-    if (!authToken) {
-      setStoreData({ phone: "", person: "", email: "" });
-    } else {
-      const phone = localStorage.getItem("phone") || "";
-      const person = localStorage.getItem("person") || "";
-      const email = localStorage.getItem("email") || "";
-      setStoreData({ phone, person, email });
+    const buyerData = localStorage.getItem("buyerFormData");
+    if (buyerData) {
+      try {
+        const parsedBuyerData = JSON.parse(buyerData);
+        const userMobile = parsedBuyerData.mobile || "";
+        const person = parsedBuyerData.uName || "";
+        setStoreData({ userMobile, person });
+      } catch (err) {
+        console.error("Invalid buyerFormData format", err);
+        setStoreData({ userMobile: "", person: "" });
+      }
     }
   }, []);
 
@@ -362,8 +355,7 @@ export default function BuyProperty() {
     setCurrentCategory(e.target.value);
     setPropertyDetails((prev) => ({
       ...prev,
-      propertyType: e.target.value,
-      propertyType_sub: "",
+      property_type: e.target.value,
     }));
     setActiveButton("");
     setActiveCommercial("");
@@ -371,10 +363,10 @@ export default function BuyProperty() {
   };
 
   const handlePropertyDetailsChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setPropertyDetails((prev) => ({
       ...prev,
-      [name]: type === "radio" ? value : value,
+      [name]: value,
     }));
   };
 
@@ -385,8 +377,8 @@ export default function BuyProperty() {
     setSelectedOption("residential");
     setPropertyDetails((prev) => ({
       ...prev,
-      propertyType_sub: type,
-      propertyType: "residential",
+      property_type: "residential",
+      property_type_sub: type,
     }));
     setShowBackButton(true);
   };
@@ -398,8 +390,8 @@ export default function BuyProperty() {
     setSelectedOption("commercial");
     setPropertyDetails((prev) => ({
       ...prev,
-      propertyType_sub: type,
-      propertyType: "commercial",
+      property_type: "commercial",
+      property_type_sub: type,
     }));
     setShowBackButton(true);
   };
@@ -410,151 +402,77 @@ export default function BuyProperty() {
     setShowBackButton(false);
     setPropertyDetails((prev) => ({
       ...prev,
-      propertyType_sub: "",
+      property_type_sub: "",
     }));
   };
 
-  const validateStep = () => {
+  const handleNext = () => {
     const errors = [];
-
-    if (step === 1) {
-      if (!selectedOption) {
-        errors.push(
-          "Please select a property category (Residential or Commercial)"
-        );
-      }
-      if (selectedOption === "residential" && !activeButton) {
-        errors.push("Please select a residential property type");
-      }
-      if (selectedOption === "commercial" && !activeCommercial) {
-        errors.push("Please select a commercial property type");
-      }
-
-      const fields =
-        selectedOption === "residential"
-          ? propertyConfig.residential[activeButton]?.step1 || []
-          : propertyConfig.commercial[activeCommercial]?.step1 || [];
-
-      fields.forEach((field) => {
-        if (
-          field.required &&
-          !propertyDetails[field.name] &&
-          (!field.showIf ||
-            propertyDetails[field.showIf?.field] === field.showIf?.value)
-        ) {
-          errors.push(`Please fill in the required ${field.label} field`);
-        }
-      });
-    } else if (step === 3) {
-      const requiredFields = step3Fields.filter((field) => field.required);
-      requiredFields.forEach((field) => {
-        if (!propertyDetails[field.name]) {
-          errors.push(`Please fill in the required ${field.label} field`);
-        }
-      });
-
-      if (propertyDetails.budget && !/^\d+$/.test(propertyDetails.budget)) {
-        errors.push("Budget must be a valid number");
-      }
-      if (
-        propertyDetails.max_budget &&
-        !/^\d+$/.test(propertyDetails.max_budget)
-      ) {
-        errors.push("Maximum Budget must be a valid number");
-      }
-      if (
-        propertyDetails.zip_code &&
-        !/^\d{6}$/.test(propertyDetails.zip_code)
-      ) {
-        errors.push("Pin Code must be a valid 6-digit number");
-      }
-      if (
-        storedata.email &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(storedata.email)
-      ) {
-        errors.push("Please enter a valid email address");
-      }
-      if (storedata.phone && !/^\d{10}$/.test(storedata.phone)) {
-        errors.push("Please enter a valid 10-digit phone number");
-      }
+    if (!selectedOption) {
+      errors.push("Please select a property category (Residential or Commercial).");
     }
-
+    if (selectedOption && !propertyDetails.property_type_sub) {
+      errors.push(`Please select a ${selectedOption} property type.`);
+    }
     if (errors.length > 0) {
       setErrorModal({ isOpen: true, messages: errors });
-      return false;
+      return;
     }
-    return true;
-  };
-
-  const handleNext = () => {
-    if (validateStep()) {
-      setErrorModal({ isOpen: false, messages: [] });
-      setStep(3);
-    }
+    setErrorModal({ isOpen: false, messages: [] });
+    setStep(3);
   };
 
   const handleBack = () => {
     setErrorModal({ isOpen: false, messages: [] });
-    setStep(1);
-    setShowBackButton(false);
+    if (step === 3) {
+      setStep(1);
+      setShowBackButton(true);
+    } else if (step === 1) {
+      navigate("/budget");
+    }
   };
 
   const handleSubmit = async () => {
-    if (!validateStep()) {
-      return;
-    }
     setIsLoading(true);
     setMessage("");
+    setErrorModal({ isOpen: false, messages: [] });
 
-    const finalPhone = isLoggedIn
-      ? localStorage.getItem("phone") || ""
-      : storedata.phone || "";
-    const finalPerson = isLoggedIn
-      ? localStorage.getItem("person") || ""
-      : storedata.person || "";
-    const finalEmail = isLoggedIn
-      ? localStorage.getItem("email") || ""
-      : storedata.email || "";
-
-    const property_type =
-      currentCategory === "residential" ? activeButton : activeCommercial;
-    const category = currentCategory;
-    const property_for = "Buy";
-
-    if (!property_type || !category) {
-      setErrorModal({
-        isOpen: true,
-        messages: ["Please ensure all property details are selected"],
-      });
+    const { userMobile, person } = storedata;
+    const errors = [];
+    if (!userMobile) {
+      errors.push("Mobile number is required. Please ensure it is stored in your profile.");
+    }
+    if (!person) {
+      errors.push("Name is required. Please ensure it is stored in your profile.");
+    }
+    if (!propertyDetails.timeline) {
+      errors.push("Please select a timeline.");
+    }
+    if (errors.length > 0) {
+      setErrorModal({ isOpen: true, messages: errors });
       setIsLoading(false);
       return;
     }
 
-    const formData = new FormData();
+    const property_type_sub =
+      currentCategory === "residential" ? activeButton : activeCommercial;
+    const category = currentCategory;
+    const property_for = "Buy";
+
     const payload = {
+      infotype: "requirement",
       property_for,
-      property_type,
-      category,
-      uName: finalPerson,
-      mobile: finalPhone,
-      email: finalEmail,
+      property_type: category,
+      property_type_sub,
+      uName: person,
+      mobile: userMobile,
       address: propertyDetails.address,
-      preferred_location: propertyDetails.preferred_location,
-      budget: parseFloat(propertyDetails.budget) || 0,
-      max_budget: parseFloat(propertyDetails.max_budget) || 0,
-      home_loan: propertyDetails.home_loan,
       requirement: propertyDetails.requirement,
       status: "Pending",
-      city: propertyDetails.city,
+       leads_type:"buyer",
       rDate: new Date().toISOString(),
-
-      propertyType_sub: propertyDetails.propertyType_sub,
-      propertyType: propertyDetails.propertyType,
-      source: propertyDetails.source,
-      Profession: propertyDetails.Profession || "",
-      timeline: propertyDetails.timeline,
-      priority: propertyDetails.priority,
       userid: localStorage.getItem("userid") || 0,
+      timeline: propertyDetails.timeline,
       bhk: propertyDetails.bhk,
       carpet: propertyDetails.carpet
         ? `${propertyDetails.carpet} ${propertyDetails.carpet_unit || "sq.ft"}`
@@ -565,34 +483,37 @@ export default function BuyProperty() {
       land: propertyDetails.land
         ? `${propertyDetails.land} ${propertyDetails.land_unit || "sq.ft"}`
         : "",
-      additional: propertyDetails.additional,
-      floor_no: parseInt(propertyDetails.floor_no) || null,
+      additional: propertyDetails.additional
+        ? `${propertyDetails.additional} ${
+            propertyDetails.additional_unit || "acres"
+          }`
+        : "",
+      floor_no: propertyDetails.floor_no,
       total_floors: parseInt(propertyDetails.total_floors) || null,
-
       kothi_story_type: propertyDetails.kothi_story_type,
       furnishing_status: propertyDetails.furnishing_status,
       width_length: propertyDetails.width_length,
-      road_width: propertyDetails.road_width,
-      roof_height: propertyDetails.roof_height,
-
-      sqft: propertyDetails.sqft,
+      road_width: propertyDetails.road_width
+        ? `${propertyDetails.road_width} ${
+            propertyDetails.road_width_unit || "ft"
+          }`
+        : "",
+      sqft: propertyDetails.sqft
+        ? `${propertyDetails.sqft} ${propertyDetails.sqft_unit || "sq.ft"}`
+        : "",
     };
 
-    Object.entries(payload).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    selectedFiles.forEach((file, index) => {
-      formData.append(`image_${index + 1}`, file);
-    });
+    console.log("Submitting payload:", payload);
 
     try {
       const authToken = token || localStorage.getItem("token");
-      const response = await fetch(`${liveUrl}api/Properties/addProperty/`, {
+      const response = await fetch(`${liveUrl}api/Buyer/addBuyer`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authToken || ""}`,
+          "Content-Type": "application/json",
         },
-        body: formData,
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -625,31 +546,49 @@ export default function BuyProperty() {
   };
 
   const renderField = (field) => {
-    const {
-      name,
-      label,
-      type,
-      placeholder,
-      options,
-      option,
-      required,
-      showIf,
-      maxLength,
-    } = field;
+    const { name, label, type, placeholder, options, option, maxLength } = field;
 
-    if (showIf && propertyDetails[showIf.field] !== showIf.value) {
-      return null;
-    }
-
-    if (type === "select") {
+    if (type === "select" && selectedOption && step === 1) {
       return (
         <div key={name} className="mb-4">
           <label
             htmlFor={name}
             className="block text-sm font-medium text-gray-700 mb-1"
+            aria-label={label}
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3">
+            {options.map((option) => (
+              <button
+                key={option}
+                onClick={() =>
+                  handlePropertyDetailsChange({
+                    target: { name, value: option },
+                  })
+                }
+                className={`w-full px-3 py-2 border-2 rounded-lg text-sm font-medium text-center break-words transition-colors ${
+                  propertyDetails[name] === option
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
+                }`}
+                aria-pressed={propertyDetails[name] === option}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    } else if (type === "select") {
+      return (
+        <div key={name} className="mb-4">
+          <label
+            htmlFor={name}
+            className="block text-sm font-medium text-gray-700 mb-1"
+            aria-label={label}
+          >
+            {label}
           </label>
           <select
             id={name}
@@ -667,41 +606,15 @@ export default function BuyProperty() {
           </select>
         </div>
       );
-    } else if (type === "radio") {
-      return (
-        <div key={name} className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
-          </label>
-          <div className="flex flex-wrap gap-4">
-            {options.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name={name}
-                  value={option}
-                  checked={propertyDetails[name] === option}
-                  onChange={handlePropertyDetailsChange}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                />
-                <span className="ml-2 text-sm text-gray-600">
-                  {option.charAt(0).toUpperCase() + option.slice(1)}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      );
     } else if (type === "selectOrText") {
       return (
         <div key={name} className="mb-4">
           <label
             htmlFor={name}
             className="block text-sm font-medium text-gray-700 mb-1"
+            aria-label={label}
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
           </label>
           <div className="flex w-full">
             <input
@@ -723,6 +636,7 @@ export default function BuyProperty() {
                 value={propertyDetails[`${name}_unit`] || option[0]}
                 onChange={handlePropertyDetailsChange}
                 className="h-10 px-3 border border-gray-300 rounded-r-md bg-gray-50 text-sm focus:ring-green-500 focus:border-green-500"
+                aria-label={`${label} unit`}
               >
                 {option.map((unit) => (
                   <option key={unit} value={unit}>
@@ -740,9 +654,9 @@ export default function BuyProperty() {
           <label
             htmlFor={name}
             className="block text-sm font-medium text-gray-700 mb-1"
+            aria-label={label}
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
           </label>
           <textarea
             id={name}
@@ -761,9 +675,9 @@ export default function BuyProperty() {
           <label
             htmlFor={name}
             className="block text-sm font-medium text-gray-700 mb-1"
+            aria-label={label}
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
           </label>
           <input
             id={name}
@@ -794,7 +708,7 @@ export default function BuyProperty() {
                   checked={selectedOption === "residential"}
                   onChange={handleOptionChange}
                   className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
-                  required
+                  aria-label="Residential property category"
                 />
                 <span className="ml-2 text-sm text-gray-600">Residential</span>
               </label>
@@ -806,23 +720,14 @@ export default function BuyProperty() {
                   checked={selectedOption === "commercial"}
                   onChange={handleOptionChange}
                   className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
-                  required
+                  aria-label="Commercial property category"
                 />
                 <span className="ml-2 text-sm text-gray-600">Commercial</span>
               </label>
             </div>
             {selectedOption === "residential" && (
               <>
-                {showBackButton && (
-                  <div className="flex justify-end mb-4">
-                    <button
-                      onClick={handlePropertyBack}
-                      className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none"
-                    >
-                      Back to Residential Options
-                    </button>
-                  </div>
-                )}
+              
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                   {Object.keys(propertyConfig.residential).map((type) => (
                     <button
@@ -835,18 +740,12 @@ export default function BuyProperty() {
                       } ${
                         activeButton && activeButton !== type ? "hidden" : ""
                       }`}
+                      aria-label={`Select ${type} residential property`}
                     >
                       {type}
                     </button>
                   ))}
                 </div>
-                {errorModal.isOpen &&
-                  selectedOption === "residential" &&
-                  !activeButton && (
-                    <div className="mt-2 text-sm text-red-600">
-                      Please select a residential property type
-                    </div>
-                  )}
                 {activeButton &&
                   propertyConfig.residential[activeButton]?.step1 && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -859,16 +758,7 @@ export default function BuyProperty() {
             )}
             {selectedOption === "commercial" && (
               <>
-                {showBackButton && (
-                  <div className="flex justify-end mb-4">
-                    <button
-                      onClick={handlePropertyBack}
-                      className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none"
-                    >
-                      Back to Commercial Options
-                    </button>
-                  </div>
-                )}
+               
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                   {Object.keys(propertyConfig.commercial).map((type) => (
                     <button
@@ -883,18 +773,12 @@ export default function BuyProperty() {
                           ? "hidden"
                           : ""
                       }`}
+                      aria-label={`Select ${type} commercial property`}
                     >
                       {type}
                     </button>
                   ))}
                 </div>
-                {errorModal.isOpen &&
-                  selectedOption === "commercial" &&
-                  !activeCommercial && (
-                    <div className="mt-2 text-sm text-red-600">
-                      Please select a commercial property type
-                    </div>
-                  )}
                 {activeCommercial &&
                   propertyConfig.commercial[activeCommercial]?.step1 && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -930,9 +814,7 @@ export default function BuyProperty() {
         {errorModal.isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-lg font-semibold text-red-600 mb-4">
-                Validation Errors
-              </h2>
+              <h2 className="text-lg font-semibold text-red-600 mb-4">Error</h2>
               <ul className="list-disc list-inside text-sm text-gray-700 mb-4">
                 {errorModal.messages.map((msg, index) => (
                   <li key={index}>{msg}</li>
@@ -941,6 +823,7 @@ export default function BuyProperty() {
               <button
                 onClick={closeModal}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                aria-label="Close error modal"
               >
                 Close
               </button>
@@ -948,18 +831,6 @@ export default function BuyProperty() {
           </div>
         )}
         <div>
-          <div className="flex justify-between items-center text-sm font-medium">
-            <div
-              className={`flex flex-col items-center ${
-                step >= 1 ? "text-blue-600" : "text-gray-400"
-              }`}
-            ></div>
-            <div
-              className={`flex flex-col items-center ${
-                step >= 3 ? "text-blue-600" : "text-gray-400"
-              }`}
-            ></div>
-          </div>
           <div className="my-4 bg-gray-200 h-2 rounded-full">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${

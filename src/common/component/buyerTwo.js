@@ -96,8 +96,11 @@ export default function BuyerTwo() {
   setLoader(true);
   
   // ADD THIS: Store mobile number in localStorage before API call
-  localStorage.setItem("dataKey", store.mobile);
-  localStorage.setItem("userMobile", store.mobile);
+ localStorage.setItem("userType", user);
+localStorage.setItem("name", store.uName);       // ✅ Store name
+localStorage.setItem("userMobile", store.mobile); // ✅ Store mobile
+localStorage.setItem("email", store.email || ""); // ✅ Optional: store email
+
   
   fetch(`${liveUrl}api/Buyer/addBuyer`, {
     method: "POST",

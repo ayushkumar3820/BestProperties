@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { liveUrl, token } from "./url"; 
+import { liveUrl, token } from "./url";
 import Navbar from "./navbar";
 import OurServices from "./ourServices";
 import Searching from "./searching";
@@ -50,12 +50,18 @@ export default function ForgetPassword() {
       return;
     }
 
+    
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     fetch(`${liveUrl}forget-password`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ email }),
     })
       .then((response) => response.json())
