@@ -17,7 +17,8 @@ export default function Budget() {
     minBudget: "",
     maxBudget: "",
   });
-  const [city, setCity] = useState("mohail");
+  const [city, setCity] = useState("Mohali");
+  const [isLoading, setIsLoading] = useState(true); // for initial localStorage check
 
   const formatBudget = (amount) => {
     const num = parseInt(amount, 10);
@@ -68,7 +69,6 @@ export default function Budget() {
       setData(foundData);
       setUserType(storedUserType);
 
-      // Restore budget & location if previously saved
       const savedMin = localStorage.getItem("minBudget");
       const savedMax = localStorage.getItem("maxBudget");
       const savedLocation = localStorage.getItem("location");
@@ -80,10 +80,12 @@ export default function Budget() {
       if (savedLocation) {
         setLocation(savedLocation);
       }
+
+      const savedCity = localStorage.getItem("city");
+      if (savedCity) setCity(savedCity);
+
+      setIsLoading(false);
     } else {
-      alert(
-        "Phone number or user type not found. Please enter your details again."
-      );
       Navigate("/requirment");
     }
   }, [Navigate]);
@@ -98,17 +100,15 @@ export default function Budget() {
         maxBudget: selectedRange.max,
       });
 
-      // Store in localStorage
-     localStorage.setItem("minBudget", selectedRange.min);
-localStorage.setItem("maxBudget", selectedRange.max);
-localStorage.setItem("location", e.target.value); // on location change
-
+      localStorage.setItem("minBudget", selectedRange.min);
+      localStorage.setItem("maxBudget", selectedRange.max);
+      localStorage.setItem("location", e.target.value); // store location as label
     }
   };
-  useEffect(() => {
-  localStorage.setItem("city", city);
-}, [city]);
 
+  useEffect(() => {
+    localStorage.setItem("city", city);
+  }, [city]);
 
   const handleLocationChange = (e) => {
     setLocation(e.target.value);
@@ -176,7 +176,7 @@ localStorage.setItem("location", e.target.value); // on location change
       });
   };
 
-  if (!data || !userType) {
+  if (isLoading) {
     return (
       <div>
         <Navbar />
@@ -245,11 +245,11 @@ localStorage.setItem("location", e.target.value); // on location change
           </div>
 
           <div className="mb-4">
-            <label className="block  mb-1  font-medium]">
+            <label className="block mb-1 font-medium">
               Select City <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full  p-2 border  rounded-none"
+              className="w-full p-2 border rounded-md"
               value={city}
               onChange={(e) => setCity(e.target.value)}
             >

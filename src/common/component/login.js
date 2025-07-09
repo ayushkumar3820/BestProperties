@@ -18,36 +18,55 @@ export default function Login() {
   const [loader, setLoader] = useState(false);
   const [modals, setModals] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  
+  // Registration form state
   const [store, setStore] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
+  
+  // Login form state
   const [newData, setNewData] = useState({
     phone: "",
     password: "",
   });
+  
+  // Forgot password state
   const [forgot, setForgot] = useState({
     email: "",
   });
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
   const handleForgot = (e) => {
     setForgot({ ...forgot, [e.target.name]: e.target.value });
+    setErrorMessage("");
   };
 
   const handleForgotPassword = () => {
     navigate("/forget-password");
   };
+
   const fireForgot = () => {
     setClick(true);
-    console.log("Forgot Password Clicked:", forgot);
+    setErrorMessage("");
+    
     if (!forgot.email) {
-      toast.error("Please enter your email");
+      setErrorMessage("Please enter your email");
       return;
     }
-    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(forgot.email)) {
-      toast.error("Please enter a valid email address");
+    
+    if (!isValidEmail(forgot.email)) {
+      setErrorMessage("Please enter a valid email address");
       return;
     }
 
@@ -65,16 +84,16 @@ export default function Login() {
       .then((data) => {
         console.log("Forgot Password API Response:", data);
         if (data.status === "done") {
-          toast.success("Password reset link sent to your email");
+          setErrorMessage.success("Password reset link sent to your email");
           setModals(false);
           setForgot({ email: "" });
         } else {
-          toast.error(data.message || "Failed to send reset link");
+          setErrorMessage(data.message || "Failed to send reset link");
         }
       })
       .catch((error) => {
         console.error("Forgot Password Error:", error);
-        toast.error("Something went wrong");
+        setErrorMessage("Something went wrong");
       });
   };
 
@@ -91,19 +110,114 @@ export default function Login() {
     setActiveButton(span);
     setClick(false);
     setLoginMessage("");
+    setErrorMessage("");
+    setValidationErrors({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+    });
   };
 
+  // Handle login form changes
   const handleChangeText = (e) => {
-    setNewData({ ...newData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewData({ ...newData, [name]: value });
+    setErrorMessage("");
+    
+    // Real-time validation for login
+    if (name === "phone") {
+      validatePhoneRealTime(value);
+    }
+    if (name === "password") {
+      validatePasswordRealTime(value);
+    }
   };
 
+  // Handle registration form changes
   const handleChange = (e) => {
-    setStore({ ...store, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setStore({ ...store, [name]: value });
+    setErrorMessage("");
+    
+    // Real-time validation for registration
+    validateFieldRealTime(name, value);
   };
 
+  // Real-time validation for individual fields
+  const validateFieldRealTime = (fieldName, value) => {
+    let error = "";
+    
+    switch (fieldName) {
+      case "name":
+        if (!value.trim()) {
+          error = "Name is required";
+        } else if (!validateName(value)) {
+          error = "Name should contain only letters and spaces";
+        }
+        break;
+        
+      case "email":
+        if (!value.trim()) {
+          error = "Email is required";
+        } else if (!isValidEmail(value)) {
+          error = "Please enter a valid email (gmail.com, yahoo.com, etc.)";
+        }
+        break;
+        
+      case "phone":
+        if (!value.trim()) {
+          error = "Mobile number is required";
+        } else if (!validatePhone(value)) {
+          error = "Please enter a valid 10-digit mobile number";
+        }
+        break;
+        
+      case "password":
+        if (!value.trim()) {
+          error = "Password is required";
+        } else if (!validatePassword(value)) {
+          error = "Password must be at least 6 characters long";
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    setValidationErrors(prev => ({
+      ...prev,
+      [fieldName]: error
+    }));
+  };
+
+  // Real-time validation for login phone
+  const validatePhoneRealTime = (value) => {
+    let error = "";
+    if (!value.trim()) {
+      error = "Mobile number is required";
+    } else if (!validatePhone(value)) {
+      error = "Please enter a valid 10-digit mobile number";
+    }
+    setValidationErrors(prev => ({ ...prev, phone: error }));
+  };
+
+  // Real-time validation for login password
+  const validatePasswordRealTime = (value) => {
+    let error = "";
+    if (!value.trim()) {
+      error = "Password is required";
+    } else if (!validatePassword(value)) {
+      error = "Password must be at least 6 characters long";
+    }
+    setValidationErrors(prev => ({ ...prev, password: error }));
+  };
+
+  // Validation functions
   const validatePhone = (phone) => {
     if (!phone) return false;
-    return /^[1-9][0-9]{9}$/.test(phone);
+    const phoneStr = phone.toString();
+    return /^[6-9][0-9]{9}$/.test(phoneStr) && phoneStr.length === 10;
   };
 
   const validatePassword = (password) => {
@@ -113,45 +227,52 @@ export default function Login() {
     return true;
   };
 
+  const validateName = (name) => {
+    if (!name || !name.trim()) return false;
+    return /^[A-Za-z\s]+$/.test(name.trim());
+  };
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@(gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|aol\.com|icloud\.com|protonmail\.com|rediffmail\.com)$/i;
+    return emailRegex.test(email);
+  };
+
+  // Registration API call
   const HandleApi = () => {
     setClick(true);
     setLoader(true);
-    console.log("Register Clicked:", store);
-
-    // Validation checks
-    if (!store.name) {
-      console.log("Validation Failed: No name");
-      toast.error("Please enter your name");
-      setLoader(false);
-      return;
+    setErrorMessage("");
+    
+    // Validate all fields before submission
+    const errors = {};
+    
+    if (!store.name.trim()) {
+      errors.name = "Name is required";
+    } else if (!validateName(store.name)) {
+      errors.name = "Name should contain only letters and spaces";
     }
-    if (!store.email) {
-      console.log("Validation Failed: No email");
-      toast.error("Please enter your email");
-      setLoader(false);
-      return;
+    
+    if (!store.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!isValidEmail(store.email)) {
+      errors.email = "Please enter a valid email (gmail.com, yahoo.com, etc.)";
     }
-    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(store.email)) {
-      console.log("Validation Failed: Invalid email");
-      toast.error("Please enter a valid email address");
-      setLoader(false);
-      return;
+    
+    if (!store.phone.toString().trim()) {
+      errors.phone = "Mobile number is required";
+    } else if (!validatePhone(store.phone)) {
+      errors.phone = "Please enter a valid 10-digit mobile number";
     }
-    if (!store.phone || !validatePhone(store.phone)) {
-      console.log("Validation Failed: Invalid phone");
-      toast.error("Please enter a valid 10-digit phone number");
-      setLoader(false);
-      return;
+    
+    if (!store.password.trim()) {
+      errors.password = "Password is required";
+    } else if (!validatePassword(store.password)) {
+      errors.password = "Password must be at least 6 characters long";
     }
-    if (!store.password) {
-      console.log("Validation Failed: No password");
-      toast.error("Please enter a password");
-      setLoader(false);
-      return;
-    }
-    if (!validatePassword(store.password)) {
-      console.log("Validation Failed: Password too short");
-      toast.error("Password must be at least 6 characters long");
+    
+    // If there are validation errors, show them and stop
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
       setLoader(false);
       return;
     }
@@ -164,16 +285,18 @@ export default function Login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: store.name,
-        email: store.email,
-        phone: store.phone,
+        name: store.name.trim(),
+        email: store.email.trim(),
+        phone: store.phone.toString().trim(),
         password: store.password,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Register API Response:", data); // Debug
+        console.log("Register API Response:", data);
         if (data.status === "done") {
+          localStorage.setItem("name", store.name);
+          localStorage.setItem("email", store.email);
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
@@ -181,38 +304,41 @@ export default function Login() {
             window.location.reload();
           }, 2000);
         } else {
-          toast.error(data.message || "Registration failed");
+          setErrorMessage(data.message || "Registration failed");
           setLoader(false);
         }
       })
       .catch((error) => {
         console.error("Register Error:", error);
-        toast.error("Something went wrong");
+        setErrorMessage("Something went wrong");
         setLoader(false);
       });
   };
+
+  // Login API call
   const handleLogin = () => {
     setClick(true);
     setLoader(true);
-    console.log("Login Clicked:", newData);
-
-    if (!newData.phone) {
-      toast.error("Please enter your phone number");
-      setLoader(false);
-      return;
+    setErrorMessage("");
+    
+    // Validate login fields
+    const errors = {};
+    
+    if (!newData.phone.toString().trim()) {
+      errors.phone = "Mobile number is required";
+    } else if (!validatePhone(newData.phone)) {
+      errors.phone = "Please enter a valid 10-digit mobile number";
     }
-    if (!validatePhone(newData.phone)) {
-      toast.error("Please enter a valid 10-digit phone number");
-      setLoader(false);
-      return;
+    
+    if (!newData.password.trim()) {
+      errors.password = "Password is required";
+    } else if (!validatePassword(newData.password)) {
+      errors.password = "Password must be at least 6 characters long";
     }
-    if (!newData.password) {
-      toast.error("Please enter your password");
-      setLoader(false);
-      return;
-    }
-    if (!validatePassword(newData.password)) {
-      toast.error("Password must be at least 6 characters long");
+    
+    // If there are validation errors, show them and stop
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
       setLoader(false);
       return;
     }
@@ -224,7 +350,7 @@ export default function Login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phone: newData.phone,
+        phone: newData.phone.toString().trim(),
         password: newData.password,
       }),
     })
@@ -235,9 +361,7 @@ export default function Login() {
           localStorage.setItem("token", data.token);
           localStorage.setItem("phone", newData.phone);
           localStorage.setItem("password", newData.password);
-
           toast.success("Login successful");
-          // Redirect to the previous page or default to '/sell-with-us'
           const redirectTo = location.state?.from || "/sell-with-us";
           setTimeout(() => {
             setLoader(false);
@@ -245,16 +369,16 @@ export default function Login() {
           }, 1000);
         } else {
           if (data.message.includes("password")) {
-            toast.error("Incorrect password");
+            setErrorMessage("Incorrect password");
           } else {
-            toast.error(data.message || "Login failed");
+            setErrorMessage(data.message || "Login failed");
           }
           setLoader(false);
         }
       })
       .catch((error) => {
         console.error("Login Error:", error);
-        toast.error("Something went wrong");
+        setErrorMessage("Something went wrong");
         setLoader(false);
       });
   };
@@ -303,6 +427,11 @@ export default function Login() {
           <div className="text-sm text-slate-400">
             Enter your email to receive a password reset link
           </div>
+          {errorMessage && (
+            <div className="text-red-600 text-sm mt-2 text-center">
+              {errorMessage}
+            </div>
+          )}
           <div className="w-full mt-4">
             <input
               placeholder="test@gmail.com"
@@ -313,7 +442,7 @@ export default function Login() {
             />
             <button
               id="forgotPassword"
-              className="mt-3 text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
+              className="mt-3 text-white w-full bg-red-600 p-2 rounded-md font-bold text-2xl"
               type="submit"
               onClick={fireForgot}
             >
@@ -322,6 +451,7 @@ export default function Login() {
           </div>
         </div>
       </Modal>
+      
       <Navbar />
       <div className="border border-green-800"></div>
       <div className="container mx-auto flex mt-14 mb-14 justify-center items-center">
@@ -361,8 +491,10 @@ export default function Login() {
                   Register
                 </button>
               </div>
+              
               <div>
                 {activeButton === "option1" ? (
+                  // LOGIN FORM
                   <>
                     <div className="">
                       {loginMessage && (
@@ -376,9 +508,17 @@ export default function Login() {
                           {loginMessage}
                         </div>
                       )}
-                      <div className="text-lg mt-4 text-black">Phone</div>
+                      {errorMessage && (
+                        <div className="text-red-600 text-sm mt-2 text-center">
+                          {errorMessage}
+                        </div>
+                      )}
+                      
+                      <div className="text-lg mt-4 text-black">Mobile Number</div>
                       <input
-                        className="border w-full p-2 border-green-600 h-10 rounded-md"
+                        className={`border w-full p-2 h-10 rounded-md ${
+                          validationErrors.phone ? 'border-red-500' : 'border-green-600'
+                        }`}
                         type="number"
                         id="phone"
                         name="phone"
@@ -386,18 +526,34 @@ export default function Login() {
                         onChange={handleChangeText}
                         onKeyDown={handleEnterKeyPress}
                         maxLength="10"
+                        placeholder="Enter 10-digit mobile number"
                       />
+                      {validationErrors.phone && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.phone}
+                        </div>
+                      )}
+                      
                       <div className="text-lg mt-4 text-black">Password</div>
                       <input
-                        className="border w-full p-2 border-green-600 h-10 rounded-md"
+                        className={`border w-full p-2 h-10 rounded-md ${
+                          validationErrors.password ? 'border-red-500' : 'border-green-600'
+                        }`}
                         type="password"
                         id="password"
                         name="password"
                         value={newData.password}
                         onChange={handleChangeText}
                         onKeyDown={handleEnterKeyPress}
+                        placeholder="Enter your password"
                       />
+                      {validationErrors.password && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.password}
+                        </div>
+                      )}
                     </div>
+                    
                     <div
                       className="forget-pass-div mt-2"
                       style={{ textAlign: "end" }}
@@ -407,12 +563,12 @@ export default function Login() {
                           fontWeight: "500",
                           textDecoration: "underline",
                         }}
-                        // onClick={() => setModals(true)}
-                        onClick={handleForgotPassword}
+                        onClick={() => setModals(true)}
                       >
                         Forgot Password?
                       </button>
                     </div>
+                    
                     <div
                       onClick={handleLogin}
                       className="flex cursor-pointer rounded-md p-2 w-full justify-center items-center mt-5"
@@ -429,7 +585,7 @@ export default function Login() {
                       ) : (
                         <button
                           id="submitButton"
-                          className="text-white w-full bg-red-600 p-2 rounded-md font-bold text-2x"
+                          className="text-white w-full bg-red-600 p-2 rounded-md font-bold text-2xl"
                           type="submit"
                         >
                           Login
@@ -438,54 +594,97 @@ export default function Login() {
                     </div>
                   </>
                 ) : (
+                  // REGISTRATION FORM
                   <>
-                    <div className="font-bold text-2xl text-black text-center">
+                    <div className="font-bold text-2xl text-black text-center mt-4">
                       Register
                     </div>
-                    <div>
+                    {errorMessage && (
+                      <div className="text-red-600 text-sm mt-2 text-center">
+                        {errorMessage}
+                      </div>
+                    )}
+                    
+                    <div className="mt-4">
                       <div className="text-lg text-black">Name</div>
                       <input
                         onChange={handleChange}
                         value={store.name}
                         name="name"
-                        className="border w-full p-2 h-10 rounded-md"
+                        className={`border w-full p-2 h-10 rounded-md ${
+                          validationErrors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         type="text"
+                        placeholder="Enter your full name"
                       />
+                      {validationErrors.name && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.name}
+                        </div>
+                      )}
                     </div>
+                    
                     <div className="mt-3">
                       <div className="text-lg text-black">Email</div>
                       <input
                         onChange={handleChange}
                         value={store.email}
                         name="email"
-                        className="border w-full p-2 h-10 rounded-md"
+                        className={`border w-full p-2 h-10 rounded-md ${
+                          validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         type="email"
+                        placeholder="user@gmail.com"
                       />
+                      {validationErrors.email && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.email}
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <div className="mt-2 text-lg text-black">Password</div>
-                      <input
-                        type="password"
-                        onChange={handleChange}
-                        name="password"
-                        value={store.password}
-                        className="w-full p-2 border h-10 rounded-md"
-                      />
-                    </div>
-                    <div>
-                      <div className="mt-2 text-lg text-black">Mobile</div>
+                    
+                    <div className="mt-3">
+                      <div className="text-lg text-black">Mobile Number</div>
                       <input
                         type="number"
                         onChange={handleChange}
                         name="phone"
                         value={store.phone}
-                        className="w-full p-2 border h-10 rounded-md"
+                        className={`w-full p-2 border h-10 rounded-md ${
+                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         maxLength="10"
+                        placeholder="Enter 10-digit mobile number"
                       />
+                      {validationErrors.phone && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.phone}
+                        </div>
+                      )}
                     </div>
+                    
+                    <div className="mt-3">
+                      <div className="text-lg text-black">Password</div>
+                      <input
+                        type="password"
+                        onChange={handleChange}
+                        name="password"
+                        value={store.password}
+                        className={`w-full p-2 border h-10 rounded-md ${
+                          validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Enter password (min 6 characters)"
+                      />
+                      {validationErrors.password && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.password}
+                        </div>
+                      )}
+                    </div>
+                    
                     <div
                       onClick={HandleApi}
-                      className="bg-white cursor-pointer flex justify-center items-center p-2 w-full mt-2 rounded-md mb-2"
+                      className="bg-white cursor-pointer flex justify-center items-center p-2 w-full mt-4 rounded-md mb-2"
                     >
                       {loader ? (
                         <svg
@@ -512,6 +711,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      
       <OurServices />
       <Searching />
       <BottomBar />

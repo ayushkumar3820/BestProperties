@@ -487,6 +487,7 @@ const propertyConfig = {
           placeholder: "Describe the property type",
         },
       ],
+      step2: [], // No step2 fields for "Other"
     },
   },
   commercial: {
@@ -780,6 +781,7 @@ const propertyConfig = {
           placeholder: "Describe the property type",
         },
       ],
+      step2: [], // No step2 fields for "Other"
     },
   },
 };
@@ -813,6 +815,7 @@ const step3Fields = [
     type: "select",
     placeholder: "City",
     options: ["Mohali", "Kharar", "Zirakpur", "Chandigarh", "Panchkula"],
+    required: true,
   },
   {
     name: "address",
@@ -963,7 +966,6 @@ export default function SellProperty() {
     const limitedFiles = validFiles.slice(0, 4);
     setSelectedFiles(limitedFiles);
 
-    // Generate previews for all selected files
     const previews = [];
     limitedFiles.forEach((file, index) => {
       const reader = new FileReader();
@@ -976,7 +978,6 @@ export default function SellProperty() {
       reader.readAsDataURL(file);
     });
 
-    // Update propertyDetails with file names
     setPropertyDetails((prev) => ({
       ...prev,
       image_one: limitedFiles[0]?.name || "",
@@ -1033,16 +1034,19 @@ export default function SellProperty() {
         selectedOption === "residential"
           ? propertyConfig.residential[activeButton]?.step2 || []
           : propertyConfig.commercial[activeCommercial]?.step2 || [];
-      fields.forEach((field) => {
-        if (
-          field.required &&
-          !propertyDetails[field.name] &&
-          (!field.showIf ||
-            propertyDetails[field.showIf?.field] === field.showIf?.value)
-        ) {
-          errors.push(`Please fill in the required ${field.label} field`);
-        }
-      });
+      // Only validate step2 if fields exist
+      if (fields.length > 0) {
+        fields.forEach((field) => {
+          if (
+            field.required &&
+            !propertyDetails[field.name] &&
+            (!field.showIf ||
+              propertyDetails[field.showIf?.field] === field.showIf?.value)
+          ) {
+            errors.push(`Please fill in the required ${field.label} field`);
+          }
+        });
+      }
     } else if (step === 3) {
       const requiredFields = step3Fields.filter((field) => field.required);
       requiredFields.forEach((field) => {
@@ -1067,7 +1071,17 @@ export default function SellProperty() {
       setClick(false);
       setMessage("");
       setErrorModal({ isOpen: false, messages: [] });
-      setStep((prev) => prev + 1);
+      // Check if step2 fields exist for the selected property type
+      const step2Fields =
+        selectedOption === "residential"
+          ? propertyConfig.residential[activeButton]?.step2 || []
+          : propertyConfig.commercial[activeCommercial]?.step2 || [];
+      if (step === 1 && step2Fields.length === 0) {
+        // Skip step2 if no fields are defined
+        setStep(3);
+      } else {
+        setStep((prev) => prev + 1);
+      }
     }
   };
 
@@ -1075,10 +1089,21 @@ export default function SellProperty() {
     setClick(false);
     setMessage("");
     setErrorModal({ isOpen: false, messages: [] });
-    setStep((prev) => prev - 1);
+    // If on step3 and step2 is empty, go back to step1
+    const step2Fields =
+      selectedOption === "residential"
+        ? propertyConfig.residential[activeButton]?.step2 || []
+        : propertyConfig.commercial[activeCommercial]?.step2 || [];
+    if (step === 3 && step2Fields.length === 0) {
+      setStep(1);
+    } else {
+      setStep((prev) => prev - 1);
+    }
   };
 
   const handleSubmit = async () => {
+    if (!validateStep()) return;
+
     setClick(true);
     setMessage("");
     setIsLoading(true);
@@ -1649,6 +1674,15 @@ export default function SellProperty() {
           </div>
         );
       case 2:
+        const step2Fields =
+          selectedOption === "residential"
+            ? propertyConfig.residential[activeButton]?.step2 || []
+            : propertyConfig.commercial[activeCommercial]?.step2 || [];
+        if (step2Fields.length === 0) {
+          // If no step2 fields, automatically move to step3
+          setStep(3);
+          return null;
+        }
         return (
           <div>
             {selectedOption === "residential" &&
