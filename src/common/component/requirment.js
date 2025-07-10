@@ -16,16 +16,14 @@ const propertyConfig = {
           type: "select",
           placeholder: "Enter Flat/Apartment Type...",
           options: [
-            "1RK/Studio",
-            "1BHK",
             "2BHK",
-            "2+1BHK",
             "3BHK",
-            "3+1BHK",
             "4BHK",
             "4+1BHK",
-            "5BHK",
-            "5+1BHK",
+            "1BHK",
+            "1RK/Studio",
+            "3+1BHK",
+            "2+1BHK",
             "Other",
           ],
         },
@@ -409,7 +407,9 @@ export default function BuyProperty() {
   const handleNext = () => {
     const errors = [];
     if (!selectedOption) {
-      errors.push("Please select a property category (Residential or Commercial).");
+      errors.push(
+        "Please select a property category (Residential or Commercial)."
+      );
     }
     if (selectedOption && !propertyDetails.property_type_sub) {
       errors.push(`Please select a ${selectedOption} property type.`);
@@ -440,10 +440,14 @@ export default function BuyProperty() {
     const { userMobile, person } = storedata;
     const errors = [];
     if (!userMobile) {
-      errors.push("Mobile number is required. Please ensure it is stored in your profile.");
+      errors.push(
+        "Mobile number is required. Please ensure it is stored in your profile."
+      );
     }
     if (!person) {
-      errors.push("Name is required. Please ensure it is stored in your profile.");
+      errors.push(
+        "Name is required. Please ensure it is stored in your profile."
+      );
     }
     if (!propertyDetails.timeline) {
       errors.push("Please select a timeline.");
@@ -469,7 +473,7 @@ export default function BuyProperty() {
       address: propertyDetails.address,
       requirement: propertyDetails.requirement,
       status: "Pending",
-       leads_type:"buyer",
+      leads_type: "buyer",
       rDate: new Date().toISOString(),
       userid: localStorage.getItem("userid") || 0,
       timeline: propertyDetails.timeline,
@@ -546,7 +550,8 @@ export default function BuyProperty() {
   };
 
   const renderField = (field) => {
-    const { name, label, type, placeholder, options, option, maxLength } = field;
+    const { name, label, type, placeholder, options, option, maxLength } =
+      field;
 
     if (type === "select" && selectedOption && step === 1) {
       return (
@@ -727,7 +732,6 @@ export default function BuyProperty() {
             </div>
             {selectedOption === "residential" && (
               <>
-              
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                   {Object.keys(propertyConfig.residential).map((type) => (
                     <button
@@ -758,7 +762,6 @@ export default function BuyProperty() {
             )}
             {selectedOption === "commercial" && (
               <>
-               
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                   {Object.keys(propertyConfig.commercial).map((type) => (
                     <button

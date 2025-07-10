@@ -5,16 +5,17 @@ import OurServices from "./ourServices";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
+import { toWords } from "number-to-words";
 
 const propertyConfig = {
-  residential: {
-    "Flat/Apartment": {
+  Residential: {
+    "Apartment / Flat": {
       step1: [
         {
           name: "bhk",
-          label: "Flat/Apartment Type",
+          label: "Apartment/Flat Type",
           type: "select",
-          placeholder: "Enter Flat/Apartment Type...",
+          placeholder: "Enter Apartment/Flat Type...",
           options: [
             "1RK/Studio",
             "1BHK",
@@ -176,7 +177,7 @@ const propertyConfig = {
         },
       ],
     },
-    "Independent/Builder Floor": {
+    "Builder Floor": {
       step1: [
         {
           name: "floor_no",
@@ -257,7 +258,7 @@ const propertyConfig = {
         },
       ],
     },
-    Plot: {
+    "Residential Plot": {
       step1: [
         {
           name: "land",
@@ -275,8 +276,8 @@ const propertyConfig = {
         {
           name: "road_width",
           label: "Road Width",
-          type: "select",
-          options: ["20ft", "30ft", "40ft", "50ft+"],
+          type: "selectOrText",
+          option: ["20ft", "30ft", "40ft", "50ft+"],
         },
       ],
       step2: [
@@ -406,7 +407,7 @@ const propertyConfig = {
         },
       ],
     },
-    Farmhouse: {
+    "Farm House": {
       step1: [
         {
           name: "land",
@@ -487,7 +488,7 @@ const propertyConfig = {
           placeholder: "Describe the property type",
         },
       ],
-      step2: [], // No step2 fields for "Other"
+      step2: [],
     },
   },
   commercial: {
@@ -562,7 +563,7 @@ const propertyConfig = {
         },
       ],
     },
-    "Plot/Land": {
+    Plot: {
       step1: [
         {
           name: "land",
@@ -580,8 +581,8 @@ const propertyConfig = {
         {
           name: "road_width",
           label: "Road Width",
-          type: "select",
-          options: ["20ft", "30ft", "40ft", "50ft+"],
+          type: "selectOrText",
+          option: ["20ft", "30ft", "40ft", "50ft+"],
         },
         {
           name: "commercial_useType",
@@ -634,7 +635,7 @@ const propertyConfig = {
         },
       ],
     },
-    Industry: {
+    "Industry/Factory": {
       step1: [
         {
           name: "built",
@@ -781,7 +782,7 @@ const propertyConfig = {
           placeholder: "Describe the property type",
         },
       ],
-      step2: [], // No step2 fields for "Other"
+      step2: [],
     },
   },
 };
@@ -824,21 +825,9 @@ const step3Fields = [
     placeholder: "Location",
     required: true,
   },
-  {
-    name: "zip_code",
-    label: "Pin Code",
-    type: "text",
-    placeholder: "Pin Code",
-  },
-  {
-    name: "map_link",
-    label: "Map Link",
-    type: "text",
-    placeholder: "Map Link",
-  },
 ];
 
-export default function SellProperty() {
+export default function SaleProperty() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [click, setClick] = useState(false);
@@ -987,10 +976,41 @@ export default function SellProperty() {
     }));
   };
 
-  const handleClickButton = (type) => setActive(type);
+  const handleClickButton = (type) => {
+    setActive(type);
+    // Update residential property types based on Rent/Lease or Sale
+    if (type === "Rent/Lease") {
+      setPropertyDetails((prev) => ({
+        ...prev,
+        property_type: "",
+      }));
+      setActiveButton("");
+      setActiveCommercial("");
+    }
+  };
+
   const handleCommercial = (type) => setActiveCommercial(type);
   const handleproperty_type = (type) => setActiveButton(type);
-  const handleOptionChange = (e) => setSelectedOption(e.target.value);
+  const handleOptionChange = (e) => {
+    setSelectedOption(e.target.value);
+    setActiveButton("");
+    setActiveCommercial("");
+  };
+
+  const getResidentialPropertyTypes = () => {
+    if (active === "Rent/Lease") {
+      return [
+        "Apartment / Flat",
+        "Independent House / Kothi",
+        "Residential Plot",
+        "Farm House",
+        "Builder Floor",
+        "Server Apartment",
+        "Other",
+      ];
+    }
+    return Object.keys(propertyConfig.Residential);
+  };
 
   const validateStep = () => {
     setMessage("");
@@ -999,10 +1019,10 @@ export default function SellProperty() {
 
     if (step === 1) {
       if (!active) {
-        errors.push("Please select a property action (Sell or Rent/Lease)");
+        errors.push("Please select a property action (Sale or Rent/Lease)");
       }
-      if (selectedOption === "residential" && !activeButton) {
-        errors.push("Please select a residential property type");
+      if (selectedOption === "Residential" && !activeButton) {
+        errors.push("Please select a Residential property type");
       }
       if (selectedOption === "commercial" && !activeCommercial) {
         errors.push("Please select a commercial property type");
@@ -1016,8 +1036,8 @@ export default function SellProperty() {
         }
       }
       const fields =
-        selectedOption === "residential"
-          ? propertyConfig.residential[activeButton]?.step1 || []
+        selectedOption === "Residential"
+          ? propertyConfig.Residential[activeButton]?.step1 || []
           : propertyConfig.commercial[activeCommercial]?.step1 || [];
       fields.forEach((field) => {
         if (
@@ -1031,10 +1051,9 @@ export default function SellProperty() {
       });
     } else if (step === 2) {
       const fields =
-        selectedOption === "residential"
-          ? propertyConfig.residential[activeButton]?.step2 || []
+        selectedOption === "Residential"
+          ? propertyConfig.Residential[activeButton]?.step2 || []
           : propertyConfig.commercial[activeCommercial]?.step2 || [];
-      // Only validate step2 if fields exist
       if (fields.length > 0) {
         fields.forEach((field) => {
           if (
@@ -1071,13 +1090,11 @@ export default function SellProperty() {
       setClick(false);
       setMessage("");
       setErrorModal({ isOpen: false, messages: [] });
-      // Check if step2 fields exist for the selected property type
       const step2Fields =
-        selectedOption === "residential"
-          ? propertyConfig.residential[activeButton]?.step2 || []
+        selectedOption === "Residential"
+          ? propertyConfig.Residential[activeButton]?.step2 || []
           : propertyConfig.commercial[activeCommercial]?.step2 || [];
       if (step === 1 && step2Fields.length === 0) {
-        // Skip step2 if no fields are defined
         setStep(3);
       } else {
         setStep((prev) => prev + 1);
@@ -1089,10 +1106,9 @@ export default function SellProperty() {
     setClick(false);
     setMessage("");
     setErrorModal({ isOpen: false, messages: [] });
-    // If on step3 and step2 is empty, go back to step1
     const step2Fields =
-      selectedOption === "residential"
-        ? propertyConfig.residential[activeButton]?.step2 || []
+      selectedOption === "Residential"
+        ? propertyConfig.Residential[activeButton]?.step2 || []
         : propertyConfig.commercial[activeCommercial]?.step2 || [];
     if (step === 3 && step2Fields.length === 0) {
       setStep(1);
@@ -1113,7 +1129,7 @@ export default function SellProperty() {
       : storedata.phone;
     const finalPerson = isLoggedIn
       ? localStorage.getItem("person") || ""
-      : storedata.person;
+      : storedata?.person || "";
 
     if (!finalPhone || !/^\d{10}$/.test(finalPhone)) {
       setErrorModal({
@@ -1125,7 +1141,7 @@ export default function SellProperty() {
     }
 
     const property_type =
-      selectedOption === "residential" ? activeButton : activeCommercial;
+      selectedOption === "Residential" ? activeButton : activeCommercial;
     const category = selectedOption;
     const property_for = active;
 
@@ -1138,22 +1154,44 @@ export default function SellProperty() {
       return;
     }
 
+    const rawBudget =
+      propertyDetails.budget?.toString().replace(/,/g, "") || "0";
+    const numericBudget = parseFloat(rawBudget) || 0;
+    const budgetUnit = (propertyDetails.budgetUnit || "Cr").trim();
+
+    let budgetInWords = toWords(Math.floor(numericBudget));
+    switch (budgetUnit.toLowerCase()) {
+      case "lac":
+      case "lakh":
+        budgetInWords += " Lakh";
+        break;
+      case "cr":
+      case "crore":
+        budgetInWords += " Crore";
+        break;
+      case "k":
+      case "thousand":
+        budgetInWords += " Thousand";
+        break;
+      default:
+        budgetInWords += ` ${budgetUnit}`;
+    }
+
+    const amenties_update = propertyDetails.amenities.join("~-~");
+
     const payload = {
       property_for,
       property_type,
       category,
       name: propertyDetails.name,
       description: propertyDetails.description,
-      budget: parseFloat(propertyDetails.budget) || 0,
-      budget_in_words: propertyDetails.budget
-        ? `${propertyDetails.budget} ${propertyDetails.budget_unit || "Cr"}`
-        : "",
+      budget: numericBudget, // Only numeric value, no unit
+      budget_in_words: budgetInWords,
       phone: finalPhone,
       person: finalPerson,
       city: propertyDetails.city,
       address: propertyDetails.address,
-      zip_code: propertyDetails.zip_code,
-      map_link: propertyDetails.map_link,
+      main_site: "Frontend",
       bhk: propertyDetails.bhk,
       bedrooms: propertyDetails.bedrooms,
       bathrooms: propertyDetails.bathrooms,
@@ -1168,7 +1206,7 @@ export default function SellProperty() {
         : "",
       additional: propertyDetails.additional,
       additional_value: propertyDetails.additional_value,
-      amenities: JSON.stringify(propertyDetails.amenities),
+      amenities: amenties_update,
       image_one: propertyDetails.image_one,
       image_two: propertyDetails.image_two,
       image_three: propertyDetails.image_three,
@@ -1552,14 +1590,14 @@ export default function SellProperty() {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
-                onClick={() => handleClickButton("Sell")}
+                onClick={() => handleClickButton("Sale")}
                 className={`w-full h-12 px-4 border-2 rounded-lg text-sm font-medium transition-colors ${
-                  active === "Sell"
+                  active === "Sale"
                     ? "bg-black text-white border-black"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                Sell
+                Sale
               </button>
               <button
                 onClick={() => handleClickButton("Rent/Lease")}
@@ -1574,7 +1612,7 @@ export default function SellProperty() {
             </div>
             {click && active === "" && (
               <div className="mt-2 text-sm text-red-600">
-                Please select a property action (Sell or Rent/Lease)
+                Please select a property action (Sale or Rent/Lease)
               </div>
             )}
             <div className="flex gap-6 mt-4">
@@ -1582,8 +1620,8 @@ export default function SellProperty() {
                 <input
                   type="radio"
                   name="category"
-                  value="residential"
-                  checked={selectedOption === "residential"}
+                  value="Residential"
+                  checked={selectedOption === "Residential"}
                   onChange={handleOptionChange}
                   className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
                   required
@@ -1603,10 +1641,10 @@ export default function SellProperty() {
                 <span className="ml-2 text-sm text-gray-600">Commercial</span>
               </label>
             </div>
-            {selectedOption === "residential" && (
+            {selectedOption === "Residential" && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-                  {Object.keys(propertyConfig.residential).map((type) => (
+                  {getResidentialPropertyTypes().map((type) => (
                     <button
                       key={type}
                       onClick={() => handleproperty_type(type)}
@@ -1621,16 +1659,16 @@ export default function SellProperty() {
                   ))}
                 </div>
                 {click &&
-                  selectedOption === "residential" &&
+                  selectedOption === "Residential" &&
                   activeButton === "" && (
                     <div className="mt-2 text-sm text-red-600">
-                      Please select a residential property type
+                      Please select a Residential property type
                     </div>
                   )}
                 {activeButton &&
-                  propertyConfig.residential[activeButton]?.step1 && (
+                  propertyConfig.Residential[activeButton]?.step1 && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {propertyConfig.residential[activeButton].step1.map(
+                      {propertyConfig.Residential[activeButton].step1.map(
                         renderField
                       )}
                     </div>
@@ -1640,7 +1678,15 @@ export default function SellProperty() {
             {selectedOption === "commercial" && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-                  {Object.keys(propertyConfig.commercial).map((type) => (
+                  {[
+                    "Office",
+                    "Retail",
+                    "Plot",
+                    "Storage",
+                    "Industry/Factory",
+                    "Hospital",
+                    "Other",
+                  ].map((type) => (
                     <button
                       key={type}
                       onClick={() => handleCommercial(type)}
@@ -1675,21 +1721,20 @@ export default function SellProperty() {
         );
       case 2:
         const step2Fields =
-          selectedOption === "residential"
-            ? propertyConfig.residential[activeButton]?.step2 || []
+          selectedOption === "Residential"
+            ? propertyConfig.Residential[activeButton]?.step2 || []
             : propertyConfig.commercial[activeCommercial]?.step2 || [];
         if (step2Fields.length === 0) {
-          // If no step2 fields, automatically move to step3
           setStep(3);
           return null;
         }
         return (
           <div>
-            {selectedOption === "residential" &&
+            {selectedOption === "Residential" &&
               activeButton &&
-              propertyConfig.residential[activeButton]?.step2 && (
+              propertyConfig.Residential[activeButton]?.step2 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {propertyConfig.residential[activeButton].step2.map(
+                  {propertyConfig.Residential[activeButton].step2.map(
                     renderField
                   )}
                 </div>

@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
-import Modal from "react-modal";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { liveUrl, token } from "./url";
@@ -16,86 +14,36 @@ export default function Login() {
   const [activeButton, setActiveButton] = useState("option1");
   const [click, setClick] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [modals, setModals] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  
-  // Registration form state
+  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [showTerms, setShowTerms] = useState(false);
+
   const [store, setStore] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
-  
-  // Login form state
+
   const [newData, setNewData] = useState({
     phone: "",
     password: "",
   });
-  
-  // Forgot password state
-  const [forgot, setForgot] = useState({
-    email: "",
+
+  const [fieldTouched, setFieldTouched] = useState({
+    name: false,
+    email: false,
+    phone: false,
+    password: false,
   });
 
-  // Validation errors state
   const [validationErrors, setValidationErrors] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
-
-  const handleForgot = (e) => {
-    setForgot({ ...forgot, [e.target.name]: e.target.value });
-    setErrorMessage("");
-  };
-
-  const handleForgotPassword = () => {
-    navigate("/forget-password");
-  };
-
-  const fireForgot = () => {
-    setClick(true);
-    setErrorMessage("");
-    
-    if (!forgot.email) {
-      setErrorMessage("Please enter your email");
-      return;
-    }
-    
-    if (!isValidEmail(forgot.email)) {
-      setErrorMessage("Please enter a valid email address");
-      return;
-    }
-
-    fetch(`${liveUrl}api/User/forgotPassword`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: forgot.email,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Forgot Password API Response:", data);
-        if (data.status === "done") {
-          setErrorMessage.success("Password reset link sent to your email");
-          setModals(false);
-          setForgot({ email: "" });
-        } else {
-          setErrorMessage(data.message || "Failed to send reset link");
-        }
-      })
-      .catch((error) => {
-        console.error("Forgot Password Error:", error);
-        setErrorMessage("Something went wrong");
-      });
-  };
 
   const handleEnterKeyPress = (event) => {
     if (event.key === "Enter") {
@@ -117,111 +65,155 @@ export default function Login() {
       phone: "",
       password: "",
     });
+    setFieldTouched({
+      name: false,
+      email: false,
+      phone: false,
+      password: false,
+    });
   };
 
-  // Handle login form changes
   const handleChangeText = (e) => {
     const { name, value } = e.target;
-    setNewData({ ...newData, [name]: value });
-    setErrorMessage("");
-    
-    // Real-time validation for login
+    setFieldTouched((prev) => ({ ...prev, [name]: true }));
+
     if (name === "phone") {
-      validatePhoneRealTime(value);
+      const numericValue = value.replace(/\D/g, "").slice(0, 10);
+      setNewData({ ...newData, [name]: numericValue });
+      if (fieldTouched[name]) {
+        validatePhoneRealTime(numericValue);
+      }
+    } else if (name === "password") {
+      const limitedValue = value.slice(0, 6);
+      setNewData({ ...newData, [name]: limitedValue });
+      if (fieldTouched[name]) {
+        validatePasswordRealTime(limitedValue);
+      }
+    } else {
+      setNewData({ ...newData, [name]: value });
     }
-    if (name === "password") {
-      validatePasswordRealTime(value);
-    }
+    setErrorMessage("");
   };
 
-  // Handle registration form changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setStore({ ...store, [name]: value });
+    setFieldTouched((prev) => ({ ...prev, [name]: true }));
+
+    if (name === "phone") {
+      const numericValue = value.replace(/\D/g, "").slice(0, 10);
+      setStore({ ...store, [name]: numericValue });
+      if (fieldTouched[name]) {
+        validateFieldRealTime(name, numericValue);
+      }
+    } else if (name === "password") {
+      const limitedValue = value.slice(0, 6);
+      setStore({ ...store, [name]: limitedValue });
+      if (fieldTouched[name]) {
+        validateFieldRealTime(name, limitedValue);
+      }
+    } else {
+      setStore({ ...store, [name]: value });
+      if (fieldTouched[name]) {
+        validateFieldRealTime(name, value);
+      }
+    }
     setErrorMessage("");
-    
-    // Real-time validation for registration
-    validateFieldRealTime(name, value);
   };
 
-  // Real-time validation for individual fields
+  const handleBlur = (fieldName) => {
+    setFieldTouched((prev) => ({ ...prev, [fieldName]: true }));
+    if (activeButton === "option1") {
+      if (fieldName === "phone") {
+        validatePhoneRealTime(newData.phone);
+      } else if (fieldName === "password") {
+        validatePasswordRealTime(newData.password);
+      }
+    } else {
+      const value = store[fieldName];
+      validateFieldRealTime(fieldName, value);
+    }
+  };
+
   const validateFieldRealTime = (fieldName, value) => {
     let error = "";
-    
     switch (fieldName) {
       case "name":
         if (!value.trim()) {
           error = "Name is required";
-        } else if (!validateName(value)) {
+        } else if (value.length < 2) {
+          error = "Name must be at least 2 characters long";
+        } else if (!/^[A-Za-z\s]+$/.test(value.trim())) {
           error = "Name should contain only letters and spaces";
         }
         break;
-        
       case "email":
-        if (!value.trim()) {
-          error = "Email is required";
-        } else if (!isValidEmail(value)) {
-          error = "Please enter a valid email (gmail.com, yahoo.com, etc.)";
+        if (value.trim() && !isValidEmail(value)) {
+          error = "Please enter a valid email address";
         }
         break;
-        
       case "phone":
         if (!value.trim()) {
           error = "Mobile number is required";
-        } else if (!validatePhone(value)) {
+        } else if (value.length < 10) {
+          error = `Please enter ${10 - value.length} more digit${
+            10 - value.length > 1 ? "s" : ""
+          }`;
+        } else if (!/^\d{10}$/.test(value)) {
           error = "Please enter a valid 10-digit mobile number";
         }
         break;
-        
       case "password":
         if (!value.trim()) {
           error = "Password is required";
-        } else if (!validatePassword(value)) {
-          error = "Password must be at least 6 characters long";
+        } else if (value.length < 6) {
+          error = `Password must be exactly 6 characters long (${
+            6 - value.length
+          } more needed)`;
         }
         break;
-        
       default:
         break;
     }
-    
-    setValidationErrors(prev => ({
+    setValidationErrors((prev) => ({
       ...prev,
-      [fieldName]: error
+      [fieldName]: error,
     }));
   };
 
-  // Real-time validation for login phone
   const validatePhoneRealTime = (value) => {
     let error = "";
     if (!value.trim()) {
       error = "Mobile number is required";
-    } else if (!validatePhone(value)) {
+    } else if (value.length < 10) {
+      error = `Please enter ${10 - value.length} more digit${
+        10 - value.length > 1 ? "s" : ""
+      }`;
+    } else if (!/^\d{10}$/.test(value)) {
       error = "Please enter a valid 10-digit mobile number";
     }
-    setValidationErrors(prev => ({ ...prev, phone: error }));
+    setValidationErrors((prev) => ({ ...prev, phone: error }));
   };
 
-  // Real-time validation for login password
   const validatePasswordRealTime = (value) => {
     let error = "";
     if (!value.trim()) {
       error = "Password is required";
-    } else if (!validatePassword(value)) {
-      error = "Password must be at least 6 characters long";
+    } else if (value.length < 6) {
+      error = `Password must be exactly 6 characters long (${
+        6 - value.length
+      } more needed)`;
     }
-    setValidationErrors(prev => ({ ...prev, password: error }));
+    setValidationErrors((prev) => ({ ...prev, password: error }));
   };
 
-  // Validation functions
   const validatePhone = (phone) => {
     if (!phone) return false;
     const phoneStr = phone.toString();
-    return /^[6-9][0-9]{9}$/.test(phoneStr) && phoneStr.length === 10;
+    return /^\d{10}$/.test(phoneStr);
   };
 
   const validatePassword = (password) => {
-    if (!password || password.length < 6) {
+    if (!password || password.length !== 6) {
       return false;
     }
     return true;
@@ -229,55 +221,59 @@ export default function Login() {
 
   const validateName = (name) => {
     if (!name || !name.trim()) return false;
-    return /^[A-Za-z\s]+$/.test(name.trim());
+    return /^[A-Za-z\s]+$/.test(name.trim()) && name.trim().length >= 2;
   };
 
   const isValidEmail = (email) => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@(gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|aol\.com|icloud\.com|protonmail\.com|rediffmail\.com)$/i;
-    return emailRegex.test(email);
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{2,}$/;
+    return emailRegex.test(email.trim());
   };
 
-  // Registration API call
+  const handleCheckboxChange = (e) => {
+    setAgreeTerms(e.target.checked);
+  };
+
   const HandleApi = () => {
     setClick(true);
     setLoader(true);
     setErrorMessage("");
-    
-    // Validate all fields before submission
+
+    setFieldTouched({
+      name: true,
+      email: true,
+      phone: true,
+      password: true,
+    });
+
     const errors = {};
-    
     if (!store.name.trim()) {
       errors.name = "Name is required";
     } else if (!validateName(store.name)) {
-      errors.name = "Name should contain only letters and spaces";
+      errors.name = "Name should contain only letters and spaces (min 2 characters)";
     }
-    
-    if (!store.email.trim()) {
-      errors.email = "Email is required";
-    } else if (!isValidEmail(store.email)) {
-      errors.email = "Please enter a valid email (gmail.com, yahoo.com, etc.)";
+
+    if (store.email.trim() && !isValidEmail(store.email)) {
+      errors.email = "Please enter a valid email address";
     }
-    
+
     if (!store.phone.toString().trim()) {
       errors.phone = "Mobile number is required";
     } else if (!validatePhone(store.phone)) {
       errors.phone = "Please enter a valid 10-digit mobile number";
     }
-    
+
     if (!store.password.trim()) {
       errors.password = "Password is required";
     } else if (!validatePassword(store.password)) {
-      errors.password = "Password must be at least 6 characters long";
+      errors.password = "Password must be exactly 6 characters long";
     }
-    
-    // If there are validation errors, show them and stop
+
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setLoader(false);
       return;
     }
 
-    console.log("Sending Register API Request:", store);
     fetch(`${liveUrl}api/User/userRegister`, {
       method: "POST",
       headers: {
@@ -293,10 +289,14 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Register API Response:", data);
         if (data.status === "done") {
-          localStorage.setItem("name", store.name);
-          localStorage.setItem("email", store.email);
+        localStorage.setItem("userName", store.name);
+        
+        localStorage.setItem("userEmail", store.email);
+        localStorage.setItem("userPassword", store.password);
+
+      
+
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
@@ -315,28 +315,29 @@ export default function Login() {
       });
   };
 
-  // Login API call
   const handleLogin = () => {
     setClick(true);
     setLoader(true);
     setErrorMessage("");
-    
-    // Validate login fields
+
+    setFieldTouched({
+      ...fieldTouched,
+      phone: true,
+      password: true,
+    });
+
     const errors = {};
-    
     if (!newData.phone.toString().trim()) {
       errors.phone = "Mobile number is required";
     } else if (!validatePhone(newData.phone)) {
       errors.phone = "Please enter a valid 10-digit mobile number";
     }
-    
     if (!newData.password.trim()) {
       errors.password = "Password is required";
     } else if (!validatePassword(newData.password)) {
-      errors.password = "Password must be at least 6 characters long";
+      errors.password = "Password must be exactly 6 characters long";
     }
-    
-    // If there are validation errors, show them and stop
+
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setLoader(false);
@@ -356,7 +357,6 @@ export default function Login() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Login API Response:", data);
         if (data.status === "done") {
           localStorage.setItem("token", data.token);
           localStorage.setItem("phone", newData.phone);
@@ -383,75 +383,12 @@ export default function Login() {
       });
   };
 
-  const customStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
-    },
+  const handleForgotPassword = () => {
+    navigate("/forget-password");
   };
 
   return (
     <>
-      <Modal
-        isOpen={modals}
-        onRequestClose={() => setModals(false)}
-        style={customStyles}
-      >
-        <div className="lg:w-[400px] w-full">
-          <div className="flex justify-center items-center">
-            <div className="font-bold mb-6 text-2xl text-green-800">
-              Forgot Password
-            </div>
-            <button
-              onClick={() => setModals(false)}
-              className="bg-red-600 absolute top-0 right-0 w-8 h-8 flex justify-center items-center"
-            >
-              <svg
-                fill="white"
-                xmlns="http://www.w3.org/2000/svg"
-                height="1em"
-                viewBox="0 0 384 512"
-              >
-                <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
-              </svg>
-            </button>
-          </div>
-          <div className="py-6 flex justify-center items-center">
-            <img className="w-28" src={Logo} alt="password" />
-          </div>
-          <div className="text-sm text-slate-400">
-            Enter your email to receive a password reset link
-          </div>
-          {errorMessage && (
-            <div className="text-red-600 text-sm mt-2 text-center">
-              {errorMessage}
-            </div>
-          )}
-          <div className="w-full mt-4">
-            <input
-              placeholder="test@gmail.com"
-              onChange={handleForgot}
-              value={forgot.email}
-              name="email"
-              className="border w-full p-2 border-green-600 h-10 rounded-md"
-            />
-            <button
-              id="forgotPassword"
-              className="mt-3 text-white w-full bg-red-600 p-2 rounded-md font-bold text-2xl"
-              type="submit"
-              onClick={fireForgot}
-            >
-              Send Reset Link
-            </button>
-          </div>
-        </div>
-      </Modal>
-      
       <Navbar />
       <div className="border border-green-800"></div>
       <div className="container mx-auto flex mt-14 mb-14 justify-center items-center">
@@ -491,10 +428,8 @@ export default function Login() {
                   Register
                 </button>
               </div>
-              
               <div>
                 {activeButton === "option1" ? (
-                  // LOGIN FORM
                   <>
                     <div className="">
                       {loginMessage && (
@@ -513,47 +448,53 @@ export default function Login() {
                           {errorMessage}
                         </div>
                       )}
-                      
-                      <div className="text-lg mt-4 text-black">Mobile Number</div>
+                      <div className="text-lg mt-4 text-black">
+                        Mobile Number
+                      </div>
                       <input
                         className={`border w-full p-2 h-10 rounded-md ${
-                          validationErrors.phone ? 'border-red-500' : 'border-green-600'
+                          fieldTouched.phone && validationErrors.phone
+                            ? "border-red-500"
+                            : "border-green-600"
                         }`}
-                        type="number"
+                        type="text"
                         id="phone"
                         name="phone"
                         value={newData.phone}
                         onChange={handleChangeText}
+                        onBlur={() => handleBlur("phone")}
                         onKeyDown={handleEnterKeyPress}
                         maxLength="10"
                         placeholder="Enter 10-digit mobile number"
                       />
-                      {validationErrors.phone && (
+                      {fieldTouched.phone && validationErrors.phone && (
                         <div className="text-red-500 text-sm mt-1">
                           {validationErrors.phone}
                         </div>
                       )}
-                      
                       <div className="text-lg mt-4 text-black">Password</div>
                       <input
                         className={`border w-full p-2 h-10 rounded-md ${
-                          validationErrors.password ? 'border-red-500' : 'border-green-600'
+                          fieldTouched.password && validationErrors.password
+                            ? "border-red-500"
+                            : "border-green-600"
                         }`}
                         type="password"
                         id="password"
                         name="password"
                         value={newData.password}
                         onChange={handleChangeText}
+                        onBlur={() => handleBlur("password")}
                         onKeyDown={handleEnterKeyPress}
-                        placeholder="Enter your password"
+                        maxLength="6"
+                        placeholder="Enter your 6-character password"
                       />
-                      {validationErrors.password && (
+                      {fieldTouched.password && validationErrors.password && (
                         <div className="text-red-500 text-sm mt-1">
                           {validationErrors.password}
                         </div>
                       )}
                     </div>
-                    
                     <div
                       className="forget-pass-div mt-2"
                       style={{ textAlign: "end" }}
@@ -562,13 +503,14 @@ export default function Login() {
                         style={{
                           fontWeight: "500",
                           textDecoration: "underline",
+                          color: "#1f2937",
+                          cursor: "pointer",
                         }}
-                        onClick={() => setModals(true)}
+                        onClick={handleForgotPassword}
                       >
-                        Forgot Password?
+                        Forgot Password
                       </button>
                     </div>
-                    
                     <div
                       onClick={handleLogin}
                       className="flex cursor-pointer rounded-md p-2 w-full justify-center items-center mt-5"
@@ -594,7 +536,6 @@ export default function Login() {
                     </div>
                   </>
                 ) : (
-                  // REGISTRATION FORM
                   <>
                     <div className="font-bold text-2xl text-black text-center mt-4">
                       Register
@@ -604,65 +545,49 @@ export default function Login() {
                         {errorMessage}
                       </div>
                     )}
-                    
                     <div className="mt-4">
                       <div className="text-lg text-black">Name</div>
                       <input
                         onChange={handleChange}
                         value={store.name}
                         name="name"
+                        onBlur={() => handleBlur("name")}
                         className={`border w-full p-2 h-10 rounded-md ${
-                          validationErrors.name ? 'border-red-500' : 'border-gray-300'
+                          fieldTouched.name && validationErrors.name
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                         type="text"
                         placeholder="Enter your full name"
                       />
-                      {validationErrors.name && (
+                      {fieldTouched.name && validationErrors.name && (
                         <div className="text-red-500 text-sm mt-1">
                           {validationErrors.name}
                         </div>
                       )}
                     </div>
-                    
-                    <div className="mt-3">
-                      <div className="text-lg text-black">Email</div>
-                      <input
-                        onChange={handleChange}
-                        value={store.email}
-                        name="email"
-                        className={`border w-full p-2 h-10 rounded-md ${
-                          validationErrors.email ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        type="email"
-                        placeholder="user@gmail.com"
-                      />
-                      {validationErrors.email && (
-                        <div className="text-red-500 text-sm mt-1">
-                          {validationErrors.email}
-                        </div>
-                      )}
-                    </div>
-                    
                     <div className="mt-3">
                       <div className="text-lg text-black">Mobile Number</div>
                       <input
-                        type="number"
+                        type="text"
                         onChange={handleChange}
                         name="phone"
                         value={store.phone}
+                        onBlur={() => handleBlur("phone")}
                         className={`w-full p-2 border h-10 rounded-md ${
-                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                          fieldTouched.phone && validationErrors.phone
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
                         maxLength="10"
                         placeholder="Enter 10-digit mobile number"
                       />
-                      {validationErrors.phone && (
+                      {fieldTouched.phone && validationErrors.phone && (
                         <div className="text-red-500 text-sm mt-1">
                           {validationErrors.phone}
                         </div>
                       )}
                     </div>
-                    
                     <div className="mt-3">
                       <div className="text-lg text-black">Password</div>
                       <input
@@ -670,18 +595,60 @@ export default function Login() {
                         onChange={handleChange}
                         name="password"
                         value={store.password}
+                        onBlur={() => handleBlur("password")}
                         className={`w-full p-2 border h-10 rounded-md ${
-                          validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                          fieldTouched.password && validationErrors.password
+                            ? "border-red-500"
+                            : "border-gray-300"
                         }`}
-                        placeholder="Enter password (min 6 characters)"
+                        maxLength="6"
+                        placeholder="Enter 6-character password"
                       />
-                      {validationErrors.password && (
+                      {fieldTouched.password && validationErrors.password && (
                         <div className="text-red-500 text-sm mt-1">
                           {validationErrors.password}
                         </div>
                       )}
                     </div>
-                    
+                    <div className="mt-3">
+                      <div className="text-lg text-black">Email</div>
+                      <input
+                        onChange={handleChange}
+                        value={store.email}
+                        name="email"
+                        onBlur={() => handleBlur("email")}
+                        className={`border w-full p-2 h-10 rounded-md ${
+                          fieldTouched.email && validationErrors.email
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                        type="email"
+                        placeholder="user@gmail.com"
+                      />
+                      {fieldTouched.email && validationErrors.email && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {validationErrors.email}
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={agreeTerms}
+                        onChange={handleCheckboxChange}
+                        className="mr-2 h-4 w-4"
+                      />
+                      <label htmlFor="terms" className="text-sm text-black">
+                        I agree to the{" "}
+                        <span
+                          onClick={() => navigate("/term-and-condition")}
+                          className="text-blue-600 underline cursor-pointer"
+                        >
+                          Terms and Conditions
+                        </span>
+                      </label>
+                    </div>
                     <div
                       onClick={HandleApi}
                       className="bg-white cursor-pointer flex justify-center items-center p-2 w-full mt-4 rounded-md mb-2"
@@ -711,7 +678,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-      
       <OurServices />
       <Searching />
       <BottomBar />

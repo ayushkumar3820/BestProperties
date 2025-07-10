@@ -115,13 +115,15 @@ export default function Navbar() {
   const dropdownItems = isLoggedIn
     ? [
         { path: "/dashboards", label: "Dashboards" },
-        { path: "/wishlist", label: "My Properties" },
+        { path: "/wishlist", label: "WishList" },
         { path: "/forget-password", label: "Forget Password" },
         { path: null, label: "Logout", onClick: handleLogout },
       ]
     : [
         { path: "/login", label: "Login", state: { from: location.pathname } },
-         { path: "/wishlist", label: "My Properties" },
+         { path: "/wishlist", label: "WishList" },
+         {path:"/wishlist",label:"Request  Properties"},
+         {path:"/wishlist",label:""}
         // { path: "/forget-password", label: "Forget Password" },
       ];
 
@@ -171,7 +173,7 @@ export default function Navbar() {
                   className="menu-item text-red-600 font-semibold p-1 lg:px-1 flex items-center gap-1"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span>{isLoggedIn ? "Setting" : "Login"}</span>
+                  <span>{isLoggedIn ? "Profile" : "Login"}</span>
                   <svg
                     className={`w-4 h-4 transform transition-transform ${
                       isDropdownOpen ? "rotate-180" : ""

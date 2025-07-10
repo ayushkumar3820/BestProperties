@@ -85,55 +85,54 @@ export default function BuyerTwo() {
     }
   };
 
- const handleApi = () => {
-  const isMobileValid = ValidateMobile();
-  const isNameValid = ValidateName();
+  const handleApi = () => {
+    const isMobileValid = ValidateMobile();
+    const isNameValid = ValidateName();
 
-  if (!isMobileValid || !isNameValid) {
-    return;
-  }
+    if (!isMobileValid || !isNameValid) {
+      return;
+    }
 
-  setLoader(true);
-  
-  // ADD THIS: Store mobile number in localStorage before API call
- localStorage.setItem("userType", user);
-localStorage.setItem("name", store.uName);       // ✅ Store name
-localStorage.setItem("userMobile", store.mobile); // ✅ Store mobile
-localStorage.setItem("email", store.email || ""); // ✅ Optional: store email
+    setLoader(true);
 
-  
-  fetch(`${liveUrl}api/Buyer/addBuyer`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...store,
-      userType: user,
-      infotype: "personalInfo",
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.status === "done") {
-        setLoader(false);
-        // CHANGE: Don't clear localStorage here, we need mobile number for next pages
-        // localStorage.removeItem("buyerFormData"); // REMOVE THIS 
-        localStorage.setItem("userType",user);
-        navigate("/budget");
-        console.log(data);
-      } else {
-        setLoader(false);
-        setClick("Failed to submit. Please try again.");
-      }
+    // ADD THIS: Store mobile number in localStorage before API call
+    localStorage.setItem("userType", user);
+    localStorage.setItem("name", store.uName);
+    localStorage.setItem("userMobile", store.mobile);
+    localStorage.setItem("email", store.email || "");
+
+    fetch(`${liveUrl}api/Buyer/addBuyer`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...store,
+        userType: user,
+        infotype: "personalInfo",
+      }),
     })
-    .catch((error) => {
-      console.error(error);
-      setLoader(false);
-      setClick("An error occurred. Please try again.");
-    });
-};
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "done") {
+          setLoader(false);
+          // CHANGE: Don't clear localStorage here, we need mobile number for next pages
+          // localStorage.removeItem("buyerFormData"); // REMOVE THIS
+          localStorage.setItem("userType", user);
+          navigate("/budget");
+          console.log(data);
+        } else {
+          setLoader(false);
+          setClick("Failed to submit. Please try again.");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        setLoader(false);
+        setClick("An error occurred. Please try again.");
+      });
+  };
 
   function handleSelectUser(event) {
     setUser(event.target.value);
@@ -151,7 +150,10 @@ localStorage.setItem("email", store.email || ""); // ✅ Optional: store email
             <div className="w-full flex justify-center items-center rounded-md">
               <fieldset>
                 <div className="flex items-center gap-5">
-                  <label className="lg:text-xl font-bold text-sm" htmlFor="option1">
+                  <label
+                    className="lg:text-xl font-bold text-sm"
+                    htmlFor="option1"
+                  >
                     I am
                   </label>
                   <input
@@ -233,5 +235,5 @@ localStorage.setItem("email", store.email || ""); // ✅ Optional: store email
         <BottomBar />
       </div>
     </>
-  )
+  );
 }
