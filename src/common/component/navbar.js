@@ -1,4 +1,3 @@
-// src/components/Navbar.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -8,36 +7,32 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const mobileDropdownRef = useRef(null);
 
   useEffect(() => {
     const checkLoginStatus = () => {
-      const retrievedToken = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
+      const flag = sessionStorage.getItem("isLoggedIn");
       const isValid =
-        retrievedToken &&
-        retrievedToken !== "undefined" &&
-        retrievedToken !== "null" &&
-        retrievedToken.trim();
+        token &&
+        token !== "undefined" &&
+        token !== "null" &&
+        token.trim() &&
+        flag === "true";
       setIsLoggedIn(isValid);
-      if (!isValid && retrievedToken) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("panelTitle");
-        localStorage.removeItem("responseData");
+      if (!isValid && token) {
+        sessionStorage.clear();
       }
     };
+
     checkLoginStatus();
     window.addEventListener("storage", checkLoginStatus);
-    return () => window.removeEventListener("storage", checkLoginStatus);
+    window.addEventListener("sessionStorageChange", checkLoginStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("sessionStorageChange", checkLoginStatus);
+    };
   }, []);
 
   useEffect(() => {
@@ -46,13 +41,43 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("panelTitle");
-    localStorage.removeItem("responseData");
+    sessionStorage.clear();
+    window.dispatchEvent(new Event("sessionStorageChange"));
     setIsLoggedIn(false);
     setIsDropdownOpen(false);
     navigate("/login");
   };
+
+  const menuItems = [
+    { path: "/property", label: "For Sale" },
+    { path: "/buyer-data", label: "Buy" },
+    { path: "/for-rent", label: "For Rent" },
+    { path: "/projects", label: "Projects" },
+    {
+      path: isLoggedIn ? "/sell-with-us" : "/login",
+      label: "Sell With Us",
+      state: !isLoggedIn ? { from: location.pathname } : undefined,
+    },
+    { path: "/home-loan", label: "Home Loan" },
+  ];
+
+  const dropdownItems = isLoggedIn
+    ? [
+        { path: "/dashboards", label: "Dashboards" },
+        { path: "/wishlist", label: "WishList" },
+        { path: "/forget-password", label: "Forget Password" },
+        { path: null, label: "Logout", onClick: handleLogout },
+      ]
+    : [
+        { path: "/login", label: "Login", state: { from: location.pathname } },
+        {
+          path: isLoggedIn ? "/wishlist" : "/login",
+          label: "WishList",
+          state: !isLoggedIn ? { form: location.pathname } : undefined,
+        },
+        { path: "/requestProperties", label: "Request Properties" },
+        { path: "/wishl ist", label: "Recommends Properties" },
+      ];
 
   const renderMenuItem = (item) => {
     if (item.hideWhenLoggedIn && isLoggedIn) return null;
@@ -64,6 +89,7 @@ export default function Navbar() {
       <Link
         key={item.path}
         to={item.path}
+        state={item.state}
         onClick={() => setIsMenuOpen(false)}
         className={className}
       >
@@ -90,7 +116,12 @@ export default function Navbar() {
       isActive ? "bg-green-600 text-white" : ""
     }`;
     return item.path ? (
-      <Link key={item.path} to={item.path} className={className}>
+      <Link
+        key={item.path}
+        to={item.path}
+        state={item.state}
+        className={className}
+      >
         {item.label}
       </Link>
     ) : (
@@ -100,33 +131,6 @@ export default function Navbar() {
     );
   };
 
-  const menuItems = [
-    { path: "/property", label: "For Sale" },
-    { path: "/buyer-data", label: "Buy" },
-    { path: "/for-rent", label: "For Rent" },
-    { path: "/projects", label: "Projects" },
-    {
-      path: isLoggedIn ? "/sell-with-us" : "/login",
-      label: "Sell With Us",
-    },
-    { path: "/home-loan", label: "Home Loan" },
-  ];
-
-  const dropdownItems = isLoggedIn
-    ? [
-        { path: "/dashboards", label: "Dashboards" },
-        { path: "/wishlist", label: "WishList" },
-        { path: "/forget-password", label: "Forget Password" },
-        { path: null, label: "Logout", onClick: handleLogout },
-      ]
-    : [
-        { path: "/login", label: "Login", state: { from: location.pathname } },
-         { path: "/wishlist", label: "WishList" },
-         {path:"/wishlist",label:"Request  Properties"},
-         {path:"/wishlist",label:""}
-        // { path: "/forget-password", label: "Forget Password" },
-      ];
-
   return (
     <div className="relative">
       <div className="w-full bg-white z-50">
@@ -135,7 +139,7 @@ export default function Navbar() {
             <div className="logo-div">
               <Link to="/">
                 <img
-                  className="w-1/1 p-2"
+                  className="w-full p-2"
                   alt="logo"
                   src="https://bestpropertiesmohali.com/assets/images/logo1.png"
                 />
@@ -168,16 +172,12 @@ export default function Navbar() {
             </div>
             <div className="hidden lg:flex lg:ml-2 mb-2 mt-2 lg:gap-5 justify-center items-center nav-items-div">
               {menuItems.map(renderDesktopMenuItem)}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  className="menu-item text-red-600 font-semibold p-1 lg:px-1 flex items-center gap-1"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
+              {/* Desktop Hover Dropdown */}
+              <div className="relative group inline-block">
+                <div className="menu-item text-red-600 font-semibold p-1 lg:px-1 flex items-center gap-1 cursor-pointer">
                   <span>{isLoggedIn ? "Profile" : "Login"}</span>
                   <svg
-                    className={`w-4 h-4 transform transition-transform ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className="w-4 h-4 transform transition-transform group-hover:rotate-180"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -190,33 +190,30 @@ export default function Navbar() {
                       d="M19 7l-7 7-7-7"
                     />
                   </svg>
-                </button>
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                    {dropdownItems.map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={() => {
-                          if (item.path) {
-                            setIsDropdownOpen(false);
-                            setIsMenuOpen(false);
-                            navigate(item.path);
-                          } else item.onClick();
-                        }}
-                        className="block w-full text-left px-4 py-2 text-black hover:bg-green-600 hover:text-white"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                </div>
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50 opacity-0 invisible transition-all duration-500 ease-in-out group-hover:opacity-100 group-hover:visible">
+                  {dropdownItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        if (item.path) {
+                          navigate(item.path, { state: item.state });
+                        } else item.onClick();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-black hover:bg-green-600 hover:text-white"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+          {/* Mobile Dropdown */}
           {isMenuOpen && (
             <div className="lg:hidden flex flex-col bg-white text-center shadow-md absolute top-full left-0 w-full z-50">
               {menuItems.map(renderMenuItem)}
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative" ref={mobileDropdownRef}>
                 <button
                   className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200 w-full flex items-center justify-center gap-1"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -248,7 +245,7 @@ export default function Navbar() {
                           if (item.path) {
                             setIsDropdownOpen(false);
                             setIsMenuOpen(false);
-                            navigate(item.path);
+                            navigate(item.path, { state: item.state });
                           } else item.onClick();
                         }}
                         className="text-left px-4 py-2 text-black hover:bg-green-600 hover:text-white"

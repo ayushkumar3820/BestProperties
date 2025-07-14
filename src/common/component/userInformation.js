@@ -53,6 +53,22 @@ export default function UserInformation() {
     phone: "",
   });
   const [userInfoModal, setUserInfoModal] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const imageList = [
+    propertyData?.image_one_url,
+    propertyData?.image_two_url,
+    propertyData?.image_three_url,
+    propertyData?.image_four_url,
+  ].filter(Boolean);
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % imageList.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
+  };
 
   // Modal styles
   const modalStyles = {
@@ -74,33 +90,26 @@ export default function UserInformation() {
 
   // Check login status and localStorage for user info
   useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    const userName = localStorage.getItem("userName");
-    const userPhone = localStorage.getItem("userPhone");
+    const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const userName = sessionStorage.getItem("userName") || "";
+    const userPhone = sessionStorage.getItem("phone") || "";
+    console.log("Checking login status:", {
+      storedIsLoggedIn,
+      userName,
+      userPhone,
+    });
 
-    console.log("Checking login status:", { storedToken, userName, userPhone });
-
-    if (storedToken) {
+    if (storedIsLoggedIn && userPhone) {
       setIsLoggedIn(true);
       setUserInfo({
-        firstname: userName || "John Doe",
-        phone: userPhone || "1234567890",
+        firstname: userName,
+        phone: userPhone,
       });
-      setFormData((prev) => ({
-        ...prev,
-        firstname: userName || "John Doe",
-        phone: userPhone || "1234567890",
-      }));
-    } else if (userName && userPhone) {
-      setUserInfo({ firstname: userName, phone: userPhone });
       setFormData((prev) => ({
         ...prev,
         firstname: userName,
         phone: userPhone,
       }));
-      setUserInfoModal(true);
-    } else {
-      setUserInfoModal(true);
     }
   }, []);
 
@@ -183,23 +192,25 @@ export default function UserInformation() {
       visitTime: "",
     };
     let isValid = true;
-
     console.log("Validating form:", { formData, isLoggedIn });
 
-    if (!formData.firstname.trim()) {
-      newErrors.firstname = "Please enter your name";
-      isValid = false;
-    } else if (!validateName(formData.firstname)) {
-      newErrors.firstname = "Name must be letters only, min 2 characters";
-      isValid = false;
+    if (!isLoggedIn) {
+      if (!formData.firstname.trim()) {
+        newErrors.firstname = "Please enter your name";
+        isValid = false;
+      } else if (!validateName(formData.firstname)) {
+        newErrors.firstname = "Name must be letters only, min 2 characters";
+        isValid = false;
+      }
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Please enter your phone number";
+        isValid = false;
+      } else if (!validatePhoneNumber(formData.phone)) {
+        newErrors.phone = "Enter a valid 10-digit phone number";
+        isValid = false;
+      }
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Please enter your phone number";
-      isValid = false;
-    } else if (!validatePhoneNumber(formData.phone)) {
-      newErrors.phone = "Enter a valid 10-digit phone number";
-      isValid = false;
-    }
+
     if (!formData.visitDate) {
       newErrors.visitDate = "Please select a visit date";
       isValid = false;
@@ -208,10 +219,12 @@ export default function UserInformation() {
       newErrors.visitTime = "Please select a visit time";
       isValid = false;
     }
+
     if (userBookings[formData.phone]?.includes(propertyId)) {
       toast.error("You have already booked this property.");
       isValid = false;
     }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -224,6 +237,7 @@ export default function UserInformation() {
       setLoader(false);
       return;
     }
+
     try {
       const payload = {
         firstname: formData.firstname,
@@ -234,8 +248,11 @@ export default function UserInformation() {
         visitDate: formData.visitDate?.toISOString(),
         visitTime: formData.visitTime?.toISOString(),
       };
+
       console.log("Submitting form with payload:", payload);
-      const response = await fetch(`${liveUrl}api/Contact/contact`, {
+
+      // Submit to the contact API
+      const contactResponse = await fetch(`${liveUrl}api/Contact/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -243,30 +260,52 @@ export default function UserInformation() {
         },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
-      if (response.ok) {
-        setUserBookings((prev) => ({
-          ...prev,
-          [formData.phone]: [...(prev[formData.phone] || []), propertyId],
-        }));
-        toast.success("Your visit has been scheduled successfully!");
-        setFormData({
-          firstname: isLoggedIn ? userInfo.firstname : "",
-          phone: isLoggedIn ? userInfo.phone : "",
-          visitDate: null,
-          visitTime: null,
-        });
-        setModalIsOpen(false);
-        setUserInfoModal(false);
+
+      const contactResult = await contactResponse.json();
+
+      if (contactResponse.ok) {
+        // Submit to the meetings API
+        const meetingsResponse = await fetch(
+          `${liveUrl}api/Buyer/scheduleVisit`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        const meetingsResult = await meetingsResponse.json();
+
+        if (meetingsResponse.ok) {
+          setUserBookings((prev) => ({
+            ...prev,
+            [formData.phone]: [...(prev[formData.phone] || []), propertyId],
+          }));
+
+          toast.success("Your visit has been scheduled successfully!");
+          setFormData({
+            firstname: isLoggedIn ? userInfo.firstname : "",
+            phone: isLoggedIn ? userInfo.phone : "",
+            visitDate: null,
+            visitTime: null,
+          });
+          setModalIsOpen(false);
+          setUserInfoModal(false);
+        } else {
+          toast.error(meetingsResult.message || "Failed to schedule meeting");
+        }
       } else {
-        if (result.message?.includes("already booked")) {
+        if (contactResult.message?.includes("already booked")) {
           toast.error("You have already booked this property.");
           setUserBookings((prev) => ({
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
           }));
         } else {
-          toast.error(result.message || "Failed to schedule visit");
+          toast.error(contactResult.message || "Failed to schedule visit");
         }
       }
     } catch (error) {
@@ -287,15 +326,27 @@ export default function UserInformation() {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
-    localStorage.setItem("userName", userInfo.firstname);
-    localStorage.setItem("userPhone", userInfo.phone);
+    sessionStorage.setItem("userName", userInfo.firstname);
+    sessionStorage.setItem("phone", userInfo.phone);
+    sessionStorage.setItem("isLoggedIn", "true");
     setUserInfoModal(false);
     setFormData((prev) => ({
       ...prev,
       firstname: userInfo.firstname,
       phone: userInfo.phone,
     }));
-    toast.success("User information saved!");
+    setIsLoggedIn(true);
+    setModalIsOpen(true);
+  };
+
+  // Handle Schedule a Visit button click
+  const handleScheduleVisit = () => {
+    console.log("Opening schedule visit, isLoggedIn:", isLoggedIn);
+    if (isLoggedIn) {
+      setModalIsOpen(true);
+    } else {
+      setUserInfoModal(true);
+    }
   };
 
   // Image handling
@@ -343,52 +394,110 @@ export default function UserInformation() {
       <Modal
         isOpen={imageModal}
         onRequestClose={() => setImageModal(false)}
-        style={modalStyles}
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            maxWidth: "90%",
+            maxHeight: "90%",
+            overflow: "hidden",
+            padding: 0,
+            backgroundColor: "#fff",
+            borderRadius: "10px",
+          },
+          overlay: {
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            zIndex: 999,
+          },
+        }}
       >
-        <div className="flex justify-end">
+        <div className="relative flex items-center justify-center">
+          {/* Close button */}
           <button
             onClick={() => setImageModal(false)}
-            className="bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
+            className="absolute top-3 right-3 bg-red-600 w-8 h-8 flex justify-center items-center rounded-md z-10"
           >
             <svg
-              className="w-5 h-5 text-white"
+              className="w-4 h-4 text-white"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 384 512"
             >
               <path
                 fill="currentColor"
-                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 
+              86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 
+              256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 
+              45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 
+              45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+              />
+            </svg>
+          </button>
+
+          {/* Left arrow */}
+          <button
+            onClick={handlePrev}
+            className="absolute left-2 sm:left-6 bg-white bg-opacity-80 p-2 rounded-full shadow z-10"
+          >
+            <svg
+              className="w-6 h-6 text-black"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Image */}
+          <img
+            className="h-[80vh] w-auto object-contain rounded"
+            src={imageList[currentIndex] || ImageOne}
+            alt={`Property ${currentIndex + 1}`}
+          />
+
+          {/* Right arrow */}
+          <button
+            onClick={handleNext}
+            className="absolute right-2 sm:right-6 bg-white bg-opacity-80 p-2 rounded-full shadow z-10"
+          >
+            <svg
+              className="w-6 h-6 text-black"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
               />
             </svg>
           </button>
         </div>
-        <div className="flex justify-center max-h-[400px] items-center">
-          <img
-            className="h-96 w-full sm:w-96 object-cover rounded-lg"
-            src={
-              activeImage === "main" && propertyData?.image_one_url
-                ? propertyData.image_one_url
-                : activeImage === "two" && propertyData?.image_two_url
-                ? propertyData.image_two_url
-                : activeImage === "three" && propertyData?.image_three_url
-                ? propertyData.image_three_url
-                : propertyData?.image_four_url || ImageOne
-            }
-            alt="Property"
-          />
+
+        {/* Image counter */}
+        <div className="text-center text-sm text-gray-600 py-2">
+          {currentIndex + 1} / {imageList.length}
         </div>
       </Modal>
 
       {/* User Information Modal */}
       <Modal
-        isOpen={userInfoModal && !isLoggedIn}
+        isOpen={userInfoModal}
         onRequestClose={() => setUserInfoModal(false)}
         style={modalStyles}
       >
         <div className="w-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-2xl text-green-800">
-              Enter Your Information
+              Schedule a Visit
             </h2>
             <button
               onClick={() => setUserInfoModal(false)}
@@ -476,7 +585,49 @@ export default function UserInformation() {
             </button>
           </div>
           <form onSubmit={handleSubmitForm}>
-            {!isLoggedIn && <></>}
+            {!isLoggedIn && (
+              <>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Your Name*
+                  </label>
+                  <input
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    name="firstname"
+                    value={formData.firstname}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstname: e.target.value })
+                    }
+                    placeholder="Enter your name"
+                    required
+                  />
+                  {errors.firstname && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.firstname}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label className="text-lg font-semibold mb-2 block text-gray-800">
+                    Phone Number*
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    placeholder="Enter your phone number"
+                    required
+                  />
+                  {errors.phone && (
+                    <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+                  )}
+                </div>
+              </>
+            )}
             <div className="mb-4">
               <label className="text-lg font-semibold mb-2 block text-gray-800">
                 Visit Date*
@@ -652,13 +803,7 @@ export default function UserInformation() {
                 )}
               </div>
               <button
-                onClick={() => {
-                  console.log(
-                    "Opening schedule visit modal, isLoggedIn:",
-                    isLoggedIn
-                  );
-                  setModalIsOpen(true);
-                }}
+                onClick={handleScheduleVisit}
                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
               >
                 Schedule a Visit

@@ -276,8 +276,8 @@ const propertyConfig = {
         {
           name: "road_width",
           label: "Road Width",
-          type: "selectOrText",
-          option: ["20ft", "30ft", "40ft", "50ft+"],
+          type: "select",
+          options: ["20ft", "30ft", "40ft", "50ft+","other"],
         },
       ],
       step2: [
@@ -581,8 +581,8 @@ const propertyConfig = {
         {
           name: "road_width",
           label: "Road Width",
-          type: "selectOrText",
-          option: ["20ft", "30ft", "40ft", "50ft+"],
+          type: "select",
+          options: ["20ft", "30ft", "40ft", "50ft+","other"],
         },
         {
           name: "commercial_useType",
@@ -699,16 +699,6 @@ const propertyConfig = {
           label: "Available Floor",
           type: "select",
           options: ["Ground", "1st", "2nd", "3rd", "Full Building"],
-        },
-        {
-          name: "furnishing_status",
-          label: "Furnishing Type",
-          type: "select",
-          options: [
-            "Fully Furnished (Operational)",
-            "Semi-Furnished",
-            "Bare Shell",
-          ],
         },
       ],
       step2: [
@@ -831,7 +821,7 @@ export default function SaleProperty() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [click, setClick] = useState(false);
-  const [activeButton, setActiveButton] = useState("");
+  const [activeButton, setActiveButton] = useState("sale");
   const [activeCommercial, setActiveCommercial] = useState("");
   const [active, setActive] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
@@ -910,6 +900,7 @@ export default function SaleProperty() {
 
   const handlePropertyDetailsChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     if (type === "checkbox") {
       setPropertyDetails((prev) => {
         const currentValues = Array.isArray(prev[name]) ? prev[name] : [];
@@ -921,10 +912,19 @@ export default function SaleProperty() {
         };
       });
     } else {
-      setPropertyDetails((prev) => ({
-        ...prev,
-        [name]: type === "radio" ? value : value,
-      }));
+      // Handle unit selection for selectOrText fields
+      if (name.includes("_unit")) {
+        const fieldName = name.split("_unit")[0];
+        setPropertyDetails((prev) => ({
+          ...prev,
+          [`${fieldName}_unit`]: value,
+        }));
+      } else {
+        setPropertyDetails((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
     }
   };
 
@@ -991,6 +991,7 @@ export default function SaleProperty() {
 
   const handleCommercial = (type) => setActiveCommercial(type);
   const handleproperty_type = (type) => setActiveButton(type);
+
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);
     setActiveButton("");
@@ -1002,10 +1003,10 @@ export default function SaleProperty() {
       return [
         "Apartment / Flat",
         "Independent House / Kothi",
-        "Residential Plot",
-        "Farm House",
         "Builder Floor",
-        "Server Apartment",
+         "Residential Plot",
+        "Serviced Apartment",
+        "Farm House",
         "Other",
       ];
     }
@@ -1119,7 +1120,6 @@ export default function SaleProperty() {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
-
     setClick(true);
     setMessage("");
     setIsLoading(true);
@@ -1128,8 +1128,8 @@ export default function SaleProperty() {
       ? localStorage.getItem("phone")
       : storedata.phone;
     const finalPerson = isLoggedIn
-      ? localStorage.getItem("person") || ""
-      : storedata?.person || "";
+      ? localStorage.getItem("name") || ""
+      : storedata?.name || "fdgf";
 
     if (!finalPhone || !/^\d{10}$/.test(finalPhone)) {
       setErrorModal({
@@ -1157,7 +1157,7 @@ export default function SaleProperty() {
     const rawBudget =
       propertyDetails.budget?.toString().replace(/,/g, "") || "0";
     const numericBudget = parseFloat(rawBudget) || 0;
-    const budgetUnit = (propertyDetails.budgetUnit || "Cr").trim();
+    const budgetUnit = propertyDetails.budget_unit || "Cr"; // Use the selected unit
 
     let budgetInWords = toWords(Math.floor(numericBudget));
     switch (budgetUnit.toLowerCase()) {
@@ -1176,7 +1176,6 @@ export default function SaleProperty() {
       default:
         budgetInWords += ` ${budgetUnit}`;
     }
-
     const amenties_update = propertyDetails.amenities.join("~-~");
 
     const payload = {
@@ -1185,7 +1184,8 @@ export default function SaleProperty() {
       category,
       name: propertyDetails.name,
       description: propertyDetails.description,
-      budget: numericBudget, // Only numeric value, no unit
+      budget: numericBudget,
+      budget_unit: budgetUnit,
       budget_in_words: budgetInWords,
       phone: finalPhone,
       person: finalPerson,
@@ -1195,15 +1195,20 @@ export default function SaleProperty() {
       bhk: propertyDetails.bhk,
       bedrooms: propertyDetails.bedrooms,
       bathrooms: propertyDetails.bathrooms,
-      carpet: propertyDetails.carpet
-        ? `${propertyDetails.carpet} ${propertyDetails.carpet_unit || "sqft"}`
-        : "",
-      built: propertyDetails.built
-        ? `${propertyDetails.built} ${propertyDetails.built_unit || "sqft"}`
-        : "",
-      land: propertyDetails.land
-        ? `${propertyDetails.land} ${propertyDetails.land_unit || "sqft"}`
-        : "",
+      carpet:
+        propertyDetails.carpet && propertyDetails.carpet_unit
+          ? `${propertyDetails.carpet} ${propertyDetails.carpet_unit || ""}`
+          : propertyDetails.carpet || "",
+      built:
+        propertyDetails.built && propertyDetails.built_unit
+          ? `${propertyDetails.built} ${propertyDetails.built_unit || ""}`
+          : propertyDetails.built || "",
+
+      land:
+        propertyDetails.land && propertyDetails.land_unit
+          ? `${propertyDetails.land} ${propertyDetails.land_unit || ""}`
+          : propertyDetails.land_unit || "",
+
       additional: propertyDetails.additional,
       additional_value: propertyDetails.additional_value,
       amenities: amenties_update,
@@ -1211,20 +1216,19 @@ export default function SaleProperty() {
       image_two: propertyDetails.image_two,
       image_three: propertyDetails.image_three,
       image_four: propertyDetails.image_four,
-      floor_no: parseInt(propertyDetails.floor_no) || null,
+      floor_no: parseInt(propertyDetails.floor_no) || "",
       total_floors: parseInt(propertyDetails.total_floors) || null,
       property_age: propertyDetails.property_age,
       kothi_story_type: propertyDetails.kothi_story_type,
-      furnishing_status: propertyDetails.furnishing_status,
-      gated_community: propertyDetails.gated_community === "yes" ? 1 : 0,
-      has_lift: propertyDetails.has_lift === "yes" ? 1 : 0,
-      parking_available: propertyDetails.parking_available === "yes" ? 1 : 0,
+      gated_community: propertyDetails.gated_community || "",
+      has_lift: propertyDetails.has_lift || "",
+      parking_available: propertyDetails.parking_available || "",
       width_length: propertyDetails.width_length,
       road_width: propertyDetails.road_width,
       commercial_useType: propertyDetails.commercial_useType,
       shutters_count: parseInt(propertyDetails.shutters_count) || null,
       roof_height: propertyDetails.roof_height,
-      loading_bay: propertyDetails.loading_bay === "yes" ? 1 : 0,
+      loading_bay: propertyDetails.loading_bay || "",
       landmark: propertyDetails.landmark,
       direction: propertyDetails.direction,
       facing: propertyDetails.facing,
@@ -1232,11 +1236,14 @@ export default function SaleProperty() {
       hospital_type: propertyDetails.hospital_type,
       floor_available: propertyDetails.floor_available,
       medical_facilities: JSON.stringify(propertyDetails.medical_facilities),
-      hospital_license: propertyDetails.hospital_license === "yes" ? 1 : 0,
+      hospital_license: propertyDetails.hospital_license || "",
       possession_status: propertyDetails.possession_status,
       construction_status: propertyDetails.construction_status,
       image_files: selectedFiles.map((file) => file.name),
     };
+
+    console.log("Property Details:", propertyDetails);
+    console.log("Payload:", payload);
 
     try {
       const authToken = token || localStorage.getItem("token");
@@ -1404,10 +1411,11 @@ export default function SaleProperty() {
               <select
                 id={`${name}_unit`}
                 name={`${name}_unit`}
-                value={propertyDetails[`${name}_unit`] || option[0]}
+                value={propertyDetails[`${name}_unit`] || ""}
                 onChange={handlePropertyDetailsChange}
                 className="h-10 px-3 border border-gray-300 rounded-r-md bg-gray-50 text-sm focus:ring-green-500 focus:border-green-500"
               >
+                <option value="">Select Unit</option>
                 {option.map((unit) => (
                   <option key={unit} value={unit}>
                     {unit}

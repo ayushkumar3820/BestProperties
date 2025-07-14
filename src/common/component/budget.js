@@ -45,6 +45,14 @@ export default function Budget() {
       { label: "₹50 Cr – ₹100 Cr", min: "500000000", max: "1000000000" },
       { label: "Above ₹100 Cr", min: "1000000000", max: "10000000000" },
     ],
+      Dealer: [
+      { label: "Below ₹50 Lac", min: "0", max: "5000000" },
+      { label: "₹50 Lac – ₹1 Cr", min: "5000000", max: "10000000" },
+      { label: "₹1 Cr – ₹2 Cr", min: "10000000", max: "20000000" },
+      { label: "₹2 Cr – ₹5 Cr", min: "20000000", max: "50000000" },
+      { label: "₹5 Cr – ₹10 Cr", min: "50000000", max: "100000000" },
+      { label: "₹10 Cr – ₹20 Cr", min: "100000000", max: "200000000" },
+    ],
   };
 
   useEffect(() => {
@@ -102,7 +110,7 @@ export default function Budget() {
 
       localStorage.setItem("minBudget", selectedRange.min);
       localStorage.setItem("maxBudget", selectedRange.max);
-      localStorage.setItem("location", e.target.value); // store location as label
+      localStorage.setItem("location", e.target.value); 
     }
   };
 

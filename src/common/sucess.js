@@ -1,74 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import Navbar from "./component/navbar";
 import BottomBar from "./component/bottomBar";
 import { useNavigate } from "react-router-dom";
 import OurServices from "./component/ourServices";
 import Searching from "./component/searching";
-import { liveUrl, token } from "./component/url";
 
 export default function Sucess() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [loader, setLoader] = useState(false);
-  const [messageData, setMessageData] = useState({
-    message: "",
-  });
 
-  // Handle input changes and validate message immediately
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setMessageData({ ...messageData, [name]: value });
+  // Auto-redirect to homepage after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/");
+    }, 3000);
 
-    // Clear error if the user starts typing a valid message
-    if (value.trim().length > 0) {
-      setError("");
-    }
-  };
-
-  // Validate message (not empty or just whitespace)
-  const validateMessage = () => {
-    if (!messageData.message.trim()) {
-      setError("Please enter a message to continue.");
-      return false;
-    }
-    return true;
-  };
-
-  const handleApi = () => {
-    // Validate before making API call
-    if (!validateMessage()) {
-      return;
-    }
-
-    setLoader(true);
-    fetch(`${liveUrl}get-any-message`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...messageData,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setLoader(false);
-          setMessageData({ message: "" }); // Clear form on success
-          navigate("/");
-          console.log(data);
-        } else {
-          setLoader(false);
-          setError("Failed to submit. Please try again.");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setLoader(false);
-        setError("An error occurred. Please try again.");
-      });
-  };
+    return () => clearTimeout(timer); // cleanup
+  }, [navigate]);
 
   return (
     <>
@@ -92,22 +39,6 @@ export default function Sucess() {
             Thank you for sharing your details. Our executive will contact you
             within 24 to 48 hours to provide a better solution.
           </div>
-          <div className="text-green-800 mt-4 font-semibold">Message</div>
-          <textarea
-            onChange={handleChange}
-            name="message"
-            value={messageData.message}
-            className="h-24 w-full border border-gray-400 p-2 rounded resize-none"
-            placeholder="Enter your message here"
-          />
-          {error && <div className="text-red-600 py-2">{error}</div>}
-          <button
-            onClick={handleApi}
-            className="bg-red-600 text-white mb-4 text-center w-full px-10 p-2 rounded-md mt-5"
-            disabled={loader}
-          >
-            {loader ? "Submitting..." : "CONTINUE"}
-          </button>
         </div>
       </div>
       <OurServices />

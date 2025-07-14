@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import Navbar from "./navbar";
-import BottomBar from "./bottomBar";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { liveUrl, token } from "./url";
+import Navbar from "./navbar";
+import BottomBar from "./bottomBar";
 import OurServices from "./ourServices";
 import Searching from "./searching";
 import Logo from "../../assets/img/password.webp";
@@ -290,13 +290,9 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "done") {
-        localStorage.setItem("userName", store.name);
-        
-        localStorage.setItem("userEmail", store.email);
-        localStorage.setItem("userPassword", store.password);
-
-      
-
+          localStorage.setItem("userName", store.name);
+          localStorage.setItem("userEmail", store.email);
+          localStorage.setItem("userPassword", store.password);
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
@@ -358,9 +354,11 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "done") {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("phone", newData.phone);
-          localStorage.setItem("password", newData.password);
+          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("phone", newData.phone);
+          sessionStorage.setItem("password", newData.password);
+          sessionStorage.setItem("isLoggedIn", "true");
+          sessionStorage.setItem("userName", data?.user?.name || "");
           toast.success("Login successful");
           const redirectTo = location.state?.from || "/sell-with-us";
           setTimeout(() => {

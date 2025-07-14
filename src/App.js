@@ -40,6 +40,7 @@ import ForgetPassword from "./common/component/forgetPassword";
 import HomeLoan from "./common/component/HomeLoan";
 import WishlistPage from "./common/component/wishList";
 import Dashboards from "./common/component/dashboards";
+import RequestProperties from "./common/component/RequestProperties";
 
 export default function App() {
   useEffect(() => {
@@ -89,6 +90,7 @@ export default function App() {
         <Route path="home-loan" element={<HomeLoan></HomeLoan>}/>
         <Route path="wishlist" element={<WishlistPage/>}/>
         <Route path="dashboards" element={<Dashboards/>}/>
+        <Route path="requestProperties" element={<RequestProperties/>}/>
       </Routes>
     </BrowserRouter>
   );

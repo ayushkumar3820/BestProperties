@@ -473,7 +473,7 @@ export default function BuyProperty() {
       address: propertyDetails.address,
       requirement: propertyDetails.requirement,
       status: "Pending",
-      leads_type: "buyer",
+      leads_type: "Buyer",
       rDate: new Date().toISOString(),
       userid: localStorage.getItem("userid") || 0,
       timeline: propertyDetails.timeline,
