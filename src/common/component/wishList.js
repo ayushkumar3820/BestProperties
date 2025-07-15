@@ -1,90 +1,184 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Bed from "../../assets/img/bed.png";
-import Bath from "../../assets/img/bath.png";
 import NoImage from "../../assets/img/image-not.jpg";
 import OurServices from "./ourServices";
 import Navbar from "./navbar";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
+import { liveUrl, token } from "./url";
 
 export default function WishlistPage() {
   const navigate = useNavigate();
   const [wishlist, setWishlist] = useState([]);
-  const [userId] = useState(1); // You can set this dynamically based on your app logic
+  const [userId, setUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [removeLoading, setRemoveLoading] = useState(null);
+  const [error, setError] = useState(null);
   const itemsPerPage = 6;
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Retrieve userId from sessionStorage
+    const storedUserId = sessionStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      if (!userId) return; // Don't fetch if userId is not set
+
+      setLoading(true);
+      setError(null);
+
       try {
-        const response = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`);
-        const data = await response.json();
+        const response = await fetch(
+          `${liveUrl}api/User/getWishlist/?userid=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        // Transform the fetched data to match your wishlist structure
-        const transformedData = data.map(item => ({
-          id: item.id,
-          name: item.title,
-          price: Math.floor(Math.random() * 20000000), // Random price for demonstration
-          location: `Location ${Math.floor(Math.random() * 100)}`, // Random location for demonstration
-          type: ["Villa", "Apartment", "Cottage"][Math.floor(Math.random() * 3)], // Random type for demonstration
-          image: NoImage,
-        }));
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-        setWishlist(transformedData);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
+        const result = await response.json();
+        if (result?.status === "done" && Array.isArray(result.result)) {
+          // Remove duplicates based on property ID
+          const uniqueProperties = result.result.filter((item, index, self) =>
+            index === self.findIndex(t => t.id === item.id)
+          );
+
+          const transformed = uniqueProperties.map((item) => ({
+            id: item.id,
+            name: item.name || "N/A",
+            price: parseInt(item.budget) || 0,
+            location: item.address || item.city || "N/A",
+            type: item.property_type || "N/A",
+            image:
+              item.image_one && item.image_one !== "NULL"
+                ? `${liveUrl}propertyimage/${item.image_one}`
+                : NoImage,
+          }));
+
+          setWishlist(transformed);
+        } else {
+          setWishlist([]);
+        }
+      } catch (err) {
+        console.error("Error fetching wishlist:", err);
+        setError("Failed to load wishlist. Please try again.");
+        setWishlist([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchWishlist();
   }, [userId]);
 
-  const removeFromWishlist = (propertyId) => {
-    const updatedWishlist = wishlist.filter((item) => item.id !== propertyId);
-    setWishlist(updatedWishlist);
+  const handleRemove = async (propertyId) => {
+    if (removeLoading === propertyId) return;
+
+    setRemoveLoading(propertyId);
+
+    try {
+      const response = await fetch(
+        `${liveUrl}api/User/removeFromWishlist`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userid: userId,
+            property_id: propertyId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.status === "success" || result.status === "done") {
+        setWishlist((prev) =>
+          prev.filter((item) => item.id !== propertyId)
+        );
+
+        const newWishlistLength = wishlist.length - 1;
+        const newTotalPages = Math.ceil(newWishlistLength / itemsPerPage);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+
+        alert("Property removed from wishlist successfully!");
+      } else {
+        throw new Error(result.message || "Failed to remove from wishlist");
+      }
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      alert(`Error: ${error.message || "Something went wrong while removing property"}`);
+    } finally {
+      setRemoveLoading(null);
+    }
   };
 
   const formatBudget = (value) => {
     if (!value || isNaN(value)) return "N/A";
-    if (value >= 10000000) {
-      return (
-        "₹" +
-        (value / 10000000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) +
-        " Cr"
-      );
-    } else if (value >= 100000) {
-      return (
-        "₹" +
-        (value / 100000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) +
-        " Lac"
-      );
-    } else {
-      return (
-        "₹" +
-        (value / 1000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-        }) +
-        " Thousand"
-      );
-    }
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)} Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(2)} Lac`;
+    return `₹${(value / 1000).toFixed(2)} Thousand`;
   };
 
-  // Logic for displaying current items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = wishlist.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(wishlist.length / itemsPerPage);
 
-  // Logic for displaying page numbers
-  const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(wishlist.length / itemsPerPage); i++) {
-    pageNumbers.push(i);
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+          </div>
+        </div>
+        <OurServices />
+        <Searching />
+        <BottomBar />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <div className="text-red-500 text-xl mb-4">{error}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+        <OurServices />
+        <Searching />
+        <BottomBar />
+      </>
+    );
   }
 
   return (
@@ -130,82 +224,130 @@ export default function WishlistPage() {
                 >
                   <div className="relative">
                     <img
-                      src={property.image || NoImage}
+                      src={property.image}
                       alt={property.name}
                       className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = NoImage;
+                      }}
                     />
                     <button
-                      onClick={() => removeFromWishlist(property.id)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                      onClick={() => handleRemove(property.id)}
+                      disabled={removeLoading === property.id}
+                      className={`absolute top-2 right-2 p-1 rounded-full transition-colors ${
+                        removeLoading === property.id
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      } text-white`}
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
+                      {removeLoading === property.id ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      ) : (
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      )}
                     </button>
                   </div>
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      {property.name || "N/A"}
+                      {property.name}
                     </h3>
                     <p className="text-green-600 font-bold text-xl mb-2">
                       {formatBudget(property.price)}
                     </p>
-                    <p className="text-gray-600 mb-2">
-                      📍 {property.location || "N/A"}
-                    </p>
-                    <p className="text-gray-600 mb-4">
-                      🏠 {property.type || "N/A"}
-                    </p>
+                    <p className="text-gray-600 mb-2">📍 {property.location}</p>
+                    <p className="text-gray-600 mb-4">🏠 {property.type}</p>
                     <div className="flex justify-between items-center">
                       <button
                         onClick={() => {
-                          const modifiedName = (property.name || "property")
-                            .replace(/\s/g, "-")
-                            .replace(/[^\w\s]/g, "-")
+                          const slug = (property.name || "property")
+                            .replace(/\s+/g, "-")
+                            .replace(/[^\w-]/g, "")
                             .toLowerCase();
-                          navigate(`/property/-${property.id}-${modifiedName}`);
+                          navigate(`/property/-${property.id}-${slug}`);
                         }}
                         className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                       >
                         View Details
                       </button>
                       <button
-                        onClick={() => removeFromWishlist(property.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
+                        onClick={() => handleRemove(property.id)}
+                        disabled={removeLoading === property.id}
+                        className={`transition-colors ${
+                          removeLoading === property.id
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-red-500 hover:text-red-700"
+                        }`}
                       >
-                        Remove
+                        {removeLoading === property.id ? "Removing..." : "Remove"}
                       </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="flex justify-center mt-6">
-              <nav className="block">
-                <ul className="flex pl-0 rounded list-none flex-wrap">
-                  {pageNumbers.map(number => (
-                    <li key={number} className="mx-1">
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <nav>
+                  <ul className="flex pl-0 rounded list-none flex-wrap">
+                    <li className="mx-1">
                       <button
-                        onClick={() => setCurrentPage(number)}
-                        className={`px-3 py-2 rounded-md ${currentPage === number ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800'}`}
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-2 rounded-md ${
+                          currentPage === 1
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                        }`}
                       >
-                        {number}
+                        Previous
                       </button>
                     </li>
-                  ))}
-                </ul>
-              </nav>
-            </div>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (num) => (
+                        <li key={num} className="mx-1">
+                          <button
+                            onClick={() => setCurrentPage(num)}
+                            className={`px-3 py-2 rounded-md ${
+                              currentPage === num
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        </li>
+                      )
+                    )}
+                    <li className="mx-1">
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-2 rounded-md ${
+                          currentPage === totalPages
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )}
           </div>
         )}
       </div>

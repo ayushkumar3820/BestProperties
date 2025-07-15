@@ -65,7 +65,9 @@ export default function Navbar() {
     ? [
         { path: "/dashboards", label: "Dashboards" },
         { path: "/wishlist", label: "WishList" },
-        { path: "/forget-password", label: "Forget Password" },
+         { path: "/myProperties", label: "MyProperties" },
+        { path: "/resetPassword/:token", label: "Reset Password" },
+
         { path: null, label: "Logout", onClick: handleLogout },
       ]
     : [
@@ -75,8 +77,14 @@ export default function Navbar() {
           label: "WishList",
           state: !isLoggedIn ? { form: location.pathname } : undefined,
         },
-        { path: "/requestProperties", label: "Request Properties" },
-        { path: "/wishl ist", label: "Recommends Properties" },
+           {
+          path: isLoggedIn ? "/myProperties" : "/login",
+          label: "MyProperties",
+          state: !isLoggedIn ? { form: location.pathname } : undefined,
+        },
+        // { path: "/myProperties",  label: "MyProperties" },
+        //  { path: "/forget-password", label: "Forget Password" },
+        // { path: "/wishl ist", label: "Recommends Properties" },
       ];
 
   const renderMenuItem = (item) => {

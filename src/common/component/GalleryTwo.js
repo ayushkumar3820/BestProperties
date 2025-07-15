@@ -37,15 +37,10 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const [unitSelections, setUnitSelections] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      const savedWishlist = localStorage.getItem("wishlist");
-      return savedWishlist ? JSON.parse(savedWishlist) : [];
-    } catch (error) {
-      console.error("Error  Loading  wishlist  localstorage", error);
-      return [];
-    }
-  });
+  const [wishlist, setWishlist] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [authToken, setAuthToken] = useState(token);
+  const [wishlistLoading, setWishlistLoading] = useState(new Set());
 
   // Reset all filters
   const handleClearFilters = () => {
@@ -61,45 +56,134 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     navigate("/property?category=All&propertyType=buy");
   };
 
-  // Wishlist management
+  // Fetch user ID from storage
   useEffect(() => {
-    const savedWishlist = localStorage.getItem("wishlist");
-    if (savedWishlist) {
-      try {
-        setWishlist(JSON.parse(savedWishlist));
-      } catch (error) {
-        console.error("Error parsing wishlist from localStorage:", error);
-      }
-    }
+    const storedUserId =
+      localStorage.getItem("userId") || sessionStorage.getItem("userId") || null;
+    setUserId(storedUserId);
   }, []);
 
+  // Fetch wishlist from API
   useEffect(() => {
-    try {
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    } catch (error) {
-      console.error("Error saving wishlist to localStorage:", error);
-    }
-  }, [wishlist]);
+    const fetchWishlist = async () => {
+      if (!userId || !authToken) {
+        console.log("User not logged in or no token available");
+        setWishlist([]);
+        return;
+      }
 
-  const isWishlist = (propertyId) => {
-    return wishlist.some((item) => item.id === propertyId);
+      try {
+        const response = await fetch(`${liveUrl}api/User/getWishlist`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.status === "success" && Array.isArray(data.result)) {
+          setWishlist(data.result.map((item) => ({
+            id: item.property_id,
+            property_name: item.property_name || "Unknown Property",
+            address: item.address || "Unknown Location",
+            budget: item.budget || "N/A",
+            image: item.image || NoImage,
+            property_type: item.property_type || "N/A",
+            addedAt: item.addedAt || new Date().toISOString(),
+          })));
+        } else {
+          console.error("Invalid wishlist data:", data);
+          setWishlist([]);
+        }
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        setWishlist([]);
+      }
+    };
+
+    fetchWishlist();
+  }, [userId, authToken]);
+
+  // Wishlist management with API calls
+  const toggleWishlist = async (property) => {
+    if (!userId || !authToken) {
+      alert("Please log in to manage your wishlist.");
+      navigate("/login"); // Redirect to login page
+      return;
+    }
+
+    const propertyId = property.id;
+    if (wishlistLoading.has(propertyId)) {
+      return; // Prevent multiple simultaneous requests
+    }
+
+    setWishlistLoading((prev) => new Set(prev).add(propertyId));
+
+    const isCurrentlyWishlisted = isWishlist(propertyId);
+    const url = isCurrentlyWishlisted
+      ? `${liveUrl}api/User/removefromwishlist`
+      : `${liveUrl}api/User/addToWishlist`;
+    const method = isCurrentlyWishlisted ? "DELETE" : "POST";
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userid: userId,
+          property_id: propertyId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setWishlist((prev) =>
+          isCurrentlyWishlisted
+            ? prev.filter((item) => item.id !== propertyId)
+            : [
+                ...prev,
+                {
+                  id: propertyId,
+                  property_name: property.property_name || property.name || "Unknown Property",
+                  address: property.address || "Unknown Location",
+                  budget: property.budget || "N/A",
+                  image: property.image || NoImage,
+                  property_type: property.property_type || "N/A",
+                  addedAt: new Date().toISOString(),
+                },
+              ]
+        );
+        alert(`Property ${isCurrentlyWishlisted ? "removed from" : "added to"} wishlist successfully!`);
+      } else {
+        console.error("API error:", data);
+        alert("wishlist successfully!");
+      }
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      alert("Failed to update wishlist due to a network error. Please try again.");
+    } finally {
+      setWishlistLoading((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(propertyId);
+        return newSet;
+      });
+    }
   };
 
-  const toggleWishlist = (property) => {
-    if (isWishlist(property.id)) {
-      setWishlist((prev) => prev.filter((item) => item.id !== property.id));
-    } else {
-      const wishlistItem = {
-        id: property.id,
-        name: property.property_name || property.name || "Unknown Property",
-        location: property.address || "Unknown Location",
-        price: property.budget || "N/A",
-        image: property.image || NoImage,
-        type: property.property_type || "N/A",
-        addedAt: new Date().toISOString(),
-      };
-      setWishlist((prev) => [...prev, wishlistItem]);
-    }
+  // Check if property is in wishlist
+  const isWishlist = (propertyId) => {
+    return wishlist.some((item) => item.id === propertyId);
   };
 
   // Extract query parameters and pre-select property types
@@ -710,17 +794,40 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 toggleWishlist(panel);
                               }}
                             >
-                              <svg
-                                className={`h-6 w-6 cursor-pointer transition duration-300 transform ${
-                                  isWishlist(panel.id)
-                                    ? "fill-red-600 scale-110"
-                                    : "fill-black"
-                                }`}
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                              </svg>
+                              {wishlistLoading.has(panel.id) ? (
+                                <svg
+                                  className="animate-spin h-6 w-6 text-gray-500"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                                  ></path>
+                                </svg>
+                              ) : (
+                                <svg
+                                  className={`h-6 w-6 cursor-pointer transition duration-300 transform ${
+                                    isWishlist(panel.id)
+                                      ? "fill-red-600 scale-110"
+                                      : "fill-black"
+                                  }`}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                              )}
                             </div>
                           </div>
                           <div className="flex-grow text-left bg-white border border-t leading-4 p-3">

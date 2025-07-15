@@ -277,7 +277,7 @@ const propertyConfig = {
           name: "road_width",
           label: "Road Width",
           type: "select",
-          options: ["20ft", "30ft", "40ft", "50ft+","other"],
+          options: ["20ft", "30ft", "40ft", "50ft+", "other"],
         },
       ],
       step2: [
@@ -582,7 +582,7 @@ const propertyConfig = {
           name: "road_width",
           label: "Road Width",
           type: "select",
-          options: ["20ft", "30ft", "40ft", "50ft+","other"],
+          options: ["20ft", "30ft", "40ft", "50ft+", "other"],
         },
         {
           name: "commercial_useType",
@@ -884,10 +884,14 @@ export default function SaleProperty() {
 
   useEffect(() => {
     const authToken = localStorage.getItem("token");
+    const userId = sessionStorage.getItem("userId");
     if (!authToken) {
       navigate("/success");
     } else {
       const phone = localStorage.getItem("phone");
+      if (userId) {
+        setStoreData((prev) => ({ ...prev, userId }));
+      }
       if (phone && phone.length === 10) {
         setStoreData((prev) => ({ ...prev, phone }));
       }
@@ -1004,7 +1008,7 @@ export default function SaleProperty() {
         "Apartment / Flat",
         "Independent House / Kothi",
         "Builder Floor",
-         "Residential Plot",
+        "Residential Plot",
         "Serviced Apartment",
         "Farm House",
         "Other",
@@ -1074,9 +1078,7 @@ export default function SaleProperty() {
           errors.push(`Please fill in the required ${field.label} field`);
         }
       });
-      if (selectedFiles.length === 0) {
-        errors.push("Please upload at least one image");
-      }
+     
     }
 
     if (errors.length > 0) {
@@ -1131,6 +1133,10 @@ export default function SaleProperty() {
       ? localStorage.getItem("name") || ""
       : storedata?.name || "fdgf";
 
+    const finalUserId = isLoggedIn
+      ? sessionStorage.getItem("userId") || storedata.userId || ""
+      : "";
+
     if (!finalPhone || !/^\d{10}$/.test(finalPhone)) {
       setErrorModal({
         isOpen: true,
@@ -1182,6 +1188,7 @@ export default function SaleProperty() {
       property_for,
       property_type,
       category,
+      userid:finalUserId,
       name: propertyDetails.name,
       description: propertyDetails.description,
       budget: numericBudget,
@@ -1455,7 +1462,7 @@ export default function SaleProperty() {
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
+      
           </label>
           <div className="relative">
             <input
@@ -1466,7 +1473,7 @@ export default function SaleProperty() {
               onChange={handleFileChange}
               className="block w-full h-10 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
               accept="image/jpeg,image/jpg,image/png"
-              required={required}
+              
             />
             <svg
               className="absolute right-3 top-2.5 w-5 h-5 text-green-600"
@@ -1768,7 +1775,7 @@ export default function SaleProperty() {
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Upload Images (Max 4, First image will be main image){" "}
-                <span className="text-red-600">*</span>
+        
               </label>
               <div className="relative">
                 <input
@@ -1779,7 +1786,7 @@ export default function SaleProperty() {
                   onChange={handleFileChange}
                   className="block w-full h-10 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                   accept="image/jpeg,image/jpg,image/png"
-                  required
+                
                 />
                 <svg
                   className="absolute right-3 top-2.5 w-5 h-5 text-green-600"

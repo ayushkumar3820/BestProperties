@@ -59,7 +59,7 @@ export default function ForgetPassword() {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    fetch(`${liveUrl}forget-password`, {
+    fetch(`${liveUrl}api/User/forgetPassword`, {
       method: "POST",
       headers,
       body: JSON.stringify({ email }),

@@ -475,7 +475,7 @@ export default function BuyProperty() {
       status: "Pending",
       leads_type: "Buyer",
       rDate: new Date().toISOString(),
-      userid: localStorage.getItem("userid") || 0,
+      userid: sessionStorage.getItem("userId") || 0,
       timeline: propertyDetails.timeline,
       bhk: propertyDetails.bhk,
       carpet: propertyDetails.carpet

@@ -84,7 +84,7 @@ export default function Login() {
         validatePhoneRealTime(numericValue);
       }
     } else if (name === "password") {
-      const limitedValue = value.slice(0, 6);
+      const limitedValue = value;
       setNewData({ ...newData, [name]: limitedValue });
       if (fieldTouched[name]) {
         validatePasswordRealTime(limitedValue);
@@ -106,7 +106,7 @@ export default function Login() {
         validateFieldRealTime(name, numericValue);
       }
     } else if (name === "password") {
-      const limitedValue = value.slice(0, 6);
+      const limitedValue = value;
       setStore({ ...store, [name]: limitedValue });
       if (fieldTouched[name]) {
         validateFieldRealTime(name, limitedValue);
@@ -166,10 +166,9 @@ export default function Login() {
         if (!value.trim()) {
           error = "Password is required";
         } else if (value.length < 6) {
-          error = `Password must be exactly 6 characters long (${
-            6 - value.length
-          } more needed)`;
+          error = `Password must be at least 6 characters long`;
         }
+
         break;
       default:
         break;
@@ -199,10 +198,9 @@ export default function Login() {
     if (!value.trim()) {
       error = "Password is required";
     } else if (value.length < 6) {
-      error = `Password must be exactly 6 characters long (${
-        6 - value.length
-      } more needed)`;
+      error = `Password must be at least 6 characters long`;
     }
+
     setValidationErrors((prev) => ({ ...prev, password: error }));
   };
 
@@ -213,7 +211,7 @@ export default function Login() {
   };
 
   const validatePassword = (password) => {
-    if (!password || password.length !== 6) {
+    if (!password || password.length < 6) {
       return false;
     }
     return true;
@@ -249,7 +247,8 @@ export default function Login() {
     if (!store.name.trim()) {
       errors.name = "Name is required";
     } else if (!validateName(store.name)) {
-      errors.name = "Name should contain only letters and spaces (min 2 characters)";
+      errors.name =
+        "Name should contain only letters and spaces (min 2 characters)";
     }
 
     if (store.email.trim() && !isValidEmail(store.email)) {
@@ -359,6 +358,8 @@ export default function Login() {
           sessionStorage.setItem("password", newData.password);
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("userName", data?.user?.name || "");
+          sessionStorage.setItem("userId", data.userid?.toString() || "");
+
           toast.success("Login successful");
           const redirectTo = location.state?.from || "/sell-with-us";
           setTimeout(() => {
@@ -484,8 +485,7 @@ export default function Login() {
                         onChange={handleChangeText}
                         onBlur={() => handleBlur("password")}
                         onKeyDown={handleEnterKeyPress}
-                        maxLength="6"
-                        placeholder="Enter your 6-character password"
+                        placeholder="Enter password (min 6 characters)"
                       />
                       {fieldTouched.password && validationErrors.password && (
                         <div className="text-red-500 text-sm mt-1">
@@ -599,8 +599,7 @@ export default function Login() {
                             ? "border-red-500"
                             : "border-gray-300"
                         }`}
-                        maxLength="6"
-                        placeholder="Enter 6-character password"
+                        placeholder="Password must be at least 6 characters long"
                       />
                       {fieldTouched.password && validationErrors.password && (
                         <div className="text-red-500 text-sm mt-1">

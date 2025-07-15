@@ -41,6 +41,8 @@ import HomeLoan from "./common/component/HomeLoan";
 import WishlistPage from "./common/component/wishList";
 import Dashboards from "./common/component/dashboards";
 import RequestProperties from "./common/component/RequestProperties";
+import ResetPassword from "./common/component/reset-pasowrd";
+import MyPropertiesPage from "./common/component/myProperties";
 
 export default function App() {
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function App() {
         <Route path="contact/" element={<Contact />} />
         <Route path="faq/" element={<FAQ />} />
         <Route path="privacy-policy/" element={<PrivacyPolicy />} />
-        {/* <Route path="data-deletion/" element={<DataDeletion />} /> */}
+
         <Route path="/single-property/:id" element={<SingleProperty />} />
         <Route path="/project-details/:id" element={<ProjectDetails />} />
         <Route path="/projects" element={<Projects />} />
@@ -70,15 +72,14 @@ export default function App() {
         <Route path="login/" element={<Login />} />
         <Route path="otpscreen/" element={<OtpScreen />} />
         <Route path="about-property/" element={<AboutProperty />} />
-        {/* <Route path="buyer/" element={<Buyer />} /> */}
-        {/* <Route path="loaction/" element={<LoactionPage />} /> */}
+
         <Route path="budget/" element={<Budget />} />
         <Route path="requirment/" element={<Requirment />} />
         <Route path="buyer-data/" element={<BuyerTwo />} />
         <Route path="landing/" element={<LandingPage />} />
         <Route path="success/" element={<Sucess />} />
         <Route path="Property/" element={<Property />} />
-        {/* <Route path="agent/" element={<Agent />} /> */}
+
         <Route path="property-type/:our_services" element={<Residential />} />
         <Route path="search" element={<Search />} />
         <Route path="for-rent/" element={<Rent />} />
@@ -87,10 +88,12 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="sell-with-us" element={<SellWithUsModal />} />
         <Route path="forget-password" element={<ForgetPassword />} />
-        <Route path="home-loan" element={<HomeLoan></HomeLoan>}/>
-        <Route path="wishlist" element={<WishlistPage/>}/>
-        <Route path="dashboards" element={<Dashboards/>}/>
-        <Route path="requestProperties" element={<RequestProperties/>}/>
+        <Route path="home-loan" element={<HomeLoan></HomeLoan>} />
+        <Route path="wishlist" element={<WishlistPage />} />
+        <Route path="dashboards" element={<Dashboards />} />
+        <Route path="requestProperties" element={<RequestProperties />} />
+        <Route path="resetPassword/:tokenPath" element={<ResetPassword />} />
+        <Route  path="myProperties" element={<MyPropertiesPage/>}/>
       </Routes>
     </BrowserRouter>
   );
