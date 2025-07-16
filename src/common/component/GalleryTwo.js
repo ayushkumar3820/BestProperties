@@ -59,7 +59,9 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   // Fetch user ID from storage
   useEffect(() => {
     const storedUserId =
-      localStorage.getItem("userId") || sessionStorage.getItem("userId") || null;
+      localStorage.getItem("userId") ||
+      sessionStorage.getItem("userId") ||
+      null;
     setUserId(storedUserId);
   }, []);
 
@@ -86,15 +88,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.result)) {
-          setWishlist(data.result.map((item) => ({
-            id: item.property_id,
-            property_name: item.property_name || "Unknown Property",
-            address: item.address || "Unknown Location",
-            budget: item.budget || "N/A",
-            image: item.image || NoImage,
-            property_type: item.property_type || "N/A",
-            addedAt: item.addedAt || new Date().toISOString(),
-          })));
+          setWishlist(
+            data.result.map((item) => ({
+              id: item.property_id || item.id,
+              property_id:item.property.id || item.id,
+              property_name: item.property_name || "Unknown Property",
+              address: item.address || "Unknown Location",
+              budget: item.budget || "N/A",
+              image: item.image || NoImage,
+              property_type: item.property_type || "N/A",
+              addedAt: item.addedAt || new Date().toISOString(),
+            }))
+          );
         } else {
           console.error("Invalid wishlist data:", data);
           setWishlist([]);
@@ -106,17 +111,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     };
 
     fetchWishlist();
-  }, [userId, authToken]);
+  }, [location.pathname,userId, authToken]);
 
-  // Wishlist management with API calls
+  
+
   const toggleWishlist = async (property) => {
     if (!userId || !authToken) {
       alert("Please log in to manage your wishlist.");
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
       return;
     }
 
-    const propertyId = property.id;
+    const propertyId = property.id || property.property_id;
     if (wishlistLoading.has(propertyId)) {
       return; // Prevent multiple simultaneous requests
     }
@@ -130,6 +136,11 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     const method = isCurrentlyWishlisted ? "DELETE" : "POST";
 
     try {
+      console.log(
+        `${isCurrentlyWishlisted ? "Removing from" : "Adding to"} wishlist:`,
+        propertyId
+      );
+
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -142,37 +153,75 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         }),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      if (data.status === "success") {
-        setWishlist((prev) =>
-          isCurrentlyWishlisted
-            ? prev.filter((item) => item.id !== propertyId)
-            : [
-                ...prev,
-                {
-                  id: propertyId,
-                  property_name: property.property_name || property.name || "Unknown Property",
-                  address: property.address || "Unknown Location",
-                  budget: property.budget || "N/A",
-                  image: property.image || NoImage,
-                  property_type: property.property_type || "N/A",
-                  addedAt: new Date().toISOString(),
-                },
-              ]
+      console.log("API response:", data);
+
+      // Check for success in multiple possible response formats
+      const isSuccess =
+        data.status === "success" ||
+        data.success === true ||
+        data.message?.toLowerCase().includes("success") ||
+        response.ok;
+
+      if (isSuccess) {
+        // Update wishlist state immediately
+        setWishlist((prev) => {
+          if (isCurrentlyWishlisted) {
+            // Remove from wishlist
+            const newWishlist = prev.filter((item) => item.id !== propertyId);
+            console.log(
+              "Removed from wishlist, new count:",
+              newWishlist.length
+            );
+            return newWishlist;
+          } else {
+            // Add to wishlist
+            const newItem = {
+              id: propertyId,
+              property_name:
+                property.property_name || property.name || "Unknown Property",
+              address: property.address || "Unknown Location",
+              budget: property.budget || "N/A",
+              image: property.image || NoImage,
+              property_type: property.property_type || "N/A",
+              addedAt: new Date().toISOString(),
+            };
+            const newWishlist = [...prev, newItem];
+            console.log("Added to wishlist, new count:", newWishlist.length);
+            return newWishlist;
+          }
+        });
+
+        // Show success message
+        alert(
+          `Property ${
+            isCurrentlyWishlisted ? "removed from" : "added to"
+          } wishlist successfully!`
         );
-        alert(`Property ${isCurrentlyWishlisted ? "removed from" : "added to"} wishlist successfully!`);
       } else {
+        // Handle different types of API errors
         console.error("API error:", data);
-        alert("wishlist successfully!");
+        const errorMessage =
+          data.message || data.error || "Unknown error occurred";
+        alert(
+          `Failed to ${
+            isCurrentlyWishlisted ? "remove from" : "add to"
+          } wishlist: ${errorMessage}`
+        );
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-      alert("Failed to update wishlist due to a network error. Please try again.");
+      alert(
+        "Failed to update wishlist due to a network error. Please try again."
+      );
     } finally {
+      // Always remove loading state
       setWishlistLoading((prev) => {
         const newSet = new Set(prev);
         newSet.delete(propertyId);
@@ -181,9 +230,21 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     }
   };
 
-  // Check if property is in wishlist
+  // Replace your existing isWishlist function with this improved version
+
   const isWishlist = (propertyId) => {
-    return wishlist.some((item) => item.id === propertyId);
+    if (!propertyId || !Array.isArray(wishlist)) {
+      return false;
+    }
+
+    const found = wishlist.some((item) => {
+      // Handle both string and number IDs
+    
+      return String(item.id) === String(propertyId) || String(item.property_id) === String(propertyId);
+    });
+
+    console.log(`Checking wishlist for property ${propertyId}:`, found);
+    return found;
   };
 
   // Extract query parameters and pre-select property types
@@ -787,12 +848,18 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                             <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
                               ID: {panel.unique_id || "N/A"}
                             </div>
+                            {/* Replace your existing heart icon div with this improved version */}
                             <div
-                              className="absolute top-2 right-2 cursor-pointer z-10"
+                              className="absolute top-2 right-2 cursor-pointer z-10 p-1 bg-white bg-opacity-70 rounded-full shadow-md hover:bg-opacity-100 transition-all duration-200"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleWishlist(panel);
                               }}
+                              title={
+                                isWishlist(panel.id || panel.property_id)
+                                  ? "Remove from wishlist"
+                                  : "Add to wishlist"
+                              }
                             >
                               {wishlistLoading.has(panel.id) ? (
                                 <svg
@@ -817,13 +884,15 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 </svg>
                               ) : (
                                 <svg
-                                  className={`h-6 w-6 cursor-pointer transition duration-300 transform ${
+                                  className={`h-6 w-6 cursor-pointer transition-all duration-300 transform  ${
                                     isWishlist(panel.id)
-                                      ? "fill-red-600 scale-110"
-                                      : "fill-black"
+                                      ? "fill-red-500 text-red-500 scale-110"
+                                      : "fill-gray-400 text-gray-400"
                                   }`}
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="1"
                                 >
                                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                                 </svg>

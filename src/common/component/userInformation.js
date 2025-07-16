@@ -237,12 +237,13 @@ export default function UserInformation() {
       setLoader(false);
       return;
     }
-
+    const userId = sessionStorage.getItem("userId");
     try {
       const payload = {
         firstname: formData.firstname,
         phone: formData.phone,
         property_id: propertyId,
+        Userid:userId,
         property_name: propertyData?.name || "N/A",
         type: "properties",
         visitDate: formData.visitDate?.toISOString(),

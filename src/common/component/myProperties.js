@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NoImage from "../../assets/img/image-not.jpg";
 import Navbar from "./navbar";
@@ -6,6 +6,7 @@ import OurServices from "./ourServices";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
+import { toWords } from "number-to-words";
 
 export default function MyProperties() {
   const navigate = useNavigate();
@@ -30,12 +31,15 @@ export default function MyProperties() {
       setError(null);
 
       try {
-        const res = await fetch(`${liveUrl}api/MyProperties/getMyProperties?Userid=${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const res = await fetch(
+          `${liveUrl}api/MyProperties/getMyProperties?Userid=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         const data = await res.json();
         if (data.status === "done" && Array.isArray(data.result)) {
@@ -69,13 +73,13 @@ export default function MyProperties() {
     setRemoveLoading(propertyId);
 
     try {
-      const res = await fetch(`${liveUrl}api/User/removeFromWishlist`, {
+      const res = await fetch(`${liveUrl}api/MyProperties/removeMyProperty/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userid: userId, property_id: propertyId }),
+        body: JSON.stringify({ Userid: userId, property_id: propertyId }),
       });
 
       const result = await res.json();
@@ -112,7 +116,8 @@ export default function MyProperties() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-green-800">My Properties</h1>
           <div className="bg-green-100 text-green-800 font-semibold py-2 px-4 rounded-md">
-            {properties.length} {properties.length === 1 ? "Property" : "Properties"}
+            {properties.length}{" "}
+            {properties.length === 1 ? "Property" : "Properties"}
           </div>
         </div>
 
@@ -144,7 +149,10 @@ export default function MyProperties() {
           <>
             <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
               {currentItems.map((property) => (
-                <div key={property.id} className="bg-white rounded-lg shadow hover:shadow-lg transition">
+                <div
+                  key={property.id}
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition"
+                >
                   <div className="relative">
                     <img
                       src={property.image}
@@ -170,15 +178,24 @@ export default function MyProperties() {
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       )}
                     </button>
                   </div>
                   <div className="p-4">
                     <h2 className="font-bold text-lg mb-1">{property.name}</h2>
-                    <p className="text-green-600 font-semibold">{property.price}</p>
-                    <p className="text-gray-600 text-sm">📍 {property.location}</p>
+                    <p className="text-green-600 font-semibold">
+                      {property.price}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      📍 {property.location}
+                    </p>
                     <p className="text-gray-600 text-sm">🏠 {property.type}</p>
                     <div className="mt-4 flex justify-between">
                       <button
@@ -197,10 +214,14 @@ export default function MyProperties() {
                         onClick={() => handleRemove(property.id)}
                         disabled={removeLoading === property.id}
                         className={`text-red-500 hover:text-red-700 ${
-                          removeLoading === property.id ? "opacity-50 cursor-not-allowed" : ""
+                          removeLoading === property.id
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
                         }`}
                       >
-                        {removeLoading === property.id ? "Removing..." : "Remove"}
+                        {removeLoading === property.id
+                          ? "Removing..."
+                          : "Remove"}
                       </button>
                     </div>
                   </div>
@@ -216,29 +237,35 @@ export default function MyProperties() {
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       className={`px-3 py-2 rounded ${
-                        currentPage === 1 ? "bg-gray-300 text-gray-500" : "bg-gray-200 hover:bg-gray-300"
+                        currentPage === 1
+                          ? "bg-gray-300 text-gray-500"
+                          : "bg-gray-200 hover:bg-gray-300"
                       }`}
                     >
                       Prev
                     </button>
                   </li>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                    <li key={num}>
-                      <button
-                        onClick={() => setCurrentPage(num)}
-                        className={`px-3 py-2 rounded ${
-                          currentPage === num
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                      >
-                        {num}
-                      </button>
-                    </li>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (num) => (
+                      <li key={num}>
+                        <button
+                          onClick={() => setCurrentPage(num)}
+                          className={`px-3 py-2 rounded ${
+                            currentPage === num
+                              ? "bg-green-600 text-white"
+                              : "bg-gray-200 hover:bg-gray-300"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      </li>
+                    )
+                  )}
                   <li>
                     <button
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className={`px-3 py-2 rounded ${
                         currentPage === totalPages
