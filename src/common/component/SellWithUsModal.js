@@ -821,10 +821,10 @@ export default function SaleProperty() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [click, setClick] = useState(false);
-  const [activeButton, setActiveButton] = useState("sale");
+  const [activeButton, setActiveButton] = useState("");
   const [activeCommercial, setActiveCommercial] = useState("");
-  const [active, setActive] = useState("");
-  const [selectedOption, setSelectedOption] = useState("");
+  const [active, setActive] = useState("Sale");
+  const [selectedOption, setSelectedOption] = useState("Residential");
   const [message, setMessage] = useState("");
   const [errorModal, setErrorModal] = useState({ isOpen: false, messages: [] });
   const [storedata, setStoreData] = useState({ phone: "", person: "" });

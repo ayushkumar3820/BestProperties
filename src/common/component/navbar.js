@@ -67,7 +67,7 @@ export default function Navbar() {
         { path: "/wishlist", label: "WishList" },
         { path: "/myProperties", label: "MyProperties" },
         // { path: "/resetPassword/:token", label: "Reset Password" },
-        { path: "/recommendProperties", label: "Recommend Property" },
+        { path: "/recommendProperties", label: "Request Properties" },
         { path: null, label: "Logout", onClick: handleLogout },
       ]
     : [
