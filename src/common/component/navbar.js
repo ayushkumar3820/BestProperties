@@ -66,7 +66,6 @@ export default function Navbar() {
         { path: "/dashboards", label: "Dashboards" },
         { path: "/wishlist", label: "WishList" },
         { path: "/myProperties", label: "MyProperties" },
-        // { path: "/resetPassword/:token", label: "Reset Password" },
         { path: "/recommendProperties", label: "Request Properties" },
         { path: null, label: "Logout", onClick: handleLogout },
       ]
@@ -182,7 +181,6 @@ export default function Navbar() {
             </div>
             <div className="hidden lg:flex lg:ml-2 mb-2 mt-2 lg:gap-5 justify-center items-center nav-items-div">
               {menuItems.map(renderDesktopMenuItem)}
-              {/* Desktop Hover Dropdown */}
               <div className="relative group inline-block">
                 <div className="menu-item text-red-600 font-semibold p-1 lg:px-1 flex items-center gap-1 cursor-pointer">
                   <span>{isLoggedIn ? "Profile" : "Login"}</span>
@@ -219,7 +217,6 @@ export default function Navbar() {
               </div>
             </div>
           </div>
-          {/* Mobile Dropdown */}
           {isMenuOpen && (
             <div className="lg:hidden flex flex-col bg-white text-center shadow-md absolute top-full left-0 w-full z-50">
               {menuItems.map(renderMenuItem)}

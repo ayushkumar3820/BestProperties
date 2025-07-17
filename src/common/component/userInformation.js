@@ -146,6 +146,8 @@ export default function UserInformation() {
         return;
       }
       setLoader(true);
+      const userId = sessionStorage.getItem("userId");
+
       try {
         const response = await fetch(
           `${liveUrl}api/PropertyDetail/propertyAllDetails`,
@@ -155,9 +157,10 @@ export default function UserInformation() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: propertyId }),
+            body: JSON.stringify({ id: propertyId, userid: userId }),
           }
         );
+        console.log("testtttttttttttttttttttttttttt",propertyData.is_scheduled);
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
@@ -243,7 +246,7 @@ export default function UserInformation() {
         firstname: formData.firstname,
         phone: formData.phone,
         property_id: propertyId,
-        Userid:userId,
+        Userid: userId,
         property_name: propertyData?.name || "N/A",
         type: "properties",
         visitDate: formData.visitDate?.toISOString(),
@@ -803,12 +806,21 @@ export default function UserInformation() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={handleScheduleVisit}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
-              >
-                Schedule a Visit
-              </button>
+              {propertyData.is_scheduled ? (
+                <button
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
+                  disabled
+                >
+                  Your meeting is already scheduled, please check your calendar
+                </button>
+              ) : (
+                <button
+                  onClick={handleScheduleVisit}
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
+                >
+                  Schedule a Visit
+                </button>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div
                   className={`border border-gray-200 rounded-lg p-4 bg-gray-50 transition-all ${

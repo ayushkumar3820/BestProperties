@@ -47,8 +47,9 @@ export default function ResetPassword() {
       const data = await res.json();
 
       if (data.status === "success") {
-        // ✅ Redirect after successful reset
-        navigate("/success"); 
+        // Redirect to login page
+        console.log("Reset successful, redirecting to login...");
+        navigate("/login");
       } else {
         setMessage(data.message || "Something went wrong.");
       }
@@ -63,12 +64,14 @@ export default function ResetPassword() {
   return (
     <>
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+
+      {/* ✅ FORM AT TOP */}
+      <div className="flex justify-center bg-gray-100 p-4 pt-10 h-[63vh]">
         <form
-          onSubmit={handleSubmit}
-          className="bg-white p-8 rounded shadow-md w-full max-w-md"
-        >
-          <h2 className="text-2xl font-bold text-black text-center mb-6">
+          className="bg-white px-8 py-6 rounded shadow-md w-full max-w-md"
+          >
+          <h2 className="text-2xl font-bold text-black text-center mb-6"
+          onSubmit={handleSubmit}>
             Reset Password
           </h2>
 

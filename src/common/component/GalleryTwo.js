@@ -1,5 +1,4 @@
-/* eslint-disable jsx-a11y/img-redundant-alt */
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Bed from "../../assets/img/bed.png";
 import AnimatedText from "./HeadingAnimation";
@@ -9,11 +8,10 @@ import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
 import "../../App.css";
 
-// Constants for budget range
 const BUDGET_MIN = 500000;
 const BUDGET_MAX = 200000000;
 
-export default function GalleryComponentTwo({ initialPropertyType }) {
+export default function GalleryComponentTwo() {
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
@@ -42,6 +40,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const [authToken, setAuthToken] = useState(token);
   const [wishlistLoading, setWishlistLoading] = useState(new Set());
 
+
   // Reset all filters
   const handleClearFilters = () => {
     setSearchQuery("");
@@ -56,65 +55,99 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     navigate("/property?category=All&propertyType=buy");
   };
 
-  // Fetch user ID from storage
+
+
+  // Fetch user ID and token from storage
   useEffect(() => {
-    const storedUserId =
-      localStorage.getItem("userId") ||
-      sessionStorage.getItem("userId") ||
-      null;
+    const storedUserId = sessionStorage.getItem("userId") || null;
+    const storedToken = sessionStorage.getItem("authToken") || token;
     setUserId(storedUserId);
+    setAuthToken(storedToken);
   }, []);
 
-  // Fetch wishlist from API
+
+
+  // Fetch wishlist on component mount
   useEffect(() => {
-    const fetchWishlist = async () => {
-      if (!userId || !authToken) {
-        console.log("User not logged in or no token available");
-        setWishlist([]);
-        return;
-      }
+    const refetchWishlistOnMount = async () => {
+      const storedUserId = sessionStorage.getItem("userId");
+      const storedToken = sessionStorage.getItem("authToken") || token;
 
-      try {
-        const response = await fetch(`${liveUrl}api/User/getWishlist`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+      if (storedUserId && storedToken) {
+        try {
+          console.log("Refetching wishlist on component mount/return");
+          const response = await fetch(`${liveUrl}api/User/getWishlist_ids/?userid=${storedUserId}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === "success" && Array.isArray(data.result)) {
+              const wishlistIds = data.result;
+              const wishlistDetailsPromises = wishlistIds.map(async (id) => {
+                const detailResponse = await fetch(`${liveUrl}api/Reactjs/gallery/${id}`, {
+                  headers: {
+                    Authorization: `Bearer ${storedToken}`,
+                    "Content-Type": "application/json",
+                  },
+                });
+                if (detailResponse.ok) {
+                  return detailResponse.json();
+                }
+                return null;
+              });
+
+              const wishlistDetails = await Promise.all(wishlistDetailsPromises);
+              const wishlistItems = wishlistDetails.filter(item => item !== null).map((item) => ({
+                id: item.property_id || item.id,
+                property_id: item.property_id || item.id,
+                property_name: item.property_name || item.property?.property_name || "Unknown Property",
+                address: item.address || item.property?.address || "Unknown Location",
+                budget: item.budget || item.property?.budget || "N/A",
+                image: item.image || item.property?.image || NoImage,
+                property_type: item.property_type || item.property?.property_type || "N/A",
+                addedAt: item.addedAt || new Date().toISOString(),
+              }));
+
+              console.log("Wishlist restored on mount:", wishlistItems.length);
+              setWishlist(wishlistItems);
+            }
+          }
+        } catch (error) {
+          console.error("Error refetching wishlist on mount:", error);
         }
-
-        const data = await response.json();
-        if (data.status === "success" && Array.isArray(data.result)) {
-          setWishlist(
-            data.result.map((item) => ({
-              id: item.property_id || item.id,
-              property_id:item.property.id || item.id,
-              property_name: item.property_name || "Unknown Property",
-              address: item.address || "Unknown Location",
-              budget: item.budget || "N/A",
-              image: item.image || NoImage,
-              property_type: item.property_type || "N/A",
-              addedAt: item.addedAt || new Date().toISOString(),
-            }))
-          );
-        } else {
-          console.error("Invalid wishlist data:", data);
-          setWishlist([]);
-        }
-      } catch (error) {
-        console.error("Error fetching wishlist:", error);
-        setWishlist([]);
       }
     };
 
-    fetchWishlist();
-  }, [location.pathname,userId, authToken]);
+    refetchWishlistOnMount();
+  }, []);
 
   
 
+
+
+  // Check if a property is in the wishlist
+  const isWishlist = (propertyId) => {
+    if (!propertyId || !Array.isArray(wishlist) || wishlist.length === 0) {
+      return false;
+    }
+
+    const searchId = String(propertyId || "");
+    return wishlist.some((item) => {
+      const itemId = String(item.id || "");
+      const itemPropertyId = String(item.property_id || "");
+      return itemId === searchId || itemPropertyId === searchId;
+    });
+  };
+
+
+
+
+
+  // Toggle wishlist status for a property
   const toggleWishlist = async (property) => {
     if (!userId || !authToken) {
       alert("Please log in to manage your wishlist.");
@@ -124,7 +157,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
     const propertyId = property.id || property.property_id;
     if (wishlistLoading.has(propertyId)) {
-      return; // Prevent multiple simultaneous requests
+      return;
     }
 
     setWishlistLoading((prev) => new Set(prev).add(propertyId));
@@ -153,37 +186,28 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         }),
       });
 
-      console.log("Response status:", response.status);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
       console.log("API response:", data);
 
-      // Check for success in multiple possible response formats
-      const isSuccess =
+      if (
         data.status === "success" ||
         data.success === true ||
         data.message?.toLowerCase().includes("success") ||
-        response.ok;
-
-      if (isSuccess) {
-        // Update wishlist state immediately
+        response.ok
+      ) {
         setWishlist((prev) => {
           if (isCurrentlyWishlisted) {
-            // Remove from wishlist
-            const newWishlist = prev.filter((item) => item.id !== propertyId);
-            console.log(
-              "Removed from wishlist, new count:",
-              newWishlist.length
+            const newWishlist = prev.filter(
+              (item) =>
+                String(item.id || item.property_id) !== String(propertyId) &&
+                String(item.property_id || item.id) !== String(propertyId)
             );
+            console.log("Updated wishlist after remove:", newWishlist.length);
             return newWishlist;
           } else {
-            // Add to wishlist
             const newItem = {
               id: propertyId,
+              property_id: propertyId,
               property_name:
                 property.property_name || property.name || "Unknown Property",
               address: property.address || "Unknown Location",
@@ -192,21 +216,17 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
               property_type: property.property_type || "N/A",
               addedAt: new Date().toISOString(),
             };
-            const newWishlist = [...prev, newItem];
-            console.log("Added to wishlist, new count:", newWishlist.length);
-            return newWishlist;
+            console.log("Updated wishlist after add:", prev.length + 1);
+            return [...prev, newItem];
           }
         });
 
-        // Show success message
         alert(
           `Property ${
             isCurrentlyWishlisted ? "removed from" : "added to"
           } wishlist successfully!`
         );
       } else {
-        // Handle different types of API errors
-        console.error("API error:", data);
         const errorMessage =
           data.message || data.error || "Unknown error occurred";
         alert(
@@ -221,7 +241,6 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         "Failed to update wishlist due to a network error. Please try again."
       );
     } finally {
-      // Always remove loading state
       setWishlistLoading((prev) => {
         const newSet = new Set(prev);
         newSet.delete(propertyId);
@@ -230,22 +249,11 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     }
   };
 
-  // Replace your existing isWishlist function with this improved version
 
-  const isWishlist = (propertyId) => {
-    if (!propertyId || !Array.isArray(wishlist)) {
-      return false;
-    }
 
-    const found = wishlist.some((item) => {
-      // Handle both string and number IDs
-    
-      return String(item.id) === String(propertyId) || String(item.property_id) === String(propertyId);
-    });
 
-    console.log(`Checking wishlist for property ${propertyId}:`, found);
-    return found;
-  };
+
+
 
   // Extract query parameters and pre-select property types
   useEffect(() => {
@@ -267,6 +275,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     }
   }, [location.search, propertyType]);
 
+
+
   // Handle outside clicks for dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -282,13 +292,17 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     };
   }, [isOpen]);
 
-  // Limit visible items in sidebar
+
+
+  // Limit items in sidebar
   const visiblePropertyTypes = showMorePropertyTypes
     ? propertyType
     : propertyType.slice(0, 6);
   const visibleAmenities = showMoreAmenities
     ? amenities
     : amenities.slice(0, 6);
+
+
 
   // Handle range input for budget
   const handleRangeChange = (event) => {
@@ -298,15 +312,21 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     });
   };
 
+
+
+
   // Handle sort selection
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
 
+
   // Handle location filter
   const handleLocationChange = (event) => {
     setLocationFilter(event.target.value);
   };
+
+
 
   // Toggle dropdown visibility
   const handleToggleDropdown = () => {
@@ -318,6 +338,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     setSearchQuery(event.target.value);
   };
 
+
+
   // Handle amenities checkbox
   const handleCheckboxChange = (amenity) => {
     setSelectedAmenities((prev) =>
@@ -327,6 +349,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     );
   };
 
+
+
   // Handle property type checkbox
   const handleChange = (type) => {
     setSelectedPropertyType((prev) =>
@@ -335,6 +359,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
         : [...prev, type]
     );
   };
+
+
 
   // Format budget for display
   const formatBudget = (value) => {
@@ -367,6 +393,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
       );
     }
   };
+
+  
 
   // Check if area value is valid
   const isValidArea = (area) => area && !isNaN(area) && area > 0;
@@ -456,6 +484,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
 
   const filteredData = newData.filter(filterPanelsByBudget);
 
+
+
   // Pagination logic
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -467,6 +497,8 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     return 0;
   });
 
+
+
   // Handle page change
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -474,11 +506,15 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
     }
   };
 
+
+
   // Handle items per page change
   const handleItemsPerPageChange = (event) => {
     setItemsPerPage(parseInt(event.target.value));
     setCurrentPage(1);
   };
+
+
 
   // Fetch properties
   const handleSubmit = () => {
@@ -507,6 +543,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
       });
   };
 
+  
   // Fetch property types
   const handlePropertyType = () => {
     setLoader(true);
@@ -570,6 +607,7 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
   const category = queryParams.get("category") || "All";
   const dynamicHeading = `Property ${category}`;
 
+  // Check if any filter is active
   const isAnyFilterActive = () => {
     return (
       searchQuery !== "" ||
@@ -845,10 +883,11 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 alt="No image available for this property"
                               />
                             )}
+
+                            
                             <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
                               ID: {panel.unique_id || "N/A"}
                             </div>
-                            {/* Replace your existing heart icon div with this improved version */}
                             <div
                               className="absolute top-2 right-2 cursor-pointer z-10 p-1 bg-white bg-opacity-70 rounded-full shadow-md hover:bg-opacity-100 transition-all duration-200"
                               onClick={(e) => {
@@ -861,7 +900,9 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                   : "Add to wishlist"
                               }
                             >
-                              {wishlistLoading.has(panel.id) ? (
+                              {wishlistLoading.has(
+                                panel.id || panel.property_id
+                              ) ? (
                                 <svg
                                   className="animate-spin h-6 w-6 text-gray-500"
                                   xmlns="http://www.w3.org/2000/svg"
@@ -884,10 +925,10 @@ export default function GalleryComponentTwo({ initialPropertyType }) {
                                 </svg>
                               ) : (
                                 <svg
-                                  className={`h-6 w-6 cursor-pointer transition-all duration-300 transform  ${
-                                    isWishlist(panel.id)
+                                  className={`h-6 w-6 cursor-pointer transition-all duration-300 transform ${
+                                    isWishlist(panel.id || panel.property_id)
                                       ? "fill-red-500 text-red-500 scale-110"
-                                      : "fill-gray-400 text-gray-400"
+                                      : "fill-gray-400 text-gray-400 hover:fill-red-300"
                                   }`}
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"

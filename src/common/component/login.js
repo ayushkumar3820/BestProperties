@@ -289,9 +289,6 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "done") {
-          localStorage.setItem("userName", store.name);
-          localStorage.setItem("userEmail", store.email);
-          localStorage.setItem("userPassword", store.password);
           toast.success("Account created successfully");
           setTimeout(() => {
             setLoader(false);
@@ -357,7 +354,7 @@ export default function Login() {
           sessionStorage.setItem("phone", newData.phone);
           sessionStorage.setItem("password", newData.password);
           sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("userName", data?.user?.name || "");
+          sessionStorage.setItem("userName", data?.name || "");
           sessionStorage.setItem("userId", data.userid?.toString() || "");
 
           toast.success("Login successful");

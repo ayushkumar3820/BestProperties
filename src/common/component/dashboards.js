@@ -10,9 +10,7 @@ export default function Dashboards() {
   const navigate = useNavigate();
   const [wishlistData, setWishlistData] = useState([]);
   const [myPropertiesData, setMyPropertiesData] = useState([]);
-  const [recommendedPropertiesData, setRecommendedPropertiesData] = useState(
-    []
-  );
+  const [requestPropertiesData, setrequestPropertiesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState("wishlist");
@@ -44,7 +42,7 @@ export default function Dashboards() {
       const [
         wishlistResponse,
         myPropertiesResponse,
-        recommendedPropertiesResponse,
+        requestPropertiesResponse,
       ] = await Promise.all([
         fetch(`${liveUrl}api/User/getWishlist/?userid=${userId}`, {
           method: "GET",
@@ -72,24 +70,21 @@ export default function Dashboards() {
       if (
         !wishlistResponse.ok ||
         !myPropertiesResponse.ok ||
-        !recommendedPropertiesResponse.ok
+        !requestPropertiesResponse.ok
       ) {
         const errorMessages = [];
         if (!wishlistResponse.ok)
           errorMessages.push(`Wishlist: ${wishlistResponse.status}`);
         if (!myPropertiesResponse.ok)
           errorMessages.push(`My Properties: ${myPropertiesResponse.status}`);
-        if (!recommendedPropertiesResponse.ok)
-          errorMessages.push(
-            `Recommended: ${recommendedPropertiesResponse.status}`
-          );
+        if (!requestPropertiesResponse.ok)
+          errorMessages.push(`request: ${requestPropertiesResponse.status}`);
         throw new Error(`Failed to fetch data - ${errorMessages.join(", ")}`);
       }
 
       const wishlistData = await wishlistResponse.json();
       const myPropertiesData = await myPropertiesResponse.json();
-      const recommendedPropertiesData =
-        await recommendedPropertiesResponse.json();
+      const requestPropertiesData = await requestPropertiesResponse.json();
 
       setWishlistData(
         Array.isArray(wishlistData?.result)
@@ -111,13 +106,13 @@ export default function Dashboards() {
           : []
       );
 
-      setRecommendedPropertiesData(
-        Array.isArray(recommendedPropertiesData?.result)
-          ? recommendedPropertiesData.result
-          : Array.isArray(recommendedPropertiesData?.data)
-          ? recommendedPropertiesData.data
-          : Array.isArray(recommendedPropertiesData)
-          ? recommendedPropertiesData
+      setrequestPropertiesData(
+        Array.isArray(requestPropertiesData?.result)
+          ? requestPropertiesData.result
+          : Array.isArray(requestPropertiesData?.data)
+          ? requestPropertiesData.data
+          : Array.isArray(requestPropertiesData)
+          ? requestPropertiesData
           : []
       );
     } catch (err) {
@@ -159,7 +154,7 @@ export default function Dashboards() {
             ? "Wishlist"
             : type === "myproperties"
             ? "My Property"
-            : "Recommended"}
+            : "request"}
         </span>
       </div>
 
@@ -298,7 +293,10 @@ export default function Dashboards() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-100 px-4 py-8" style={{ paddingLeft: "5rem", paddingRight: "6rem" }}>
+      <div
+        className="min-h-screen bg-gray-100 px-4 py-8"
+        style={{ paddingLeft: "5rem", paddingRight: "6rem" }}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div
@@ -319,13 +317,11 @@ export default function Dashboards() {
             </div>
             <div
               className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg cursor-pointer"
-              onClick={() => setActiveSection("recommended")}
+              onClick={() => setActiveSection("request")}
             >
-              <h3 className="text-lg font-semibold mb-2">
-                Recommended Properties
-              </h3>
+              <h3 className="text-lg font-semibold mb-2">Request Properties</h3>
               <p className="text-3xl font-bold">
-                {recommendedPropertiesData?.length || 0}
+                {requestPropertiesData?.length || 0}
               </p>
             </div>
           </div>
@@ -341,10 +337,10 @@ export default function Dashboards() {
                   data={myPropertiesData}
                 />
               )}
-              {activeSection === "recommended" && (
+              {activeSection === "request" && (
                 <TableSection
-                  title="Recommended Properties Details"
-                  data={recommendedPropertiesData}
+                  title="request Properties Details"
+                  data={requestPropertiesData}
                 />
               )}
             </div>

@@ -394,15 +394,7 @@ export default function BuyProperty() {
     setShowBackButton(true);
   };
 
-  const handlePropertyBack = () => {
-    setActiveButton("");
-    setActiveCommercial("");
-    setShowBackButton(false);
-    setPropertyDetails((prev) => ({
-      ...prev,
-      property_type_sub: "",
-    }));
-  };
+
 
   const handleNext = () => {
     const errors = [];
@@ -463,6 +455,10 @@ export default function BuyProperty() {
     const category = currentCategory;
     const property_for = "Buy";
 
+const hotTimelineOptions = ["Immediate", "Within Week", "Within Month", "1-3 Months"];
+const priority = hotTimelineOptions.includes(propertyDetails.timeline) ? "Hot" : "Cold";
+
+
     const payload = {
       infotype: "requirement",
       property_for,
@@ -474,6 +470,7 @@ export default function BuyProperty() {
       requirement: propertyDetails.requirement,
       status: "Pending",
       leads_type: "Buyer",
+      priority:priority,
       rDate: new Date().toISOString(),
       userid: sessionStorage.getItem("userId") || 0,
       timeline: propertyDetails.timeline,

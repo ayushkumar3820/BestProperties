@@ -108,8 +108,8 @@ export default function Budget() {
         maxBudget: selectedRange.max,
       });
 
-      localStorage.setItem("minBudget", selectedRange.min);
-      localStorage.setItem("maxBudget", selectedRange.max);
+      sessionStorage.setItem("minBudget", selectedRange.min);
+      sessionStorage.setItem("maxBudget", selectedRange.max);
       localStorage.setItem("location", e.target.value); 
     }
   };
@@ -120,7 +120,7 @@ export default function Budget() {
 
   const handleLocationChange = (e) => {
     setLocation(e.target.value);
-    localStorage.setItem("location", e.target.value);
+    // localStorage.setItem("location", e.target.value);
   };
 
   const Validate = () => {
