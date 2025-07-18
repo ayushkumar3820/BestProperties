@@ -1,12 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Bed from "../../assets/img/bed.png";
 import AnimatedText from "./HeadingAnimation";
-import Bath from "../../assets/img/bath.png";
-import NoImage from "../../assets/img/image-not.jpg";
 import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
+import PropertyCard from "./PropertyCard";
 import "../../App.css";
+import Cookies from "js-cookie";
 
 const BUDGET_MIN = 500000;
 const BUDGET_MAX = 200000000;
@@ -40,8 +39,6 @@ export default function GalleryComponentTwo() {
   const [authToken, setAuthToken] = useState(token);
   const [wishlistLoading, setWishlistLoading] = useState(new Set());
 
-
-  // Reset all filters
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedPropertyType([]);
@@ -55,63 +52,70 @@ export default function GalleryComponentTwo() {
     navigate("/property?category=All&propertyType=buy");
   };
 
-
-
-  // Fetch user ID and token from storage
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem("userId") || null;
-    const storedToken = sessionStorage.getItem("authToken") || token;
+    const storedUserId = Cookies.get("userId") || null;
+    const storedToken = Cookies.get("authToken") || token;
     setUserId(storedUserId);
     setAuthToken(storedToken);
   }, []);
 
-
-
-  // Fetch wishlist on component mount
   useEffect(() => {
     const refetchWishlistOnMount = async () => {
-      const storedUserId = sessionStorage.getItem("userId");
-      const storedToken = sessionStorage.getItem("authToken") || token;
-
+      const storedUserId = Cookies.get("userId");
+      const storedToken = Cookies.get("authToken") || token;
       if (storedUserId && storedToken) {
         try {
           console.log("Refetching wishlist on component mount/return");
-          const response = await fetch(`${liveUrl}api/User/getWishlist_ids/?userid=${storedUserId}`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          });
-
+          const response = await fetch(
+            `${liveUrl}api/User/getWishlist_ids/?userid=${storedUserId}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            }
+          );
           if (response.ok) {
             const data = await response.json();
             if (data.status === "success" && Array.isArray(data.result)) {
               const wishlistIds = data.result;
               const wishlistDetailsPromises = wishlistIds.map(async (id) => {
-                const detailResponse = await fetch(`${liveUrl}api/Reactjs/gallery/${id}`, {
-                  headers: {
-                    Authorization: `Bearer ${storedToken}`,
-                    "Content-Type": "application/json",
-                  },
-                });
+                const detailResponse = await fetch(
+                  `${liveUrl}api/Reactjs/gallery/${id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${storedToken}`,
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
                 if (detailResponse.ok) {
                   return detailResponse.json();
                 }
                 return null;
               });
-
-              const wishlistDetails = await Promise.all(wishlistDetailsPromises);
-              const wishlistItems = wishlistDetails.filter(item => item !== null).map((item) => ({
-                id: item.property_id || item.id,
-                property_id: item.property_id || item.id,
-                property_name: item.property_name || item.property?.property_name || "Unknown Property",
-                address: item.address || item.property?.address || "Unknown Location",
-                budget: item.budget || item.property?.budget || "N/A",
-                image: item.image || item.property?.image || NoImage,
-                property_type: item.property_type || item.property?.property_type || "N/A",
-                addedAt: item.addedAt || new Date().toISOString(),
-              }));
-
+              const wishlistDetails = await Promise.all(
+                wishlistDetailsPromises
+              );
+              const wishlistItems = wishlistDetails
+                .filter((item) => item !== null)
+                .map((item) => ({
+                  id: item.property_id || item.id,
+                  property_id: item.property_id || item.id,
+                  property_name:
+                    item.property_name ||
+                    item.property?.property_name ||
+                    "Unknown Property",
+                  address:
+                    item.address ||
+                    item.property?.address ||
+                    "Unknown Location",
+                  budget: item.budget || item.property?.budget || "N/A",
+                  image: item.image || item.property?.image || "",
+                  property_type:
+                    item.property_type || item.property?.property_type || "N/A",
+                  addedAt: item.addedAt || new Date().toISOString(),
+                }));
               console.log("Wishlist restored on mount:", wishlistItems.length);
               setWishlist(wishlistItems);
             }
@@ -121,20 +125,13 @@ export default function GalleryComponentTwo() {
         }
       }
     };
-
     refetchWishlistOnMount();
   }, []);
 
-  
-
-
-
-  // Check if a property is in the wishlist
   const isWishlist = (propertyId) => {
     if (!propertyId || !Array.isArray(wishlist) || wishlist.length === 0) {
       return false;
     }
-
     const searchId = String(propertyId || "");
     return wishlist.some((item) => {
       const itemId = String(item.id || "");
@@ -143,11 +140,6 @@ export default function GalleryComponentTwo() {
     });
   };
 
-
-
-
-
-  // Toggle wishlist status for a property
   const toggleWishlist = async (property) => {
     if (!userId || !authToken) {
       alert("Please log in to manage your wishlist.");
@@ -161,7 +153,6 @@ export default function GalleryComponentTwo() {
     }
 
     setWishlistLoading((prev) => new Set(prev).add(propertyId));
-
     const isCurrentlyWishlisted = isWishlist(propertyId);
     const url = isCurrentlyWishlisted
       ? `${liveUrl}api/User/removefromwishlist`
@@ -173,7 +164,6 @@ export default function GalleryComponentTwo() {
         `${isCurrentlyWishlisted ? "Removing from" : "Adding to"} wishlist:`,
         propertyId
       );
-
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -212,7 +202,7 @@ export default function GalleryComponentTwo() {
                 property.property_name || property.name || "Unknown Property",
               address: property.address || "Unknown Location",
               budget: property.budget || "N/A",
-              image: property.image || NoImage,
+              image: property.image || "",
               property_type: property.property_type || "N/A",
               addedAt: new Date().toISOString(),
             };
@@ -220,7 +210,6 @@ export default function GalleryComponentTwo() {
             return [...prev, newItem];
           }
         });
-
         alert(
           `Property ${
             isCurrentlyWishlisted ? "removed from" : "added to"
@@ -249,22 +238,13 @@ export default function GalleryComponentTwo() {
     }
   };
 
-
-
-
-
-
-
-  // Extract query parameters and pre-select property types
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const keyword = queryParams.get("keyword") || "";
     const category = queryParams.get("category") || "All";
     const propertyTypeParam = queryParams.get("propertyType") || "buy";
-
     setSearchQuery(keyword);
     setRentFilter(propertyTypeParam === "rent");
-
     if (category !== "All" && propertyType.length > 0) {
       const preSelectedTypes = propertyType.filter((type) =>
         type.toLowerCase().includes(category.toLowerCase())
@@ -275,9 +255,6 @@ export default function GalleryComponentTwo() {
     }
   }, [location.search, propertyType]);
 
-
-
-  // Handle outside clicks for dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -292,9 +269,6 @@ export default function GalleryComponentTwo() {
     };
   }, [isOpen]);
 
-
-
-  // Limit items in sidebar
   const visiblePropertyTypes = showMorePropertyTypes
     ? propertyType
     : propertyType.slice(0, 6);
@@ -302,9 +276,6 @@ export default function GalleryComponentTwo() {
     ? amenities
     : amenities.slice(0, 6);
 
-
-
-  // Handle range input for budget
   const handleRangeChange = (event) => {
     setRangeValues({
       min: parseInt(event.target.value),
@@ -312,35 +283,22 @@ export default function GalleryComponentTwo() {
     });
   };
 
-
-
-
-  // Handle sort selection
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
 
-
-  // Handle location filter
   const handleLocationChange = (event) => {
     setLocationFilter(event.target.value);
   };
 
-
-
-  // Toggle dropdown visibility
   const handleToggleDropdown = () => {
     setIsOpen((prev) => !prev);
   };
 
-  // Handle search input
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-
-
-  // Handle amenities checkbox
   const handleCheckboxChange = (amenity) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenity)
@@ -349,9 +307,6 @@ export default function GalleryComponentTwo() {
     );
   };
 
-
-
-  // Handle property type checkbox
   const handleChange = (type) => {
     setSelectedPropertyType((prev) =>
       prev.includes(type)
@@ -360,9 +315,6 @@ export default function GalleryComponentTwo() {
     );
   };
 
-
-
-  // Format budget for display
   const formatBudget = (value) => {
     if (!value || isNaN(value)) return "N/A";
     if (value >= 10000000) {
@@ -394,12 +346,8 @@ export default function GalleryComponentTwo() {
     }
   };
 
-  
-
-  // Check if area value is valid
   const isValidArea = (area) => area && !isNaN(area) && area > 0;
 
-  // Convert area based on selected unit
   const convertArea = (area, unit, panelId, areaType) => {
     if (!isValidArea(area)) return "N/A";
     const effectiveArea = area;
@@ -413,7 +361,6 @@ export default function GalleryComponentTwo() {
     return `${Math.round(convertedValue).toLocaleString()} ${unit}`;
   };
 
-  // Handle unit change for a specific property and area type
   const handleUnitChange = (panelId, unit, areaType) => {
     setUnitSelections((prev) => ({
       ...prev,
@@ -421,7 +368,6 @@ export default function GalleryComponentTwo() {
     }));
   };
 
-  // Filter properties based on budget, search, category, location, amenities, and property type
   const filterPanelsByBudget = (panel) => {
     const panelBudget = parseInt(panel.budget) || 0;
     const panelAmenities = panel.amenities ? panel.amenities.split("~-~") : [];
@@ -432,10 +378,8 @@ export default function GalleryComponentTwo() {
     const searchLower = searchQuery.toLowerCase().trim();
     const queryParams = new URLSearchParams(location.search);
     const category = queryParams.get("category") || "All";
-
     const isBudgetInRange =
       panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
-
     const matchesSearch =
       !searchQuery ||
       (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
@@ -449,28 +393,22 @@ export default function GalleryComponentTwo() {
       (panel.bathrooms && panel.bathrooms.toString().includes(searchLower)) ||
       (panel.sqft && panel.sqft.toString().includes(searchLower)) ||
       formatBudget(panelBudget).toLowerCase().includes(searchLower);
-
     const matchesCategory =
       category === "All" || propertyCheck.includes(category.toLowerCase());
-
     const matchesLocation =
       !locationFilter ||
       (panel.address &&
         panel.address.toLowerCase().includes(locationFilter.toLowerCase()));
-
     const hasSelectedAmenities =
       selectedAmenities.length === 0 ||
       selectedAmenities.every((amenity) => panelAmenities.includes(amenity));
-
     const hasSelectedPropertyType =
       selectedPropertyType.length === 0 ||
       selectedPropertyType.some((type) =>
         propertyCheck.includes(type.toLowerCase())
       );
-
     const matchesRentFilter =
       !rentFilter || (rentFilter && propertyCheck.includes("rent"));
-
     return (
       isBudgetInRange &&
       matchesSearch &&
@@ -484,9 +422,6 @@ export default function GalleryComponentTwo() {
 
   const filteredData = newData.filter(filterPanelsByBudget);
 
-
-
-  // Pagination logic
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -497,26 +432,17 @@ export default function GalleryComponentTwo() {
     return 0;
   });
 
-
-
-  // Handle page change
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
-
-
-  // Handle items per page change
   const handleItemsPerPageChange = (event) => {
     setItemsPerPage(parseInt(event.target.value));
     setCurrentPage(1);
   };
 
-
-
-  // Fetch properties
   const handleSubmit = () => {
     setLoader(true);
     fetch(`${liveUrl}api/Reactjs/gallery`, {
@@ -543,8 +469,6 @@ export default function GalleryComponentTwo() {
       });
   };
 
-  
-  // Fetch property types
   const handlePropertyType = () => {
     setLoader(true);
     fetch(`${liveUrl}property-property-type`, {
@@ -570,7 +494,6 @@ export default function GalleryComponentTwo() {
       });
   };
 
-  // Fetch amenities
   const handleAmenities = () => {
     setLoader(true);
     fetch(`${liveUrl}api/Reactjs/amenities`, {
@@ -596,7 +519,6 @@ export default function GalleryComponentTwo() {
       });
   };
 
-  // Initial data fetch
   useEffect(() => {
     handleSubmit();
     handlePropertyType();
@@ -607,7 +529,6 @@ export default function GalleryComponentTwo() {
   const category = queryParams.get("category") || "All";
   const dynamicHeading = `Property ${category}`;
 
-  // Check if any filter is active
   const isAnyFilterActive = () => {
     return (
       searchQuery !== "" ||
@@ -622,7 +543,6 @@ export default function GalleryComponentTwo() {
     );
   };
 
-  // Sanitize property name for URL
   const sanitizePropertyName = (name) => {
     return (name || "property")
       .toLowerCase()
@@ -641,7 +561,7 @@ export default function GalleryComponentTwo() {
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
             >
-              <path d="M304 48a48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
+              <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" />
             </svg>
           </div>
         ) : (
@@ -841,418 +761,19 @@ export default function GalleryComponentTwo() {
                 {newData && Array.isArray(newData) && newData.length > 0 ? (
                   currentItems.length > 0 ? (
                     currentItems.map((panel, index) => (
-                      <div
-                        className={`property-div w-full max-w-[350px] rounded-md shadow-lg transition duration-300 ease-in-out ${
-                          selectedPropertyType.includes(panel.property_type)
-                            ? "border-2"
-                            : ""
-                        }`}
+                      <PropertyCard
                         key={panel.id || index}
-                      >
-                        <div className="flex flex-col h-full">
-                          <div
-                            className="flex-shrink-0 relative cursor-pointer"
-                            onClick={() => {
-                              const modifiedPanelName = sanitizePropertyName(
-                                panel.property_name || panel.name
-                              );
-                              navigate(
-                                `/property/-${
-                                  panel.id || index
-                                }-${modifiedPanelName}`
-                              );
-                            }}
-                          >
-                            {panel.image &&
-                            typeof panel.image === "string" &&
-                            (panel.image.endsWith(".jpg") ||
-                              panel.image.endsWith(".jpeg") ||
-                              panel.image.endsWith(".png") ||
-                              panel.image.endsWith(".svg")) ? (
-                              <img
-                                className="rounded-t-md h-[200px] w-full object-cover"
-                                src={panel.image}
-                                alt={`Property ${
-                                  panel.property_name || panel.name || "Image"
-                                }`}
-                              />
-                            ) : (
-                              <img
-                                className="rounded-t-md h-[200px] w-full object-cover"
-                                src={NoImage}
-                                alt="No image available for this property"
-                              />
-                            )}
-
-                            
-                            <div className="absolute bottom-0 left-0 bg-[#d7dde5] text-[#303030] px-2 py-1 text-xs">
-                              ID: {panel.unique_id || "N/A"}
-                            </div>
-                            <div
-                              className="absolute top-2 right-2 cursor-pointer z-10 p-1 bg-white bg-opacity-70 rounded-full shadow-md hover:bg-opacity-100 transition-all duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleWishlist(panel);
-                              }}
-                              title={
-                                isWishlist(panel.id || panel.property_id)
-                                  ? "Remove from wishlist"
-                                  : "Add to wishlist"
-                              }
-                            >
-                              {wishlistLoading.has(
-                                panel.id || panel.property_id
-                              ) ? (
-                                <svg
-                                  className="animate-spin h-6 w-6 text-gray-500"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                  ></circle>
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
-                                  ></path>
-                                </svg>
-                              ) : (
-                                <svg
-                                  className={`h-6 w-6 cursor-pointer transition-all duration-300 transform ${
-                                    isWishlist(panel.id || panel.property_id)
-                                      ? "fill-red-500 text-red-500 scale-110"
-                                      : "fill-gray-400 text-gray-400 hover:fill-red-300"
-                                  }`}
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                  strokeWidth="1"
-                                >
-                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-grow text-left bg-white border border-t leading-4 p-3">
-                            <div className="mr-2">
-                              <div className="flex items-center justify-between whitespace-nowrap text-lg text-red-800 pr-3">
-                                <div className="flex items-center space-x-4">
-                                  <span
-                                    className="cursor-pointer font-bold"
-                                    onClick={() => {
-                                      const modifiedPanelName =
-                                        sanitizePropertyName(
-                                          panel.property_name || panel.name
-                                        );
-                                      navigate(
-                                        `/property/-${
-                                          panel.id || index
-                                        }-${modifiedPanelName}`
-                                      );
-                                    }}
-                                  >
-                                    {formatBudget(panel.budget)}
-                                  </span>
-                                  {isValidArea(panel.sqft) && (
-                                    <div className="flex items-center space-x-2">
-                                      <span
-                                        className="text-[#303030] text-sm cursor-pointer"
-                                        onClick={() => {
-                                          const modifiedPanelName =
-                                            sanitizePropertyName(
-                                              panel.property_name || panel.name
-                                            );
-                                          navigate(
-                                            `/property/-${
-                                              panel.id || index
-                                            }-${modifiedPanelName}`
-                                          );
-                                        }}
-                                      >
-                                        {convertArea(
-                                          panel.sqft,
-                                          unitSelections[
-                                            `${panel.id || index}-main`
-                                          ] || "sq.ft.",
-                                          panel.id || index,
-                                          "main"
-                                        )}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              {isValidArea(panel.built_up_area) && (
-                                <div className="flex items-center space-x-2 mt-2">
-                                  <span
-                                    className="text-[#303030] text-sm cursor-pointer"
-                                    onClick={() => {
-                                      const modifiedPanelName =
-                                        sanitizePropertyName(
-                                          panel.property_name || panel.name
-                                        );
-                                      navigate(
-                                        `/property/-${
-                                          panel.id || index
-                                        }-${modifiedPanelName}`
-                                      );
-                                    }}
-                                  >
-                                    Built-Up:{" "}
-                                    {convertArea(
-                                      panel.built_up_area,
-                                      unitSelections[
-                                        `${panel.id || index}-built`
-                                      ] || "sq.ft.",
-                                      panel.id || index,
-                                      "built"
-                                    )}
-                                  </span>
-                                  <div className="relative">
-                                    <select
-                                      value={
-                                        unitSelections[
-                                          `${panel.id || index}-built`
-                                        ] || "sq.ft."
-                                      }
-                                      onChange={(e) =>
-                                        handleUnitChange(
-                                          panel.id || index,
-                                          e.target.value,
-                                          "built"
-                                        )
-                                      }
-                                      className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
-                                      aria-label="Select area unit for built-up area"
-                                    >
-                                      <option value="sq.ft.">sq.ft.</option>
-                                      <option value="sq.m.">sq.m.</option>
-                                      <option value="sq.yards">sq.yards</option>
-                                    </select>
-                                    <svg
-                                      fill="black"
-                                      className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 512 512"
-                                    >
-                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              )}
-                              {isValidArea(panel.land_area) && (
-                                <div className="flex items-center space-x-2 mt-2">
-                                  <span
-                                    className="text-[#303030] text-sm cursor-pointer"
-                                    onClick={() => {
-                                      const modifiedPanelName =
-                                        sanitizePropertyName(
-                                          panel.property_name || panel.name
-                                        );
-                                      navigate(
-                                        `/property/-${
-                                          panel.id || index
-                                        }-${modifiedPanelName}`
-                                      );
-                                    }}
-                                  >
-                                    Land Area:{" "}
-                                    {convertArea(
-                                      panel.land_area,
-                                      unitSelections[
-                                        `${panel.id || index}-land`
-                                      ] || "sq.ft.",
-                                      panel.id || index,
-                                      "land"
-                                    )}
-                                  </span>
-                                  <div className="relative">
-                                    <select
-                                      value={
-                                        unitSelections[
-                                          `${panel.id || index}-land`
-                                        ] || "sq.ft."
-                                      }
-                                      onChange={(e) =>
-                                        handleUnitChange(
-                                          panel.id || index,
-                                          e.target.value,
-                                          "land"
-                                        )
-                                      }
-                                      className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
-                                      aria-label="Select area unit for land area"
-                                    >
-                                      <option value="sq.ft.">sq.ft.</option>
-                                      <option value="sq.m.">sq.m.</option>
-                                      <option value="sq.yards">sq.yards</option>
-                                    </select>
-                                    <svg
-                                      fill="black"
-                                      className="h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#303030]"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 512 512"
-                                    >
-                                      <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              )}
-                              <div
-                                className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
-                                onClick={() => {
-                                  const modifiedPanelName =
-                                    sanitizePropertyName(
-                                      panel.property_name || panel.name
-                                    );
-                                  navigate(
-                                    `/property/-${
-                                      panel.id || index
-                                    }-${modifiedPanelName}`
-                                  );
-                                }}
-                              >
-                                <div>
-                                  <svg
-                                    fill="#15803d"
-                                    className="h-4 w-4 fill-[#303030]"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 576 512"
-                                  >
-                                    <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 88.4c0 8-1.5 15.8-4.5 23.1l-88 0c-2.9 0-5.6-.6-8-1.7l-191-95c-5.6-2.8-9.2-8.3-9.8-14.3l-4-160.2c0-17.7 14.3-32 32-32l31.1 0 0-80.2c0-26.5 21.5-48 48-48l32 0 0-63.9c0-8.7 3.5-17 10-23.6c6.4-6.6 15.2-10.3 24.2-10.3l96 0c9.1 0 17.8 3.7 24.2 10.3c6.5 6.6 10 14.9 10 23.6l0 63.9 32 0c26.5 0 48 21.5 48 48l0 80.2 0 31.9zM272 192a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm-48 256l0-112 96 48 0 112-96-48z" />
-                                  </svg>
-                                </div>
-                                <div className="leading-6 text-[#303030] text-sm truncate">
-                                  {panel.property_name || panel.name || "N/A"}
-                                </div>
-                              </div>
-                              <div
-                                className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
-                                onClick={() => {
-                                  const modifiedPanelName =
-                                    sanitizePropertyName(
-                                      panel.property_name || panel.name
-                                    );
-                                  navigate(
-                                    `/property/-${
-                                      panel.id || index
-                                    }-${modifiedPanelName}`
-                                  );
-                                }}
-                              >
-                                <div>
-                                  <svg
-                                    fill="#15803d"
-                                    className="h-4 w-4 fill-[#303030]"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 512 512"
-                                  >
-                                    <path d="M32 32C14.3 32 0 46.3 0 64V448c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H32zM160 160c0-17.7 14.3-32 32-32H320c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V160zM288 352c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V288c0-17.7 14.3-32 32-32H256c17.7 0 32 14.3 32 32v64z" />
-                                  </svg>
-                                </div>
-                                <div className="leading-6 text-[#303030] text-sm truncate">
-                                  {panel.property_type || "N/A"}
-                                </div>
-                              </div>
-                              <div
-                                className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer"
-                                onClick={() => {
-                                  const modifiedPanelName =
-                                    sanitizePropertyName(
-                                      panel.property_name || panel.name
-                                    );
-                                  navigate(
-                                    `/property/-${
-                                      panel.id || index
-                                    }-${modifiedPanelName}`
-                                  );
-                                }}
-                              >
-                                <div>
-                                  <svg
-                                    fill="#15803d"
-                                    className="h-4 w-4 fill-[#303030]"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 384 512"
-                                  >
-                                    <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                                  </svg>
-                                </div>
-                                <div className="leading-6 text-[#303030] text-sm truncate">
-                                  {panel.address || "N/A"}
-                                </div>
-                              </div>
-                              <div
-                                className="flex items-center gap-3 mt-2 cursor-pointer"
-                                onClick={() => {
-                                  const modifiedPanelName =
-                                    sanitizePropertyName(
-                                      panel.property_name || panel.name
-                                    );
-                                  navigate(
-                                    `/property/-${
-                                      panel.id || index
-                                    }-${modifiedPanelName}`
-                                  );
-                                }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {panel.bedrooms != null &&
-                                    panel.bedrooms > 0 && (
-                                      <img
-                                        className="w-6"
-                                        src={Bed}
-                                        alt="Bedroom icon"
-                                      />
-                                    )}
-                                  <div className="text-sm font-bold text-[#303030]">
-                                    {panel.bedrooms != null &&
-                                    panel.bedrooms > 0
-                                      ? panel.bedrooms
-                                      : null}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {panel.bathrooms != null &&
-                                    panel.bathrooms > 0 && (
-                                      <img
-                                        className="w-6"
-                                        src={Bath}
-                                        alt="Bathroom icon"
-                                      />
-                                    )}
-                                  <div className="text-sm font-bold text-[#303030]">
-                                    {panel.bathrooms != null &&
-                                    panel.bathrooms > 0
-                                      ? panel.bathrooms
-                                      : null}
-                                  </div>
-                                </div>
-                                <div className="flex gap-2 items-center">
-                                  {panel.verified &&
-                                    typeof panel.verified === "string" && (
-                                      <img
-                                        className="w-5"
-                                        src={panel.verified}
-                                        alt="Verified property icon"
-                                        onError={(e) =>
-                                          (e.target.src = NoImage)
-                                        }
-                                      />
-                                    )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                        panel={panel}
+                        index={index}
+                        isWishlist={isWishlist}
+                        toggleWishlist={toggleWishlist}
+                        wishlistLoading={wishlistLoading}
+                        formatBudget={formatBudget}
+                        convertArea={convertArea}
+                        unitSelections={unitSelections}
+                        handleUnitChange={handleUnitChange}
+                        sanitizePropertyName={sanitizePropertyName}
+                      />
                     ))
                   ) : (
                     <p className="text-center mt-24 mb-24 font-bold text-lg text-red-600">

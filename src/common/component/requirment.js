@@ -5,6 +5,7 @@ import OurServices from "./ourServices";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
+import Cookie from "js-cookie";
 
 const propertyConfig = {
   residential: {
@@ -472,7 +473,7 @@ const priority = hotTimelineOptions.includes(propertyDetails.timeline) ? "Hot" :
       leads_type: "Buyer",
       priority:priority,
       rDate: new Date().toISOString(),
-      userid: sessionStorage.getItem("userId") || 0,
+      userid: Cookie.get("userId") || 0,
       timeline: propertyDetails.timeline,
       bhk: propertyDetails.bhk,
       carpet: propertyDetails.carpet

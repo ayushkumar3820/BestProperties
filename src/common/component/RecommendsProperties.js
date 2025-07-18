@@ -6,6 +6,7 @@ import OurServices from "./ourServices";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
+import Cookie from "js-cookie";
 
 export default function RecommendsProperties() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function RecommendsProperties() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem("userId");
+    const storedUserId = Cookie.get("userId");
     if (storedUserId) setUserId(storedUserId);
   }, []);
 

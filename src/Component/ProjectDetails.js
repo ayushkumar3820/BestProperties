@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Slider from "react-slick";
 import Searching from "../common/component/searching";
 import BgImage from "../Images/nirwana-heights03.jpg";
-// import MapImage from "../Images/room-structure.jpg";
+
 
 const ProjectDetails = () => {
   const { id } = useParams();

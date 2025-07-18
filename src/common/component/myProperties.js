@@ -7,6 +7,7 @@ import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
 import { toWords } from "number-to-words";
+import Cookie from "js-cookie";
 
 export default function MyProperties() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function MyProperties() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem("userId");
+    const storedUserId = Cookie.get("userId");
     if (storedUserId) setUserId(storedUserId);
   }, []);
 

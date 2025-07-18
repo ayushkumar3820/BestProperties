@@ -6,6 +6,7 @@ import Navbar from "./navbar";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
+import Cookie from "js-cookie";
 
 export default function WishlistPage() {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ export default function WishlistPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Retrieve userId from sessionStorage
-    const storedUserId = sessionStorage.getItem("userId");
+    // Retrieve userId from Cookie
+    const storedUserId = Cookie.get("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     } else {
@@ -47,7 +48,7 @@ export default function WishlistPage() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            setError("Session expired. Please log in again.");
+            setError("Cookie expired. Please log in again.");
             navigate("/login");
             return;
           }
@@ -114,9 +115,9 @@ export default function WishlistPage() {
     if (!isValidArea(area)) return "N/A";
     switch (unit) {
       case "sq.m.":
-        return `${(area * 0.092903).toFixed(2)} sq.m.`; // sq.ft. to sq.m.
+        return `${(area * 0.092903).toFixed(2)} sq.m.`; 
       case "sq.yards":
-        return `${(area * 0.111111).toFixed(2)} sq.yards`; // sq.ft. to sq.yards
+        return `${(area * 0.111111).toFixed(2)} sq.yards`; 
       default:
         return `${area.toFixed(2)} sq.ft.`;
     }
@@ -158,8 +159,9 @@ export default function WishlistPage() {
       });
 
       if (!response.ok) {
+
         if (response.status === 401) {
-          setError("Session expired. Please log in again.");
+          setError("Cookie expired. Please log in again.");
           navigate("/login");
           return;
         }
@@ -172,11 +174,11 @@ export default function WishlistPage() {
         const newWishlistLength = wishlist.length - 1;
         const newTotalPages = Math.ceil(newWishlistLength / itemsPerPage);
         if (newWishlistLength === 0) {
-          setCurrentPage(1); // Reset to page 1 if wishlist is empty
+          setCurrentPage(1); 
         } else if (currentPage > newTotalPages) {
           setCurrentPage(newTotalPages);
         }
-        // Optionally, add toast notification for success
+      
         // toast.success("Property removed from wishlist!");
       } else {
         throw new Error(result.message || "Failed to remove from wishlist");

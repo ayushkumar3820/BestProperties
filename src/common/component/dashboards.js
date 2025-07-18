@@ -5,6 +5,7 @@ import Navbar from "./navbar";
 import OurServices from "./ourServices";
 import Searching from "./searching";
 import { liveUrl, token } from "./url";
+import Cookie from "js-cookie";
 
 export default function Dashboards() {
   const navigate = useNavigate();
@@ -13,14 +14,14 @@ export default function Dashboards() {
   const [requestPropertiesData, setrequestPropertiesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState("wishlist");
+  const [activeSection, setActiveSection] = useState("request");
 
   const getUserId = () => {
-    const storedUserId = sessionStorage.getItem("userId");
+    const storedUserId = Cookie.get("userId");
     if (storedUserId) {
       return storedUserId;
     }
-    console.warn("User ID not found in sessionStorage");
+    console.warn("User ID not found in Cookie");
     return null;
   };
 
@@ -132,74 +133,7 @@ export default function Dashboards() {
     }
   };
 
-  const PropertyCard = ({ property, type }) => (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4 hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-gray-800 truncate">
-          {property?.name ||
-            property?.property_name ||
-            property?.title ||
-            "Property Name"}
-        </h3>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            type === "wishlist"
-              ? "bg-red-100 text-red-600"
-              : type === "myproperties"
-              ? "bg-green-100 text-green-600"
-              : "bg-blue-100 text-blue-600"
-          }`}
-        >
-          {type === "wishlist"
-            ? "Wishlist"
-            : type === "myproperties"
-            ? "My Property"
-            : "request"}
-        </span>
-      </div>
-
-      <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-        {property?.description ||
-          property?.property_description ||
-          property?.details ||
-          "No description available"}
-      </p>
-
-      <div className="flex justify-between items-center text-sm text-gray-500">
-        <span className="font-medium">
-          {property?.property_for ||
-            property?.type ||
-            property?.category ||
-            "For Sale"}
-        </span>
-        <span>
-          ID:{" "}
-          {property?.id ||
-            property?.property_id ||
-            property?.propertyId ||
-            "N/A"}
-        </span>
-      </div>
-
-      {(property?.property_builder || property?.builder) && (
-        <div className="mt-2 text-sm text-gray-500">
-          Builder: {property.property_builder || property.builder}
-        </div>
-      )}
-
-      {(property?.price || property?.property_price) && (
-        <div className="mt-2 text-sm font-semibold text-green-600">
-          ₹{property.price || property.property_price}
-        </div>
-      )}
-
-      {(property?.location || property?.property_location) && (
-        <div className="mt-2 text-sm text-gray-500">
-          📍 {property.location || property.property_location}
-        </div>
-      )}
-    </div>
-  );
+ 
 
   const TableSection = ({ title, data }) => (
     <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -299,6 +233,15 @@ export default function Dashboards() {
       >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div
+              className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg cursor-pointer"
+              onClick={() => setActiveSection("request")}
+            >
+              <h3 className="text-lg font-semibold mb-2">Schedule Properties</h3>
+              <p className="text-3xl font-bold">
+                {requestPropertiesData?.length || 0}
+              </p>
+            </div>
             <div
               className="bg-gradient-to-r from-blue-500 to-blue-600 text-white/CN p-6 rounded-xl shadow-lg cursor-pointer"
               onClick={() => setActiveSection("wishlist")}
@@ -315,15 +258,7 @@ export default function Dashboards() {
                 {myPropertiesData?.length || 0}
               </p>
             </div>
-            <div
-              className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg cursor-pointer"
-              onClick={() => setActiveSection("request")}
-            >
-              <h3 className="text-lg font-semibold mb-2">Request Properties</h3>
-              <p className="text-3xl font-bold">
-                {requestPropertiesData?.length || 0}
-              </p>
-            </div>
+            
           </div>
 
           {activeSection && (
@@ -339,7 +274,7 @@ export default function Dashboards() {
               )}
               {activeSection === "request" && (
                 <TableSection
-                  title="request Properties Details"
+                  title="Schedule Properties "
                   data={requestPropertiesData}
                 />
               )}

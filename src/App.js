@@ -44,6 +44,7 @@ import RequestProperties from "./common/component/RequestProperties";
 import ResetPassword from "./common/component/reset-pasowrd";
 import MyPropertiesPage from "./common/component/myProperties";
 import RecommendsProperties from "./common/component/RecommendsProperties";
+import UserProfile from "./common/component/myProfile";
 
 export default function App() {
   useEffect(() => {
@@ -96,6 +97,7 @@ export default function App() {
         <Route path="resetPassword/:tokenPath" element={<ResetPassword />} />
         <Route  path="myProperties" element={<MyPropertiesPage/>}/>
         <Route path="recommendProperties" element={<RecommendsProperties/>}/>
+        <Route path="myProfile" element={<UserProfile/>}/>
       </Routes>
     </BrowserRouter>
   );

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { liveUrl, token } from "./url";
 import OurServices from "./ourServices";
 import Searching from "./searching";
+import Cookie from "js-cookie";
 
 export default function Budget() {
   const Navigate = useNavigate();
@@ -108,9 +109,8 @@ export default function Budget() {
         maxBudget: selectedRange.max,
       });
 
-      sessionStorage.setItem("minBudget", selectedRange.min);
-      sessionStorage.setItem("maxBudget", selectedRange.max);
-      localStorage.setItem("location", e.target.value); 
+      Cookie.set("minBudget", selectedRange.min);
+      Cookie.set("maxBudget", selectedRange.max);
     }
   };
 

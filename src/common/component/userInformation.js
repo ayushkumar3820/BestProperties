@@ -16,6 +16,7 @@ import Bed from "../../assets/img/bed.png";
 import Bath from "../../assets/img/bath.png";
 import Kitchen from "../../assets/img/kitchen.png";
 import "./ModalPage.css";
+import Cookie from "js-cookie"
 
 // Bind modal to app element for accessibility
 Modal.setAppElement("#root");
@@ -55,6 +56,34 @@ export default function UserInformation() {
   const [userInfoModal, setUserInfoModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Retrieve the is_scheduled status from Cookie when the component mounts
+  useEffect(() => {
+    const storedIsLoggedIn = Cookie.get("isLoggedIn") === "true";
+    const userName = Cookie.get("userName") || "";
+    const userPhone = Cookie.get("phone") || "";
+    const isScheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
+
+    if (storedIsLoggedIn && userPhone) {
+      setIsLoggedIn(true);
+      setUserInfo({
+        firstname: userName,
+        phone: userPhone,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        firstname: userName,
+        phone: userPhone,
+      }));
+    }
+
+    if (propertyData) {
+      setPropertyData(prev => ({
+        ...prev,
+        is_scheduled: isScheduled
+      }));
+    }
+  }, [propertyId]);
+
   const imageList = [
     propertyData?.image_one_url,
     propertyData?.image_two_url,
@@ -88,32 +117,6 @@ export default function UserInformation() {
     },
   };
 
-  // Check login status and localStorage for user info
-  useEffect(() => {
-    const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
-    const userName = sessionStorage.getItem("userName") || "";
-    const userPhone = sessionStorage.getItem("phone") || "";
-    console.log("Checking login status:", {
-      storedIsLoggedIn,
-      userName,
-      userPhone,
-    });
-
-    if (storedIsLoggedIn && userPhone) {
-      setIsLoggedIn(true);
-      setUserInfo({
-        firstname: userName,
-        phone: userPhone,
-      });
-      setFormData((prev) => ({
-        ...prev,
-        firstname: userName,
-        phone: userPhone,
-      }));
-    }
-  }, []);
-
-  // Fetch random properties
   const fetchRandomProperties = async () => {
     try {
       const response = await fetch(`${liveUrl}api/Reactjs/gallery`, {
@@ -146,8 +149,7 @@ export default function UserInformation() {
         return;
       }
       setLoader(true);
-      const userId = sessionStorage.getItem("userId");
-
+      const userId = Cookie.get("userId");
       try {
         const response = await fetch(
           `${liveUrl}api/PropertyDetail/propertyAllDetails`,
@@ -160,11 +162,13 @@ export default function UserInformation() {
             body: JSON.stringify({ id: propertyId, userid: userId }),
           }
         );
-        console.log("testtttttttttttttttttttttttttt",propertyData.is_scheduled);
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
-        setPropertyData(data?.result?.main_property?.[0] || null);
+        const isScheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
+        setPropertyData({
+          ...data?.result?.main_property?.[0],
+          is_scheduled: isScheduled || data?.result?.main_property?.[0]?.is_scheduled === "true" || data?.result?.main_property?.[0]?.is_scheduled === true,
+        });
         const additionalProperties = data?.result?.additional_properties || [];
         if (additionalProperties.length > 0) {
           setSimilarProperties(additionalProperties);
@@ -183,7 +187,6 @@ export default function UserInformation() {
     window.scrollTo(0, 0);
   }, [propertyId]);
 
-  // Form validation
   const validatePhoneNumber = (phone) => /^[0-9]{10}$/.test(phone);
   const validateName = (firstname) => /^[a-zA-Z\s]{2,}$/.test(firstname.trim());
 
@@ -195,7 +198,6 @@ export default function UserInformation() {
       visitTime: "",
     };
     let isValid = true;
-    console.log("Validating form:", { formData, isLoggedIn });
 
     if (!isLoggedIn) {
       if (!formData.firstname.trim()) {
@@ -213,7 +215,6 @@ export default function UserInformation() {
         isValid = false;
       }
     }
-
     if (!formData.visitDate) {
       newErrors.visitDate = "Please select a visit date";
       isValid = false;
@@ -222,17 +223,14 @@ export default function UserInformation() {
       newErrors.visitTime = "Please select a visit time";
       isValid = false;
     }
-
     if (userBookings[formData.phone]?.includes(propertyId)) {
-      toast.error("You have already booked this property.");
+      // toast.error("You have already booked this property.");
       isValid = false;
     }
-
     setErrors(newErrors);
     return isValid;
   };
 
-  // Form submission
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     setLoader(true);
@@ -240,7 +238,7 @@ export default function UserInformation() {
       setLoader(false);
       return;
     }
-    const userId = sessionStorage.getItem("userId");
+    const userId = Cookie.get("userId");
     try {
       const payload = {
         firstname: formData.firstname,
@@ -253,9 +251,6 @@ export default function UserInformation() {
         visitTime: formData.visitTime?.toISOString(),
       };
 
-      console.log("Submitting form with payload:", payload);
-
-      // Submit to the contact API
       const contactResponse = await fetch(`${liveUrl}api/Contact/contact`, {
         method: "POST",
         headers: {
@@ -264,11 +259,8 @@ export default function UserInformation() {
         },
         body: JSON.stringify(payload),
       });
-
       const contactResult = await contactResponse.json();
-
       if (contactResponse.ok) {
-        // Submit to the meetings API
         const meetingsResponse = await fetch(
           `${liveUrl}api/Buyer/scheduleVisit`,
           {
@@ -280,16 +272,13 @@ export default function UserInformation() {
             body: JSON.stringify(payload),
           }
         );
-
         const meetingsResult = await meetingsResponse.json();
-
         if (meetingsResponse.ok) {
           setUserBookings((prev) => ({
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
           }));
-
-          toast.success("Your visit has been scheduled successfully!");
+          // toast.success("Your visit has been scheduled successfully!");
           setFormData({
             firstname: isLoggedIn ? userInfo.firstname : "",
             phone: isLoggedIn ? userInfo.phone : "",
@@ -298,12 +287,18 @@ export default function UserInformation() {
           });
           setModalIsOpen(false);
           setUserInfoModal(false);
+
+          // Store the is_scheduled status in Cookie
+          Cookie.set(`isScheduled_${propertyId}`, "true");
+          setPropertyData(prev => ({
+            ...prev,
+            is_scheduled: true
+          }));
         } else {
           toast.error(meetingsResult.message || "Failed to schedule meeting");
         }
       } else {
         if (contactResult.message?.includes("already booked")) {
-          toast.error("You have already booked this property.");
           setUserBookings((prev) => ({
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
@@ -330,9 +325,9 @@ export default function UserInformation() {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
-    sessionStorage.setItem("userName", userInfo.firstname);
-    sessionStorage.setItem("phone", userInfo.phone);
-    sessionStorage.setItem("isLoggedIn", "true");
+    Cookie.set("userName", userInfo.firstname);
+    Cookie.set("phone", userInfo.phone);
+    Cookie.set("isLoggedIn", "true");
     setUserInfoModal(false);
     setFormData((prev) => ({
       ...prev,
@@ -343,9 +338,7 @@ export default function UserInformation() {
     setModalIsOpen(true);
   };
 
-  // Handle Schedule a Visit button click
   const handleScheduleVisit = () => {
-    console.log("Opening schedule visit, isLoggedIn:", isLoggedIn);
     if (isLoggedIn) {
       setModalIsOpen(true);
     } else {
@@ -353,12 +346,10 @@ export default function UserInformation() {
     }
   };
 
-  // Image handling
   const handleImageChange = (imageType) => {
     setActiveImage(imageType);
   };
 
-  // Budget formatting
   const formatBudget = (value) => {
     if (!value) return "N/A";
     const numValue = Number(value);
@@ -369,7 +360,6 @@ export default function UserInformation() {
     return numValue.toLocaleString();
   };
 
-  // Render property image
   const renderPropertyImage = () => {
     const imageMap = {
       main: propertyData?.image_one_url,
@@ -417,7 +407,6 @@ export default function UserInformation() {
         }}
       >
         <div className="relative flex items-center justify-center">
-          {/* Close button */}
           <button
             onClick={() => setImageModal(false)}
             className="absolute top-3 right-3 bg-red-600 w-8 h-8 flex justify-center items-center rounded-md z-10"
@@ -806,12 +795,12 @@ export default function UserInformation() {
                   </div>
                 )}
               </div>
-              {propertyData.is_scheduled ? (
+              {propertyData?.is_scheduled === true ? (
                 <button
                   className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
                   disabled
                 >
-                  Your meeting is already scheduled, please check your calendar
+                  Your meeting is already scheduled.
                 </button>
               ) : (
                 <button

@@ -6,6 +6,7 @@ import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
 import { toWords } from "number-to-words";
+import Cookie from "js-cookie";
 
 const propertyConfig = {
   Residential: {
@@ -880,11 +881,11 @@ export default function SaleProperty() {
     image_four: "",
   });
 
-  const isLoggedIn = !!localStorage.getItem("token");
+  const isLoggedIn = !!Cookie.get("token");
 
   useEffect(() => {
-    const authToken = localStorage.getItem("token");
-    const userId = sessionStorage.getItem("userId");
+    const authToken = Cookie.get("token");
+    const userId =Cookie.get("userId");
     if (!authToken) {
       navigate("/success");
     } else {
@@ -1134,7 +1135,7 @@ export default function SaleProperty() {
       : storedata?.name || "fdgf";
 
     const finalUserId = isLoggedIn
-      ? sessionStorage.getItem("userId") || storedata.userId || ""
+      ? Cookie.get("userId") || storedata.userId || ""
       : "";
 
     if (!finalPhone || !/^\d{10}$/.test(finalPhone)) {

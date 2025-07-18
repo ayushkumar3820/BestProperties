@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import Cookies from 'js-cookie';
 import { liveUrl, token } from "./url";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";
@@ -18,26 +19,22 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
-
   const [store, setStore] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
-
   const [newData, setNewData] = useState({
     phone: "",
     password: "",
   });
-
   const [fieldTouched, setFieldTouched] = useState({
     name: false,
     email: false,
     phone: false,
     password: false,
   });
-
   const [validationErrors, setValidationErrors] = useState({
     name: "",
     email: "",
@@ -76,7 +73,6 @@ export default function Login() {
   const handleChangeText = (e) => {
     const { name, value } = e.target;
     setFieldTouched((prev) => ({ ...prev, [name]: true }));
-
     if (name === "phone") {
       const numericValue = value.replace(/\D/g, "").slice(0, 10);
       setNewData({ ...newData, [name]: numericValue });
@@ -98,7 +94,6 @@ export default function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFieldTouched((prev) => ({ ...prev, [name]: true }));
-
     if (name === "phone") {
       const numericValue = value.replace(/\D/g, "").slice(0, 10);
       setStore({ ...store, [name]: numericValue });
@@ -168,7 +163,6 @@ export default function Login() {
         } else if (value.length < 6) {
           error = `Password must be at least 6 characters long`;
         }
-
         break;
       default:
         break;
@@ -200,7 +194,6 @@ export default function Login() {
     } else if (value.length < 6) {
       error = `Password must be at least 6 characters long`;
     }
-
     setValidationErrors((prev) => ({ ...prev, password: error }));
   };
 
@@ -235,14 +228,12 @@ export default function Login() {
     setClick(true);
     setLoader(true);
     setErrorMessage("");
-
     setFieldTouched({
       name: true,
       email: true,
       phone: true,
       password: true,
     });
-
     const errors = {};
     if (!store.name.trim()) {
       errors.name = "Name is required";
@@ -250,29 +241,24 @@ export default function Login() {
       errors.name =
         "Name should contain only letters and spaces (min 2 characters)";
     }
-
     if (store.email.trim() && !isValidEmail(store.email)) {
       errors.email = "Please enter a valid email address";
     }
-
     if (!store.phone.toString().trim()) {
       errors.phone = "Mobile number is required";
     } else if (!validatePhone(store.phone)) {
       errors.phone = "Please enter a valid 10-digit mobile number";
     }
-
     if (!store.password.trim()) {
       errors.password = "Password is required";
     } else if (!validatePassword(store.password)) {
       errors.password = "Password must be exactly 6 characters long";
     }
-
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setLoader(false);
       return;
     }
-
     fetch(`${liveUrl}api/User/userRegister`, {
       method: "POST",
       headers: {
@@ -311,13 +297,11 @@ export default function Login() {
     setClick(true);
     setLoader(true);
     setErrorMessage("");
-
     setFieldTouched({
       ...fieldTouched,
       phone: true,
       password: true,
     });
-
     const errors = {};
     if (!newData.phone.toString().trim()) {
       errors.phone = "Mobile number is required";
@@ -329,7 +313,6 @@ export default function Login() {
     } else if (!validatePassword(newData.password)) {
       errors.password = "Password must be exactly 6 characters long";
     }
-
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       setLoader(false);
@@ -350,12 +333,13 @@ export default function Login() {
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "done") {
-          sessionStorage.setItem("token", data.token);
-          sessionStorage.setItem("phone", newData.phone);
-          sessionStorage.setItem("password", newData.password);
-          sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("userName", data?.name || "");
-          sessionStorage.setItem("userId", data.userid?.toString() || "");
+          // Store user data in cookies
+          Cookies.set('token', data.token, { expires: 7 });
+          Cookies.set('phone', newData.phone, { expires: 7 });
+          Cookies.set('password', newData.password, { expires: 7 });
+          Cookies.set('isLoggedIn', 'true', { expires: 7 });
+          Cookies.set('userName', data?.name || "", { expires: 7 });
+          Cookies.set('userId', data.userid?.toString() || "", { expires: 7 });
 
           toast.success("Login successful");
           const redirectTo = location.state?.from || "/sell-with-us";

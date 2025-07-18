@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -11,27 +12,23 @@ export default function Navbar() {
 
   useEffect(() => {
     const checkLoginStatus = () => {
-      const token = sessionStorage.getItem("token");
-      const flag = sessionStorage.getItem("isLoggedIn");
-      const isValid =
-        token &&
-        token !== "undefined" &&
-        token !== "null" &&
-        token.trim() &&
-        flag === "true";
+      const token = Cookies.get("token");
+      const flag = Cookies.get("isLoggedIn");
+      const isValid = token && token !== "undefined" && token !== "null" && token.trim() && flag === "true";
       setIsLoggedIn(isValid);
       if (!isValid && token) {
-        sessionStorage.clear();
+        Cookies.remove("token");
+        Cookies.remove("isLoggedIn");
       }
     };
 
     checkLoginStatus();
     window.addEventListener("storage", checkLoginStatus);
-    window.addEventListener("sessionStorageChange", checkLoginStatus);
+    window.addEventListener("cookieChange", checkLoginStatus);
 
     return () => {
       window.removeEventListener("storage", checkLoginStatus);
-      window.removeEventListener("sessionStorageChange", checkLoginStatus);
+      window.removeEventListener("cookieChange", checkLoginStatus);
     };
   }, []);
 
@@ -41,8 +38,12 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    sessionStorage.clear();
-    window.dispatchEvent(new Event("sessionStorageChange"));
+    Cookies.remove("token");
+    Cookies.remove("isLoggedIn");
+    Cookies.remove("userId");
+    Cookies.remove("userName");
+    Cookies.remove("phone");
+    window.dispatchEvent(new Event("cookieChange"));
     setIsLoggedIn(false);
     setIsDropdownOpen(false);
     navigate("/login");

@@ -11,6 +11,7 @@
     "froala-editor": "^4.1.4",
     "html-to-image": "^1.11.11",
     "html-to-text": "^9.0.5",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.523.0",
     "number-to-words": "^1.2.4",
     "react": "^18.2.0",
@@ -42,7 +43,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "debug":"react-scripts  start --inspect"
+    "debug": "react-scripts  start --inspect"
   },
   "eslintConfig": {
     "extends": [
