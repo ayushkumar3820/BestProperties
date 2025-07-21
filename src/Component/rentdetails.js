@@ -15,6 +15,7 @@ import Bed from "../assets/img/bed.png";
 import Kitchen from "../assets/img/kitchen.png";
 import { liveUrl, token } from "../common/component/url";
 import "../common/component/ModalPage.css";
+import Cookie from "js-cookie";
 
 // Bind modal to app element for accessibility
 Modal.setAppElement("#root");
@@ -33,6 +34,7 @@ export default function RentDetails() {
   const [mainUrl, setMainUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
   const [userInfo, setUserInfo] = useState({
     firstname: "",
     phone: "",
@@ -54,11 +56,12 @@ export default function RentDetails() {
   });
   const [userBookings, setUserBookings] = useState({});
 
-  // Check login status and prefill user info
+  // Check login status and booking status
   useEffect(() => {
-    const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
-    const userName = sessionStorage.getItem("userName") || "";
-    const userPhone = sessionStorage.getItem("phone") || "";
+    const storedIsLoggedIn = Cookie.get("isLoggedIn") === "true";
+    const userName = Cookie.get("userName") || "";
+    const userPhone = Cookie.get("phone") || "";
+    const scheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
     if (storedIsLoggedIn && userPhone) {
       setIsLoggedIn(true);
       setUserInfo({
@@ -71,7 +74,8 @@ export default function RentDetails() {
         phone: userPhone,
       }));
     }
-  }, []);
+    setIsScheduled(scheduled);
+  }, [propertyId]);
 
   // Fetch property details
   useEffect(() => {
@@ -155,7 +159,10 @@ export default function RentDetails() {
       toast.error("Property name is missing.");
       isValid = false;
     }
-    if (userBookings[formData.phone]?.includes(formData.property_id)) {
+    if (
+      userBookings[formData.phone]?.includes(formData.property_id) ||
+      isScheduled
+    ) {
       toast.error("You have already booked this property.");
       isValid = false;
     }
@@ -191,20 +198,28 @@ export default function RentDetails() {
       });
       const result = await response.json();
       if (response.ok) {
-        const meetingsResponse = await fetch(`${liveUrl}api/Buyer/scheduleVisit`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
+        const meetingsResponse = await fetch(
+          `${liveUrl}api/Buyer/scheduleVisit`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
         const meetingsResult = await meetingsResponse.json();
         if (meetingsResponse.ok) {
           setUserBookings((prev) => ({
             ...prev,
-            [formData.phone]: [...(prev[formData.phone] || []), formData.property_id],
+            [formData.phone]: [
+              ...(prev[formData.phone] || []),
+              formData.property_id,
+            ],
           }));
+          Cookie.set(`isScheduled_${propertyId}`, "true");
+          setIsScheduled(true);
           toast.success("Your visit has been scheduled successfully!");
           setFormData({
             firstname: isLoggedIn ? userInfo.firstname : "",
@@ -225,8 +240,13 @@ export default function RentDetails() {
           toast.error("You have already booked this property.");
           setUserBookings((prev) => ({
             ...prev,
-            [formData.phone]: [...(prev[formData.phone] || []), formData.property_id],
+            [formData.phone]: [
+              ...(prev[formData.phone] || []),
+              formData.property_id,
+            ],
           }));
+          Cookie.set(`isScheduled_${propertyId}`, "true");
+          setIsScheduled(true);
         } else {
           toast.error(result.message || "Failed to submit information.");
         }
@@ -250,9 +270,9 @@ export default function RentDetails() {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
-    sessionStorage.setItem("userName", userInfo.firstname);
-    sessionStorage.setItem("phone", userInfo.phone);
-    sessionStorage.setItem("isLoggedIn", "true");
+    Cookie.set("userName", userInfo.firstname);
+    Cookie.set("phone", userInfo.phone);
+    Cookie.set("isLoggedIn", "true");
     setUserInfoModal(false);
     setFormData((prev) => ({
       ...prev,
@@ -276,12 +296,9 @@ export default function RentDetails() {
   const formatBudget = (value) => {
     if (!value) return "N/A";
     const numValue = Number(value);
-    if (numValue >= 10000000)
-      return `${(numValue / 10000000).toFixed(2)} Cr`;
-    if (numValue >= 100000)
-      return `${(numValue / 100000).toFixed(2)} Lac`;
-    if (numValue >= 1000)
-      return `${(numValue / 1000).toFixed(0)}K`;
+    if (numValue >= 10000000) return `${(numValue / 10000000).toFixed(2)} Cr`;
+    if (numValue >= 100000) return `${(numValue / 100000).toFixed(2)} Lac`;
+    if (numValue >= 1000) return `${(numValue / 1000).toFixed(0)}K`;
     return numValue.toLocaleString();
   };
 
@@ -357,7 +374,9 @@ export default function RentDetails() {
         </div>
         {isLoggedIn && (
           <div className="w-1/3 bg-white p-4">
-            <h2 className="font-bold text-xl text-green-800 mb-4">User Information</h2>
+            <h2 className="font-bold text-xl text-green-800 mb-4">
+              User Information
+            </h2>
             <p className="text-lg font-semibold mb-2">
               Name: {userInfo.firstname}
             </p>
@@ -365,10 +384,16 @@ export default function RentDetails() {
               Phone: {userInfo.phone}
             </p>
             <p className="text-lg font-semibold mb-2">
-              Visit Date: {formData.visitDate ? formData.visitDate.toLocaleDateString() : "Not Scheduled"}
+              Visit Date:{" "}
+              {formData.visitDate
+                ? formData.visitDate.toLocaleDateString()
+                : "Not Scheduled"}
             </p>
             <p className="text-lg font-semibold mb-2">
-              Visit Time: {formData.visitTime ? formData.visitTime.toLocaleTimeString() : "Not Scheduled"}
+              Visit Time:{" "}
+              {formData.visitTime
+                ? formData.visitTime.toLocaleTimeString()
+                : "Not Scheduled"}
             </p>
           </div>
         )}
@@ -457,7 +482,12 @@ export default function RentDetails() {
             <button
               onClick={() => {
                 setModalIsOpen(false);
-                setErrors({ firstname: "", phone: "", visitDate: "", visitTime: "" });
+                setErrors({
+                  firstname: "",
+                  phone: "",
+                  visitDate: "",
+                  visitTime: "",
+                });
               }}
               className="bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
               aria-label="Close booking modal"
@@ -493,7 +523,9 @@ export default function RentDetails() {
                     disabled={isSubmitting}
                   />
                   {errors.firstname && (
-                    <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.firstname}
+                    </p>
                   )}
                 </div>
                 <div className="mb-4">
@@ -524,7 +556,9 @@ export default function RentDetails() {
               </label>
               <DatePicker
                 selected={formData.visitDate}
-                onChange={(date) => setFormData({ ...formData, visitDate: date })}
+                onChange={(date) =>
+                  setFormData({ ...formData, visitDate: date })
+                }
                 minDate={new Date()}
                 className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
                 placeholderText="Select a date"
@@ -541,7 +575,9 @@ export default function RentDetails() {
               </label>
               <DatePicker
                 selected={formData.visitTime}
-                onChange={(time) => setFormData({ ...formData, visitTime: time })}
+                onChange={(time) =>
+                  setFormData({ ...formData, visitTime: time })
+                }
                 showTimeSelect
                 showTimeSelectOnly
                 timeIntervals={30}
@@ -593,10 +629,18 @@ export default function RentDetails() {
                     <img
                       onClick={() => {
                         setImageModalOpen(true);
-                        setCurrentImage(panel.image_one ? `${mainUrl}${panel.image_one}` : ImageOne);
+                        setCurrentImage(
+                          panel.image_one
+                            ? `${mainUrl}${panel.image_one}`
+                            : ImageOne
+                        );
                       }}
                       className="w-full border rounded-lg cursor-pointer h-[200px] sm:h-[300px] mb-2 object-cover"
-                      src={panel.image_one ? `${mainUrl}${panel.image_one}` : ImageOne}
+                      src={
+                        panel.image_one
+                          ? `${mainUrl}${panel.image_one}`
+                          : ImageOne
+                      }
                       alt="Main property"
                     />
                     <div className="flex gap-2">
@@ -702,71 +746,107 @@ export default function RentDetails() {
                           {panel.property_type || "N/A"}
                         </div>
                         {panel.prefer && (
-                          <div className="text-lg font-semibold capitalize">
+                          <div className="text-base font-semibold capitalize">
                             Prefer: {panel.prefer}
                           </div>
                         )}
                         {panel.property_status && (
-                          <div className="text-lg capitalize">
+                          <div className="text-base capitalize">
                             Status: {panel.property_status}
                           </div>
                         )}
                         {panel.sector && (
-                          <div className="text-lg font-semibold text-green-800">
+                          <div className="text-base font-semibold text-green-800">
                             Sector: {panel.sector}
                           </div>
                         )}
                         {panel.floor && (
-                          <div className="text-lg font-semibold text-green-800">
+                          <div className="text-base font-semibold text-green-800">
                             Floor: {panel.floor}
                           </div>
                         )}
                         <div className="flex flex-wrap gap-3 mt-4">
                           {panel.bathrooms > 0 && (
                             <div className="flex items-center gap-2 bg-slate-200 p-2 rounded-lg">
-                              <img className="w-6 h-6" src={Bath} alt="Bathroom icon" />
-                              <span className="font-bold">{panel.bathrooms} Baths</span>
+                              <img
+                                className="w-6 h-6"
+                                src={Bath}
+                                alt="Bathroom icon"
+                              />
+                              <span className="font-bold">
+                                {panel.bathrooms} Baths
+                              </span>
                             </div>
                           )}
                           {panel.bedrooms > 0 && (
                             <div className="flex items-center gap-2 bg-slate-200 p-2 rounded-lg">
-                              <img className="w-6 h-6" src={Bed} alt="Bedroom icon" />
-                              <span className="font-bold">{panel.bedrooms} Beds</span>
+                              <img
+                                className="w-6 h-6"
+                                src={Bed}
+                                alt="Bedroom icon"
+                              />
+                              <span className="font-bold">
+                                {panel.bedrooms} Beds
+                              </span>
                             </div>
                           )}
                           {panel.kitchen > 0 && (
                             <div className="flex items-center gap-2 bg-slate-200 p-2 rounded-lg">
-                              <img className="w-6 h-6" src={Kitchen} alt="Kitchen icon" />
-                              <span className="font-bold">{panel.kitchen} Kitchen</span>
+                              <img
+                                className="w-6 h-6"
+                                src={Kitchen}
+                                alt="Kitchen icon"
+                              />
+                              <span className="font-bold">
+                                {panel.kitchen} Kitchen
+                              </span>
                             </div>
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={handleBookNow}
-                        className="bg-red-600 p-2 mt-4 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
-                      >
-                        Book Now!
-                      </button>
+                      {isScheduled ? (
+                        <button
+                          className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mb-4"
+                          disabled
+                        >
+                          Meeting Already Scheduled
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleBookNow}
+                          className="bg-red-600 p-2 mt-4 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Book Now!
+                        </button>
+                      )}
                       <div className="mt-4 mb-4">
                         <div className="p-4 border rounded-lg bg-gray-50">
                           {panel.amenities && (
                             <div className="mb-4">
-                              <h3 className="font-bold text-lg text-green-800">Amenities:</h3>
+                              <h3 className="font-bold text-lg text-green-800">
+                                Amenities:
+                              </h3>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                                {panel.amenities.split("~-~").map((amenity, index) => (
-                                  <div className="flex items-center gap-1" key={index}>
-                                    <svg
-                                      className="w-2 h-2 text-green-600"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 512 512"
-                                      fill="currentColor"
+                                {panel.amenities
+                                  .split("~-~")
+                                  .map((amenity, index) => (
+                                    <div
+                                      className="flex items-center gap-1"
+                                      key={index}
                                     >
-                                      <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
-                                    </svg>
-                                    <span className="text-sm">{amenity.trim()}</span>
-                                  </div>
-                                ))}
+                                      <svg
+                                        className="w-2 h-2 text-green-600"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 512 512"
+                                        fill="currentColor"
+                                      >
+                                        <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+                                      </svg>
+                                      <span className="text-xs">
+                                        {amenity.trim()}
+                                      </span>
+                                    </div>
+                                  ))}
                               </div>
                             </div>
                           )}
@@ -774,7 +854,9 @@ export default function RentDetails() {
                             {panel.address && (
                               <div className="flex gap-2">
                                 <span className="font-semibold">Address:</span>
-                                <span className="font-normal">{panel.address}</span>
+                                <span className="font-normal">
+                                  {panel.address}
+                                </span>
                               </div>
                             )}
                             {panel.sqft && panel.measureUnit && (
@@ -787,7 +869,9 @@ export default function RentDetails() {
                             )}
                             {panel.description && (
                               <div>
-                                <span className="font-semibold">Description:</span>
+                                <span className="font-semibold">
+                                  Description:
+                                </span>
                                 <p className="font-normal text-sm leading-relaxed mt-1">
                                   {panel.description}
                                 </p>
@@ -795,8 +879,12 @@ export default function RentDetails() {
                             )}
                             {panel.security_deposite && (
                               <div className="flex gap-2">
-                                <span className="font-semibold">Security Deposit:</span>
-                                <span className="font-normal">{panel.security_deposite}</span>
+                                <span className="font-semibold">
+                                  Security Deposit:
+                                </span>
+                                <span className="font-normal">
+                                  {panel.security_deposite}
+                                </span>
                               </div>
                             )}
                           </div>

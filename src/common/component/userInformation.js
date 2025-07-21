@@ -16,7 +16,7 @@ import Bed from "../../assets/img/bed.png";
 import Bath from "../../assets/img/bath.png";
 import Kitchen from "../../assets/img/kitchen.png";
 import "./ModalPage.css";
-import Cookie from "js-cookie"
+import Cookie from "js-cookie";
 
 // Bind modal to app element for accessibility
 Modal.setAppElement("#root");
@@ -77,9 +77,9 @@ export default function UserInformation() {
     }
 
     if (propertyData) {
-      setPropertyData(prev => ({
+      setPropertyData((prev) => ({
         ...prev,
-        is_scheduled: isScheduled
+        is_scheduled: isScheduled,
       }));
     }
   }, [propertyId]);
@@ -162,12 +162,16 @@ export default function UserInformation() {
             body: JSON.stringify({ id: propertyId, userid: userId }),
           }
         );
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!response.ok)
+          throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
         const isScheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
         setPropertyData({
           ...data?.result?.main_property?.[0],
-          is_scheduled: isScheduled || data?.result?.main_property?.[0]?.is_scheduled === "true" || data?.result?.main_property?.[0]?.is_scheduled === true,
+          is_scheduled:
+            isScheduled ||
+            data?.result?.main_property?.[0]?.is_scheduled === "true" ||
+            data?.result?.main_property?.[0]?.is_scheduled === true,
         });
         const additionalProperties = data?.result?.additional_properties || [];
         if (additionalProperties.length > 0) {
@@ -290,9 +294,9 @@ export default function UserInformation() {
 
           // Store the is_scheduled status in Cookie
           Cookie.set(`isScheduled_${propertyId}`, "true");
-          setPropertyData(prev => ({
+          setPropertyData((prev) => ({
             ...prev,
-            is_scheduled: true
+            is_scheduled: true,
           }));
         } else {
           toast.error(meetingsResult.message || "Failed to schedule meeting");

@@ -11,7 +11,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  // const [message, setMessage] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -64,8 +64,6 @@ export default function ResetPassword() {
   return (
     <>
       <Navbar />
-
-      {/* Reset Password Form */}
       <div className="flex justify-center bg-gray-100 p-4 pt-10 h-[63vh]">
         <div className="bg-white px-8 py-6 rounded shadow-md w-full max-w-md">
           <h2 className="text-2xl font-bold text-black text-center mb-6">

@@ -198,19 +198,7 @@ export default function MyProperties() {
                       📍 {property.location}
                     </p>
                     <p className="text-gray-600 text-sm">🏠 {property.type}</p>
-                    <div className="mt-4 flex justify-between">
-                      <button
-                        onClick={() => {
-                          const slug = (property.name || "property")
-                            .replace(/\s+/g, "-")
-                            .replace(/[^\w-]/g, "")
-                            .toLowerCase();
-                          navigate(`/property/-${property.id}-${slug}`);
-                        }}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                      >
-                        View Details
-                      </button>
+                    <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => handleRemove(property.id)}
                         disabled={removeLoading === property.id}
