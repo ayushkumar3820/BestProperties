@@ -38,6 +38,7 @@ export default function GalleryComponentTwo() {
   const [userId, setUserId] = useState(null);
   const [authToken, setAuthToken] = useState(token);
   const [wishlistLoading, setWishlistLoading] = useState(new Set());
+  const [wishlistIds, setWishlistIds] = useState(new Set());
 
   const handleClearFilters = () => {
     setSearchQuery("");
@@ -79,6 +80,10 @@ export default function GalleryComponentTwo() {
             const data = await response.json();
             if (data.status === "success" && Array.isArray(data.result)) {
               const wishlistIds = data.result;
+              console.log("fetched  wishlists IDs", wishlistIds);
+
+              setWishlistIds(new Set(wishlistIds.map((id) => String(id))));
+
               const wishlistDetailsPromises = wishlistIds.map(async (id) => {
                 const detailResponse = await fetch(
                   `${liveUrl}api/Reactjs/gallery/${id}`,
@@ -129,10 +134,20 @@ export default function GalleryComponentTwo() {
   }, []);
 
   const isWishlist = (propertyId) => {
-    if (!propertyId || !Array.isArray(wishlist) || wishlist.length === 0) {
+    if (!propertyId) {
       return false;
     }
     const searchId = String(propertyId || "");
+
+    // First check the faster Set lookup
+    if (wishlistIds.has(searchId)) {
+      return true;
+    }
+
+    // Fallback to array check for backward compatibility
+    if (!Array.isArray(wishlist) || wishlist.length === 0) {
+      return false;
+    }
     return wishlist.some((item) => {
       const itemId = String(item.id || "");
       const itemPropertyId = String(item.property_id || "");
@@ -185,12 +200,24 @@ export default function GalleryComponentTwo() {
         data.message?.toLowerCase().includes("success") ||
         response.ok
       ) {
+        const propertyIdStr = String(propertyId);
+
+        setWishlistIds((prevIds) => {
+          const newIds = new Set(prevIds);
+          if (isCurrentlyWishlisted) {
+            newIds.delete(propertyIdStr);
+          } else {
+            newIds.add(propertyIdStr);
+          }
+          return newIds;
+        });
+
         setWishlist((prev) => {
           if (isCurrentlyWishlisted) {
             const newWishlist = prev.filter(
               (item) =>
-                String(item.id || item.property_id) !== String(propertyId) &&
-                String(item.property_id || item.id) !== String(propertyId)
+                String(item.id || item.property_id) !== propertyIdStr &&
+                String(item.property_id || item.id) !== propertyIdStr
             );
             console.log("Updated wishlist after remove:", newWishlist.length);
             return newWishlist;

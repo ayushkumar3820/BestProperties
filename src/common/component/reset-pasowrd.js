@@ -17,19 +17,18 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading) return;
-    // setMessage("");
 
-    // Basic validation
     if (password.length < 6) {
-      // setMessage("Password must be at least 6 characters.");
+      alert("Password must be at least 6 characters");
       return;
     }
     if (password !== confirmPassword) {
-      // setMessage("Passwords do not match.");
+      alert("Passwords do not match");
       return;
     }
 
     setIsLoading(true);
+    console.log("🚀 Sending request to reset password");
 
     try {
       const res = await fetch(`${liveUrl}api/User/resetPassword`, {
@@ -45,38 +44,18 @@ export default function ResetPassword() {
       });
 
       const data = await res.json();
-      console.log("API Response:", data); // Debug log
+      console.log("🔁 API Response:", data);
 
-      // Check for success based on your API response
-      if (
-        res.ok &&
-        (data.status === "done" ||
-          data.message === "Password has been reset successfully")
-      ) {
-        // setMessage("Password has been reset successfully!");
-        alert("Reset password is successful");
-        console.log("Reset successful, redirecting to login...");
-
-        // Clear the form
-        setPassword("");
-        setConfirmPassword("");
-
-        // Redirect to login page
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+      if (data.message?.toLowerCase().includes("reset")) {
+        console.log("✅ Password reset successful");
+        alert("Password has been reset");
+        navigate("/login");
       } else {
-        // Handle error cases
-        const errorMessage =
-          data.message || data.error || "Something went wrong.";
-        // setMessage(errorMessage);
-        alert("Reset password failed: " + errorMessage);
-        console.log("Reset failed:", errorMessage);
+        console.log("❌ Reset failed:", data);
+        alert(data.message || "Reset failed");
       }
     } catch (error) {
-      console.error("Reset error:", error);
-      // setMessage("Server error. Please try again.");
-      alert("Server error occurred");
+      console.error("🔥 API error:", error);
     } finally {
       setIsLoading(false);
     }
