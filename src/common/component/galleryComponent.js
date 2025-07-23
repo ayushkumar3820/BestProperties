@@ -401,6 +401,16 @@ export default function GalleryComponent() {
     e.target.onerror = null;
   };
 
+// Function to convert sqft to sq.yards if measureUnit is not already sq.yard
+const convertToSquareYards = (sqft, measureUnit) => {
+  if (!measureUnit || measureUnit.toLowerCase() !== "sq.yard") {
+    const sqYards = sqft * 0.11;
+    return `${sqYards.toFixed()} sq.yard`;
+  }
+  return `${sqft} sq.yard`;
+};
+
+
   return (
     <div>
       {loader ? (
@@ -501,8 +511,7 @@ export default function GalleryComponent() {
                                       </div>
                                       {panel.sqft > 0 && (
                                         <div className="text-sm">
-                                          |{" "}
-                                          {`${panel.sqft} ${panel.measureUnit} sq.ft.`}
+                                          | {convertToSquareYards(panel.sqft, panel.measureUnit)}
                                         </div>
                                       )}
                                     </div>
@@ -608,11 +617,15 @@ export default function GalleryComponent() {
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-                                    <div className="lg:text-lg ml-2 text-sm headingStyle">
-                                      {formatBudget(item.budget)}
-                                      {item.sqft?.length > 0
-                                        ? ` | ${item.sqft}`
-                                        : null}
+                                   <div className="flex items-center space-x-2 text-sm lg:text-lg ml-2">
+                                      <div className="text-red-900 font-bold">
+                                        {formatBudget(item.budget)}
+                                      </div>
+                                      {item.sqft > 0 && (
+                                        <div className="text-sm text-[#303030]">
+                                          | {convertToSquareYards(item.sqft, item.measureUnit)}
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>

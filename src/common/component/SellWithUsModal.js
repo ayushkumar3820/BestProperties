@@ -816,6 +816,12 @@ const step3Fields = [
     placeholder: "Location",
     required: true,
   },
+  {
+    name: "images",
+    label: "Upload Images (Max 4, First image will be main image)",
+    type: "file",
+    accept: "image/jpeg,image/jpg,image/png",
+  },
 ];
 
 export default function SaleProperty() {
@@ -828,11 +834,11 @@ export default function SaleProperty() {
   const [selectedOption, setSelectedOption] = useState("Residential");
   const [message, setMessage] = useState("");
   const [errorModal, setErrorModal] = useState({ isOpen: false, messages: [] });
-  const [storedata, setStoreData] = useState({ phone: "", person: "" });
+  const [storedata, setStoreData] = useState({ phone: "", person: "", userId: "" });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [propertyDetails, setPropertyDetails] = useState({
+  const initialPropertyDetails = {
     bhk: "",
     kothi_story_type: "",
     floor_no: "",
@@ -879,28 +885,35 @@ export default function SaleProperty() {
     image_two: "",
     image_three: "",
     image_four: "",
-  });
+  };
+  const [propertyDetails, setPropertyDetails] = useState(initialPropertyDetails);
 
   const isLoggedIn = !!Cookie.get("token");
 
   useEffect(() => {
-    const authToken = Cookie.get("token");
-    const userId =Cookie.get("userId");
+    const authToken = Cookie.get("token") || "";
+    const userId = Cookie.get("userId") || "";
+    const phone = Cookie.get("phone") || "";
+    const name = Cookie.get("userName") || "";
     if (!authToken) {
       navigate("/success");
     } else {
-      const phone = localStorage.getItem("phone");
       if (userId) {
         setStoreData((prev) => ({ ...prev, userId }));
       }
-      if (phone && phone.length === 10) {
+      if (phone && /^\d{10}$/.test(phone)) {
         setStoreData((prev) => ({ ...prev, phone }));
+      }
+      if (name) {
+        setStoreData((prev) => ({ ...prev, person: name }));
       }
     }
   }, [navigate]);
 
   const handleNewData = (e) => {
-    setStoreData({ ...storedata, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "phone" && !/^\d*$/.test(value)) return;
+    setStoreData({ ...storedata, [name]: value });
   };
 
   const handlePropertyDetailsChange = (e) => {
@@ -917,13 +930,19 @@ export default function SaleProperty() {
         };
       });
     } else {
-      // Handle unit selection for selectOrText fields
       if (name.includes("_unit")) {
         const fieldName = name.split("_unit")[0];
         setPropertyDetails((prev) => ({
           ...prev,
           [`${fieldName}_unit`]: value,
         }));
+      } else if (["floor_no", "total_floors", "shutters_count"].includes(name)) {
+        if (/^\d*$/.test(value)) {
+          setPropertyDetails((prev) => ({
+            ...prev,
+            [name]: value,
+          }));
+        }
       } else {
         setPropertyDetails((prev) => ({
           ...prev,
@@ -937,7 +956,7 @@ export default function SaleProperty() {
     const files = Array.from(e.target.files);
     const validFiles = files.filter((file) => {
       const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024;
       if (!validTypes.includes(file.type)) {
         setErrorModal({
           isOpen: true,
@@ -983,7 +1002,6 @@ export default function SaleProperty() {
 
   const handleClickButton = (type) => {
     setActive(type);
-    // Update residential property types based on Rent/Lease or Sale
     if (type === "Rent/Lease") {
       setPropertyDetails((prev) => ({
         ...prev,
@@ -1079,7 +1097,6 @@ export default function SaleProperty() {
           errors.push(`Please fill in the required ${field.label} field`);
         }
       });
-     
     }
 
     if (errors.length > 0) {
@@ -1127,21 +1144,24 @@ export default function SaleProperty() {
     setMessage("");
     setIsLoading(true);
 
-    const finalPhone = isLoggedIn
-      ? localStorage.getItem("phone")
-      : storedata.phone;
+    const finalPhone = isLoggedIn ? Cookie.get("phone") || "" : storedata.phone;
     const finalPerson = isLoggedIn
-      ? localStorage.getItem("name") || ""
-      : storedata?.name || "fdgf";
-
-    const finalUserId = isLoggedIn
-      ? Cookie.get("userId") || storedata.userId || ""
-      : "";
+      ? Cookie.get("userName") || storedata.person || ""
+      : storedata.person || "";
+    const finalUserId = isLoggedIn ? Cookie.get("userId") || "" : storedata.userId || "";
 
     if (!finalPhone || !/^\d{10}$/.test(finalPhone)) {
       setErrorModal({
         isOpen: true,
         messages: ["Please enter a valid 10-digit phone number"],
+      });
+      setIsLoading(false);
+      return;
+    }
+    if (!finalPerson) {
+      setErrorModal({
+        isOpen: true,
+        messages: ["Please provide a valid name"],
       });
       setIsLoading(false);
       return;
@@ -1250,11 +1270,8 @@ export default function SaleProperty() {
       image_files: selectedFiles.map((file) => file.name),
     };
 
-    console.log("Property Details:", propertyDetails);
-    console.log("Payload:", payload);
-
     try {
-      const authToken = token || localStorage.getItem("token");
+      const authToken = token || Cookie.get("token") || "";
       if (!authToken) {
         throw new Error("No authentication token found. Please log in again.");
       }
@@ -1272,9 +1289,9 @@ export default function SaleProperty() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("panelTitle");
-          localStorage.removeItem("responseData");
+          Cookie.remove("token");
+          Cookie.remove("panelTitle");
+          Cookie.remove("responseData");
           navigate("/success");
           throw new Error("Unauthorized: Please log in again");
         }
@@ -1282,6 +1299,9 @@ export default function SaleProperty() {
       }
 
       setMessage(data.message || "Property submitted successfully!");
+      setPropertyDetails({ ...initialPropertyDetails });
+      setSelectedFiles([]);
+      setImagePreviews([]);
       navigate("/success");
     } catch (error) {
       console.error("Error in handleSubmit:", error);
@@ -1308,6 +1328,7 @@ export default function SaleProperty() {
       option,
       required,
       showIf,
+      accept,
     } = field;
 
     if (showIf && propertyDetails[showIf.field] !== showIf.value) {
@@ -1463,7 +1484,6 @@ export default function SaleProperty() {
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             {label}
-      
           </label>
           <div className="relative">
             <input
@@ -1473,8 +1493,7 @@ export default function SaleProperty() {
               multiple
               onChange={handleFileChange}
               className="block w-full h-10 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-              accept="image/jpeg,image/jpg,image/png"
-              
+              accept={accept}
             />
             <svg
               className="absolute right-3 top-2.5 w-5 h-5 text-green-600"
@@ -1578,7 +1597,8 @@ export default function SaleProperty() {
                     value={storedata.phone}
                     onChange={handleNewData}
                     className="block w-full h-10 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                    type="text"
+                    type="tel"
+                    pattern="[0-9]{10}"
                     placeholder="Enter 10-digit phone number"
                     maxLength={10}
                     required
@@ -1770,81 +1790,6 @@ export default function SaleProperty() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {step3Fields.map(renderField)}
-            <div className="mb-4 col-span-2">
-              <label
-                htmlFor="images"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Upload Images (Max 4, First image will be main image){" "}
-        
-              </label>
-              <div className="relative">
-                <input
-                  id="images"
-                  name="images"
-                  type="file"
-                  multiple
-                  onChange={handleFileChange}
-                  className="block w-full h-10 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                  accept="image/jpeg,image/jpg,image/png"
-                
-                />
-                <svg
-                  className="absolute right-3 top-2.5 w-5 h-5 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                  />
-                </svg>
-              </div>
-              {imagePreviews.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    Image Previews ({imagePreviews.length}/4):
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="h-24 w-24 object-cover rounded-md border border-gray-300"
-                        />
-                        {index === 0 && (
-                          <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                            Main
-                          </span>
-                        )}
-                        <p className="text-xs text-gray-600 mt-1 truncate">
-                          {selectedFiles[index]?.name || ""}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {selectedFiles.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm font-medium text-gray-700">
-                    Selected files:
-                  </p>
-                  <ul className="mt-1 text-sm text-gray-600 list-disc list-inside">
-                    {selectedFiles.map((file, index) => (
-                      <li key={index} className="hover:text-gray-800">
-                        {index === 0 ? `${file.name} (Main Image)` : file.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
           </div>
         );
       default:
@@ -1964,6 +1909,7 @@ export default function SaleProperty() {
             <button
               className="w-full sm:w-auto bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none"
               onClick={handleBack}
+              disabled={isLoading}
             >
               Back
             </button>
@@ -1972,6 +1918,7 @@ export default function SaleProperty() {
             <button
               className="w-full sm:w-auto bg-red-600 text-white px-6 py-2 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
               onClick={handleNext}
+              disabled={isLoading}
             >
               Update And Next
             </button>
@@ -1982,7 +1929,31 @@ export default function SaleProperty() {
               onClick={handleSubmit}
               disabled={isLoading}
             >
-              {isLoading ? "Submitting..." : "Submit Property"}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                    />
+                  </svg>
+                  Submitting...
+                </span>
+              ) : (
+                "Submit Property"
+              )}
             </button>
           )}
         </div>

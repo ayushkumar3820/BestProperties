@@ -1,0 +1,939 @@
+{
+  "propertyConfig": {
+    "residential": {
+      "Flat/Apartment": {
+        "step1": [
+          {
+            "name": "bhkType",
+            "label": "BHK Type",
+            "type": "selectOrText",
+            "options": ["1RK/Studio", "1BHK", "2BHK", "3BHK", "4BHK", "5BHK+"],
+            "required": true
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyFloor",
+            "label": "Property Floor Number",
+            "type": "text",
+            "placeholder": "Floor Number"
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["Carpet Area", "Built-up Area", "Super Area"],
+            "required": true
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "amenities",
+            "label": "Amenities",
+            "type": "checkbox",
+            "options": [
+              "Car Parking",
+              "Security Services",
+              "Water Supply",
+              "Elevators",
+              "Power Backup",
+              "Gym",
+              "Play Area",
+              "Swimming Pool",
+              "Restaurants",
+              "Party Hall",
+              "Temple and Religious Activity Place",
+              "Cinema Hall",
+              "Walking/Jogging Track"
+            ]
+          },
+          {
+            "name": "propertyDescription",
+            "label": "Property Description",
+            "type": "text",
+            "placeholder": "Enter the correct property description"
+          },
+          {
+            "name": "gatedCommunity",
+            "label": "Gated Community?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ]
+      },
+      "Independent House / Kothi": {
+        "step1": [
+          {
+            "name": "plotArea",
+            "label": "Plot Area",
+            "type": "selectOrText",
+            "placeholder": "Plot Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "coveredArea",
+            "label": "Covered Area",
+            "type": "selectOrText",
+            "placeholder": "Covered Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "houseType",
+            "label": "Independent House / Kothi Type",
+            "type": "select",
+            "options": [
+              "Single Story",
+              "Double Story",
+              "Duplex Story",
+              "Triplex Story",
+              "Villa Style"
+            ],
+            "required": true
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "gatedCommunity",
+            "label": "Gated Community?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ]
+      },
+      "Independent/Builder Floor": {
+        "step1": [
+          {
+            "name": "floorType",
+            "label": "Independent/Builder Floor Type",
+            "type": "select",
+            "options": [
+              "Ground Floor",
+              "1st Floor",
+              "2nd Floor",
+              "3rd Floor",
+              "Top Floor"
+            ],
+            "required": true
+          },
+          {
+            "name": "totalFloors",
+            "label": "Total Floors in Building",
+            "type": "text",
+            "placeholder": "Total Floors"
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "direction",
+            "label": "Direction",
+            "type": "selectOrText",
+            "options": [
+              "East",
+              "West",
+              "North",
+              "South",
+              "North-East",
+              "North-West",
+              "South-East",
+              "South-West",
+              "Other"
+            ]
+          },
+          {
+            "name": "facing",
+            "label": "Facing",
+            "type": "selectOrText",
+            "options": ["Park", "Parking"]
+          },
+          {
+            "name": "gatedCommunity",
+            "label": "Gated Community?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ]
+      },
+      "Plot": {
+        "step1": [
+          {
+            "name": "plotArea",
+            "label": "Plot Area",
+            "type": "selectOrText",
+            "placeholder": "Plot Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "widthLength",
+            "label": "Width x Length",
+            "type": "text",
+            "placeholder": "e.g., 30x40"
+          },
+          {
+            "name": "roadWidth",
+            "label": "Road Width",
+            "type": "selectOrText",
+            "options": ["20ft", "30ft", "40ft", "50ft+"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "useType",
+            "label": "Use Type",
+            "type": "select",
+            "options": ["Residential", "Commercial", "Industrial"],
+            "required": true
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "direction",
+            "label": "Direction",
+            "type": "selectOrText",
+            "options": [
+              "East",
+              "West",
+              "North",
+              "South",
+              "North-East",
+              "North-West",
+              "South-East",
+              "South-West",
+              "Other"
+            ]
+          },
+          {
+            "name": "facing",
+            "label": "Facing",
+            "type": "selectOrText",
+            "options": ["Park", "Parking"]
+          }
+        ]
+      },
+      "Serviced Apartment": {
+        "step1": [
+          {
+            "name": "bhkType",
+            "label": "Serviced Apartment Type",
+            "type": "select",
+            "options": ["1RK/Studio", "1BHK", "2BHK", "3BHK", "Penthouse"],
+            "required": true
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyFloor",
+            "label": "Property Floor Number",
+            "type": "text",
+            "placeholder": "Floor Number"
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "direction",
+            "label": "Direction",
+            "type": "selectOrText",
+            "options": [
+              "East",
+              "West",
+              "North",
+              "South",
+              "North-East",
+              "North-West",
+              "South-East",
+              "South-West",
+              "Other"
+            ]
+          },
+          {
+            "name": "facing",
+            "label": "Facing",
+            "type": "selectOrText",
+            "options": ["Park", "Parking"]
+          },
+          {
+            "name": "gatedCommunity",
+            "label": "Gated Community?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          },
+          {
+            "name": "isInSociety",
+            "label": "Is this in a Society?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ]
+      },
+      "Farmhouse": {
+        "step1": [
+          {
+            "name": "plotArea",
+            "label": "Plot Area",
+            "type": "selectOrText",
+            "placeholder": "Plot Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "farmArea",
+            "label": "Farm Area (Optional)",
+            "type": "selectOrText",
+            "placeholder": "Farm Area (acres)",
+            "option": ["acres", "sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "isAgricultural",
+            "label": "Is it Agricultural Land?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "furnishingStatus",
+            "label": "Furnishing Status",
+            "type": "select",
+            "options": ["Unfurnished", "Semi-Furnished", "Fully-Furnished"]
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "amenities",
+            "label": "Amenities",
+            "type": "checkbox",
+            "options": [
+              "Car Parking",
+              "Security Services",
+              "Water Supply",
+              "Elevators",
+              "Power Backup",
+              "Gym",
+              "Play Area",
+              "Swimming Pool",
+              "Restaurants",
+              "Party Hall",
+              "Temple and Religious Activity Place",
+              "Cinema Hall",
+              "Walking/Jogging Track"
+            ]
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "nearBy",
+            "label": "Near By",
+            "type": "selectOrText",
+            "options": ["Hospital", "School", "Restaurant", "Store", "Other"]
+          },
+          {
+            "name": "gatedCommunity",
+            "label": "Gated Community?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ]
+      },
+      "Other": {
+        "step1": [
+          {
+            "name": "ownershipType",
+            "label": "Describe Property Type",
+            "type": "text",
+            "placeholder": "Describe the property type",
+            "required": true
+          }
+        ],
+        "step2": [
+          {
+            "name": "furnishingStatus",
+            "label": "Furnishing Status",
+            "type": "select",
+            "options": ["Unfurnished", "Semi-Furnished", "Fully-Furnished"]
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          },
+          {
+            "name": "availableFrom",
+            "label": "Available From Date",
+            "type": "date"
+          }
+        ]
+      }
+    },
+    "commercial": {
+      "Office": {
+        "step1": [
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "commercialFurnishing",
+            "label": "Furnishing",
+            "type": "select",
+            "options": ["Bare Shell", "Semi-Furnished", "Furnished"]
+          },
+          {
+            "name": "areaInSqft",
+            "label": "Area in sq.ft",
+            "type": "selectOrText",
+            "placeholder": "Area in sq.ft",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "hasLift",
+            "label": "Is there a lift?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          },
+          {
+            "name": "parkingAvailable",
+            "label": "Parking Available?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      },
+      "Retail": {
+        "step1": [
+          {
+            "name": "commercialFurnishing",
+            "label": "Furnishing",
+            "type": "select",
+            "options": ["Bare Shell", "Semi-Furnished", "Furnished"]
+          },
+          {
+            "name": "areaInSqft",
+            "label": "Area in sq.ft",
+            "type": "selectOrText",
+            "placeholder": "Area in sq.ft",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "floorNo",
+            "label": "Floor No",
+            "type": "text",
+            "placeholder": "Floor Number"
+          },
+          {
+            "name": "hasLift",
+            "label": "Is there a lift?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          },
+          {
+            "name": "parkingAvailable",
+            "label": "Parking Available?",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      },
+      "Plot/Land": {
+        "step1": [
+          {
+            "name": "plotArea",
+            "label": "Plot Area",
+            "type": "selectOrText",
+            "placeholder": "Plot Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "widthLength",
+            "label": "Width x Length",
+            "type": "text",
+            "placeholder": "e.g., 30x40"
+          },
+          {
+            "name": "roadWidth",
+            "label": "Road Width",
+            "type": "select",
+            "options": ["20ft", "30ft", "40ft", "50ft+"]
+          },
+          {
+            "name": "useType",
+            "label": "Use Type",
+            "type": "select",
+            "options": ["Industrial", "ShowRoom", "Shop"],
+            "required": true
+          },
+          {
+            "name": "carpetArea",
+            "label": "Carpet Area",
+            "type": "selectOrText",
+            "placeholder": "Carpet Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          }
+        ]
+      },
+      "Storage": {
+        "step1": [
+          {
+            "name": "builtArea",
+            "label": "Built Area",
+            "type": "selectOrText",
+            "placeholder": "Built Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "landArea",
+            "label": "Land Area",
+            "type": "selectOrText",
+            "placeholder": "Land Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "shutters",
+            "label": "No. of Shutters",
+            "type": "text",
+            "placeholder": "Number of Shutters"
+          },
+          {
+            "name": "roofHeight",
+            "label": "Height of Roof",
+            "type": "text",
+            "placeholder": "Height (ft)"
+          },
+          {
+            "name": "loadingBay",
+            "label": "Loading/Unloading Bay",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      },
+      "Industry": {
+        "step1": [
+          {
+            "name": "builtArea",
+            "label": "Built Area",
+            "type": "selectOrText",
+            "placeholder": "Built Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "landArea",
+            "label": "Land Area",
+            "type": "selectOrText",
+            "placeholder": "Land Area (sq.ft)",
+            "option": ["sq.ft", "marla", "kanal"]
+          },
+          {
+            "name": "shutters",
+            "label": "No. of Shutters",
+            "type": "text",
+            "placeholder": "Number of Shutters"
+          },
+          {
+            "name": "roofHeight",
+            "label": "Height of Roof",
+            "type": "text",
+            "placeholder": "Height (ft)"
+          },
+          {
+            "name": "loadingBay",
+            "label": "Loading/Unloading Bay",
+            "type": "radio",
+            "options": ["yes", "no"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      },
+      "Hospitality": {
+        "step1": [
+          {
+            "name": "areaInSqft",
+            "label": "Area in sq.ft",
+            "type": "selectOrText",
+            "placeholder": "Area in sq.ft",
+            "option": ["sq.ft", "marla", "kanal"],
+            "required": true
+          },
+          {
+            "name": "commercialFurnishing",
+            "label": "Furnishing",
+            "type": "select",
+            "options": ["Bare Shell", "Semi-Furnished", "Furnished"]
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      },
+      "Other": {
+        "step1": [
+          {
+            "name": "ownershipType",
+            "label": "Describe Property Type",
+            "type": "text",
+            "placeholder": "Describe the property type",
+            "required": true
+          }
+        ],
+        "step2": [
+          {
+            "name": "constructionStatus",
+            "label": "Construction Status",
+            "type": "select",
+            "options": ["Ready To Move", "For Sale", "Under Construction"],
+            "required": true
+          },
+          {
+            "name": "completionTime",
+            "label": "Completion Time",
+            "type": "text",
+            "placeholder": "e.g., 6 months, 1 year",
+            "conditional": { "field": "constructionStatus", "value": "Under Construction" }
+          },
+          {
+            "name": "propertyAge",
+            "label": "Property Age",
+            "type": "select",
+            "options": ["0-1 year", "1-5 years", "5-10 years", "10+ years"]
+          }
+        ]
+      }
+    }
+  },
+  "step3Fields": [
+    {
+      "name": "demandedPrice",
+      "label": "Demanded Price",
+      "type": "text",
+      "placeholder": "Enter the correct price",
+      "required": true
+    },
+    {
+      "name": "state",
+      "label": "State",
+      "type": "select",
+      "options": [],
+      "required": true
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "type": "select",
+      "options": [],
+      "required": true
+    },
+    {
+      "name": "locality",
+      "label": "Locality",
+      "type": "text",
+      "placeholder": "Locality",
+      "required": true
+    },
+    {
+      "name": "landmark",
+      "label": "Landmark",
+      "type": "text",
+      "placeholder": "Landmark"
+    },
+    {
+      "name": "pinCode",
+      "label": "Pin Code",
+      "type": "text",
+      "placeholder": "Pin Code"
+    },
+    {
+      "name": "mapLink",
+      "label": "Map Link",
+      "type": "text",
+      "placeholder": "Google Maps Link"
+    }
+  ],
+  "states": [
+    {
+      "name": "Maharashtra",
+      "cities": [
+        "Mumbai",
+        "Pune",
+        "Nagpur",
+        "Thane",
+        "Nashik"
+      ]
+    },
+    {
+      "name": "Karnataka",
+      "cities": [
+        "Bangalore",
+        "Mysore",
+        "Hubli",
+        "Mangalore"
+      ]
+    },
+    {
+      "name": "Delhi",
+      "cities": [
+        "New Delhi",
+        "South Delhi",
+        "East Delhi",
+        "West Delhi"
+      ]
+    }
+  ],
+  "additionalAmenities": [
+    "Clubhouse",
+    "Garden",
+    "CCTV Surveillance",
+    "Spa",
+    "Yoga Center"
+  ],
+  "defaultValues": {
+    "propertyAge": "0-1 year",
+    "gatedCommunity": "no",
+    "constructionStatus": "Ready To Move"
+  },
+  "validationRules": {
+    "pinCode": {
+      "pattern": "^[0-9]{6}$",
+      "message": "Pin Code must be a 6-digit number"
+    },
+    "demandedPrice": {
+      "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
+      "message": "Demanded Price must be a valid number"
+    }
+  }
+}

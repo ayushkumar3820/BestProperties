@@ -119,7 +119,7 @@ export default function WishlistPage() {
       case "sq.yards":
         return `${(area * 0.111111).toFixed(2)} sq.yards`; 
       default:
-        return `${area.toFixed(2)} sq.ft.`;
+        return ` sq.ft.`; 
     }
   };
 

@@ -6,7 +6,6 @@ import OurServices from "./ourServices";
 import Searching from "./searching";
 import BottomBar from "./bottomBar";
 import { liveUrl, token } from "./url";
-import { toWords } from "number-to-words";
 import Cookie from "js-cookie";
 
 export default function MyProperties() {
@@ -19,11 +18,17 @@ export default function MyProperties() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  // Fetch userId from cookies on component mount
   useEffect(() => {
     const storedUserId = Cookie.get("userId");
-    if (storedUserId) setUserId(storedUserId);
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      setError("User not logged in.");
+    }
   }, []);
 
+  // Fetch properties when userId is available
   useEffect(() => {
     if (!userId) return;
 
@@ -45,11 +50,19 @@ export default function MyProperties() {
         const data = await res.json();
         if (data.status === "done" && Array.isArray(data.result)) {
           const transformed = data.result.map((item) => ({
-            id: item.id,
+            id: item.id || "N/A",
             name: item.name || "N/A",
             price: item.budget_in_words || "N/A",
+            budget: item.budget || "N/A",
             location: item.address || item.city || "N/A",
             type: item.property_type || "N/A",
+            category: item.category || "N/A",
+            description: item.description || "N/A",
+            property_for: item.property_for || "N/A",
+            land: item.land || "N/A",
+            carpet: item.carpet || "N/A",
+            created_at: item.created_at || "N/A",
+            updated_at: item.updated_at || "N/A",
             image:
               item.image_one && item.image_one !== "NULL"
                 ? `${liveUrl}propertyimage/${item.image_one}`
@@ -70,6 +83,7 @@ export default function MyProperties() {
     fetchData();
   }, [userId]);
 
+  // Handle property removal
   const handleRemove = async (propertyId) => {
     setRemoveLoading(propertyId);
 
@@ -99,12 +113,13 @@ export default function MyProperties() {
         throw new Error("Removal failed.");
       }
     } catch (err) {
-      alert("Error removing property.");
+      alert("Error removing property: " + err.message);
     } finally {
       setRemoveLoading(null);
     }
   };
 
+  // Pagination logic
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = properties.slice(indexOfFirst, indexOfLast);
@@ -125,6 +140,7 @@ export default function MyProperties() {
         {loading && (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading properties...</p>
           </div>
         )}
 
@@ -158,7 +174,7 @@ export default function MyProperties() {
                     <img
                       src={property.image}
                       alt={property.name}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-48 object-cover rounded-t-lg"
                       onError={(e) => (e.target.src = NoImage)}
                     />
                     <button
@@ -169,6 +185,7 @@ export default function MyProperties() {
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-red-500 hover:bg-red-600"
                       } text-white`}
+                      title="Remove Property"
                     >
                       {removeLoading === property.id ? (
                         <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
@@ -192,17 +209,31 @@ export default function MyProperties() {
                   <div className="p-4">
                     <h2 className="font-bold text-lg mb-1">{property.name}</h2>
                     <p className="text-green-600 font-semibold">
-                      {property.price}
+                      {property.price} ({property.budget} Lakh)
                     </p>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 text-sm mb-1">
                       📍 {property.location}
                     </p>
-                    <p className="text-gray-600 text-sm">🏠 {property.type}</p>
+                    <p className="text-gray-600 text-sm mb-1">
+                      🏠 Type: {property.type}
+                    </p>
+                    <p className="text-gray-600 text-sm mb-1">
+                      🏢 Category: {property.category}
+                    </p>
+                    <p className="text-gray-600 text-sm mb-1">
+                      📜 For: {property.property_for}
+                    </p>
+
+                    <p className="text-gray-500 text-xs mb-1">
+                      Created:{" "}
+                      {new Date(property.created_at).toLocaleDateString()}
+                    </p>
+
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => handleRemove(property.id)}
                         disabled={removeLoading === property.id}
-                        className={`text-red-500 hover:text-red-700 ${
+                        className={`text-red-500 hover:text-red-700 font-semibold ${
                           removeLoading === property.id
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -220,14 +251,14 @@ export default function MyProperties() {
 
             {totalPages > 1 && (
               <div className="flex justify-center mt-6">
-                <ul className="flex gap-1">
+                <ul className="flex gap-2">
                   <li>
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className={`px-3 py-2 rounded ${
+                      className={`px-4 py-2 rounded-md ${
                         currentPage === 1
-                          ? "bg-gray-300 text-gray-500"
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                           : "bg-gray-200 hover:bg-gray-300"
                       }`}
                     >
@@ -239,7 +270,7 @@ export default function MyProperties() {
                       <li key={num}>
                         <button
                           onClick={() => setCurrentPage(num)}
-                          className={`px-3 py-2 rounded ${
+                          className={`px-4 py-2 rounded-md ${
                             currentPage === num
                               ? "bg-green-600 text-white"
                               : "bg-gray-200 hover:bg-gray-300"
@@ -256,9 +287,9 @@ export default function MyProperties() {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className={`px-3 py-2 rounded ${
+                      className={`px-4 py-2 rounded-md ${
                         currentPage === totalPages
-                          ? "bg-gray-300 text-gray-500"
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                           : "bg-gray-200 hover:bg-gray-300"
                       }`}
                     >

@@ -39,7 +39,7 @@ export default function UserInformation() {
     firstname: "",
     phone: "",
     visitDate: null,
-    visitTime: null,
+    visitTime: "",
   });
   const [errors, setErrors] = useState({
     firstname: "",
@@ -56,7 +56,28 @@ export default function UserInformation() {
   const [userInfoModal, setUserInfoModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Retrieve the is_scheduled status from Cookie when the component mounts
+  // Time slots for 7 AM to 7 PM
+  const generateTimeSlots = () => {
+    const times = [];
+    let current = new Date();
+    current.setHours(7, 0, 0, 0); // Start at 7:00 AM
+    const end = new Date();
+    end.setHours(19, 0, 0, 0); // End at 7:00 PM
+
+    while (current <= end) {
+      const timeString = current.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      times.push(timeString);
+      current.setMinutes(current.getMinutes() + 30);
+    }
+    return times;
+  };
+  const timeSlots = generateTimeSlots();
+
+  // Retrieve user info and schedule status from cookies
   useEffect(() => {
     const storedIsLoggedIn = Cookie.get("isLoggedIn") === "true";
     const userName = Cookie.get("userName") || "";
@@ -82,8 +103,9 @@ export default function UserInformation() {
         is_scheduled: isScheduled,
       }));
     }
-  }, [propertyId]);
+  }, [propertyId, propertyData]);
 
+  // Image list for carousel
   const imageList = [
     propertyData?.image_one_url,
     propertyData?.image_two_url,
@@ -108,12 +130,16 @@ export default function UserInformation() {
       bottom: "auto",
       marginRight: "-50%",
       transform: "translate(-50%, -50%)",
-      borderRadius: "10px",
+      borderRadius: "12px",
       backgroundColor: "white",
-      padding: "20px",
+      padding: "24px",
       maxWidth: "90vw",
       maxHeight: "90vh",
-      width: "400px",
+      width: "500px",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
+      zIndex: 1000,
     },
   };
 
@@ -228,7 +254,7 @@ export default function UserInformation() {
       isValid = false;
     }
     if (userBookings[formData.phone]?.includes(propertyId)) {
-      // toast.error("You have already booked this property.");
+      toast.error("You have already booked this property.");
       isValid = false;
     }
     setErrors(newErrors);
@@ -244,6 +270,13 @@ export default function UserInformation() {
     }
     const userId = Cookie.get("userId");
     try {
+      // Convert visitTime string to ISO format
+      const selectedTime = new Date();
+      const [time, period] = formData.visitTime.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      selectedTime.setHours(hours, minutes, 0, 0);
       const payload = {
         firstname: formData.firstname,
         phone: formData.phone,
@@ -252,7 +285,7 @@ export default function UserInformation() {
         property_name: propertyData?.name || "N/A",
         type: "properties",
         visitDate: formData.visitDate?.toISOString(),
-        visitTime: formData.visitTime?.toISOString(),
+        visitTime: selectedTime.toISOString(),
       };
 
       const contactResponse = await fetch(`${liveUrl}api/Contact/contact`, {
@@ -282,12 +315,12 @@ export default function UserInformation() {
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
           }));
-          // toast.success("Your visit has been scheduled successfully!");
+          toast.success("Your visit has been scheduled successfully!");
           setFormData({
             firstname: isLoggedIn ? userInfo.firstname : "",
             phone: isLoggedIn ? userInfo.phone : "",
             visitDate: null,
-            visitTime: null,
+            visitTime: "",
           });
           setModalIsOpen(false);
           setUserInfoModal(false);
@@ -307,6 +340,7 @@ export default function UserInformation() {
             ...prev,
             [formData.phone]: [...(prev[formData.phone] || []), propertyId],
           }));
+          toast.error("You have already booked this property.");
         } else {
           toast.error(contactResult.message || "Failed to schedule visit");
         }
@@ -413,7 +447,7 @@ export default function UserInformation() {
         <div className="relative flex items-center justify-center">
           <button
             onClick={() => setImageModal(false)}
-            className="absolute top-3 right-3 bg-red-600 w-8 h-8 flex justify-center items-center rounded-md z-10"
+            className="absolute top-3 right-3 bg-red-600 w-8 h-8 flex justify-center items-center rounded-md"
           >
             <svg
               className="w-4 h-4 text-white"
@@ -422,16 +456,10 @@ export default function UserInformation() {
             >
               <path
                 fill="currentColor"
-                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 
-              86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 
-              256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 
-              45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 
-              45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
               />
             </svg>
           </button>
-
-          {/* Left arrow */}
           <button
             onClick={handlePrev}
             className="absolute left-2 sm:left-6 bg-white bg-opacity-80 p-2 rounded-full shadow z-10"
@@ -450,15 +478,11 @@ export default function UserInformation() {
               />
             </svg>
           </button>
-
-          {/* Image */}
           <img
             className="h-[80vh] w-auto object-contain rounded"
             src={imageList[currentIndex] || ImageOne}
             alt={`Property ${currentIndex + 1}`}
           />
-
-          {/* Right arrow */}
           <button
             onClick={handleNext}
             className="absolute right-2 sm:right-6 bg-white bg-opacity-80 p-2 rounded-full shadow z-10"
@@ -478,8 +502,6 @@ export default function UserInformation() {
             </svg>
           </button>
         </div>
-
-        {/* Image counter */}
         <div className="text-center text-sm text-gray-600 py-2">
           {currentIndex + 1} / {imageList.length}
         </div>
@@ -492,9 +514,9 @@ export default function UserInformation() {
         style={modalStyles}
       >
         <div className="w-full">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="font-bold text-2xl text-green-800">
-              Schedule a Visit
+              Enter Your Details
             </h2>
             <button
               onClick={() => setUserInfoModal(false)}
@@ -508,50 +530,50 @@ export default function UserInformation() {
                 <path
                   fill="currentColor"
                   d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
-                />
-              </svg>
-            </button>
-          </div>
-          <form onSubmit={handleUserInfoSubmit}>
-            <div className="mb-4">
-              <label className="text-lg font-semibold mb-2 block text-gray-800">
-                Your Name*
-              </label>
-              <input
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
-                name="firstname"
-                value={userInfo.firstname}
-                onChange={(e) =>
-                  setUserInfo({ ...userInfo, firstname: e.target.value })
-                }
-                placeholder="Enter your name"
-                required
               />
-            </div>
-            <div className="mb-4">
-              <label className="text-lg font-semibold mb-2 block text-gray-800">
-                Phone Number*
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={userInfo.phone}
-                onChange={(e) =>
-                  setUserInfo({ ...userInfo, phone: e.target.value })
-                }
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
-                placeholder="Enter your phone number"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              Submit
-            </button>
-          </form>
+            </svg>
+          </button>
         </div>
+        <form onSubmit={handleUserInfoSubmit}>
+          <div className="mb-6">
+            <label className="text-lg font-semibold mb-2 block text-gray-800">
+              Your Name*
+            </label>
+            <input
+              className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              name="firstname"
+              value={userInfo.firstname}
+              onChange={(e) =>
+                setUserInfo({ ...userInfo, firstname: e.target.value })
+              }
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="text-lg font-semibold mb-2 block text-gray-800">
+              Phone Number*
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={userInfo.phone}
+              onChange={(e) =>
+                setUserInfo({ ...userInfo, phone: e.target.value })
+              }
+              className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              placeholder="Enter your phone number"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-lg transition-colors"
+          >
+            Continue
+          </button>
+        </form>
+      </div>
       </Modal>
 
       {/* Schedule Visit Modal */}
@@ -561,7 +583,7 @@ export default function UserInformation() {
         style={modalStyles}
       >
         <div className="w-full">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="font-bold text-2xl text-green-800">
               Schedule a Visit
             </h2>
@@ -584,12 +606,12 @@ export default function UserInformation() {
           <form onSubmit={handleSubmitForm}>
             {!isLoggedIn && (
               <>
-                <div className="mb-4">
+                <div className="mb-6">
                   <label className="text-lg font-semibold mb-2 block text-gray-800">
                     Your Name*
                   </label>
                   <input
-                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                     name="firstname"
                     value={formData.firstname}
                     onChange={(e) =>
@@ -599,12 +621,12 @@ export default function UserInformation() {
                     required
                   />
                   {errors.firstname && (
-                    <p className="text-red-600 text-sm mt-1">
+                    <p className="text-red-600 text-sm mt-2">
                       {errors.firstname}
                     </p>
                   )}
                 </div>
-                <div className="mb-4">
+                <div className="mb-6">
                   <label className="text-lg font-semibold mb-2 block text-gray-800">
                     Phone Number*
                   </label>
@@ -615,17 +637,17 @@ export default function UserInformation() {
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                    className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                     placeholder="Enter your phone number"
                     required
                   />
                   {errors.phone && (
-                    <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+                    <p className="text-red-600 text-sm mt-2">{errors.phone}</p>
                   )}
                 </div>
               </>
             )}
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="text-lg font-semibold mb-2 block text-gray-800">
                 Visit Date*
               </label>
@@ -635,41 +657,49 @@ export default function UserInformation() {
                   setFormData({ ...formData, visitDate: date })
                 }
                 minDate={new Date()}
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
+                className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                 placeholderText="Select a date"
                 disabled={loader}
                 popperPlacement="bottom"
+                wrapperClassName="w-full"
+                calendarClassName="border border-gray-300 rounded-lg shadow-lg bg-white"
+                dayClassName={() =>
+                  "text-gray-800 hover:bg-green-100 cursor-pointer p-2"
+                }
               />
               {errors.visitDate && (
-                <p className="text-red-600 text-sm mt-1">{errors.visitDate}</p>
+                <p className="text-red-600 text-sm mt-2">{errors.visitDate}</p>
               )}
             </div>
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="text-lg font-semibold mb-2 block text-gray-800">
                 Visit Time*
               </label>
-              <DatePicker
-                selected={formData.visitTime}
-                onChange={(time) =>
-                  setFormData({ ...formData, visitTime: time })
+              <select
+                value={formData.visitTime}
+                onChange={(e) =>
+                  setFormData({ ...formData, visitTime: e.target.value })
                 }
-                showTimeSelect
-                showTimeSelectOnly
-                timeIntervals={30}
-                timeCaption="Time"
-                dateFormat="h:mm aa"
-                className="w-full h-12 border border-black rounded-lg py-3 px-4 focus:outline-none focus:border-green-500"
-                placeholderText="Select a time"
+                className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                 disabled={loader}
-                popperPlacement="bottom"
-              />
+                required
+              >
+                <option value="" disabled>
+                  Select a time
+                </option>
+                {timeSlots.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
               {errors.visitTime && (
-                <p className="text-red-600 text-sm mt-1">{errors.visitTime}</p>
+                <p className="text-red-600 text-sm mt-2">{errors.visitTime}</p>
               )}
             </div>
             <button
               type="submit"
-              className={`w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors ${
+              className={`w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-lg transition-colors ${
                 loader ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={loader}
@@ -691,7 +721,7 @@ export default function UserInformation() {
             >
               <path
                 fill="currentColor"
-                d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
+                d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM304 464a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"
               />
             </svg>
           </div>
@@ -857,12 +887,18 @@ export default function UserInformation() {
                       )}
                       {propertyData.built && (
                         <span>
-                          <strong>Built Area:</strong> {propertyData.built}
+                          <strong>Built Area:</strong> {propertyData.built}{" "}
+                          {propertyData.built_unit
+                            ? propertyData.built_unit
+                            : "Sq. Yard"}
                         </span>
                       )}
                       {propertyData.land && (
                         <span>
-                          <strong>Land Area:</strong> {propertyData.land}
+                          <strong>Land Area:</strong> {propertyData.land}{" "}
+                          {propertyData.land_unit
+                            ? propertyData.land_unit
+                            : "Sq. Yard"}
                         </span>
                       )}
                       {propertyData.bhk && (
@@ -1041,11 +1077,11 @@ export default function UserInformation() {
                           <span className="text-sm">{property.bedrooms}</span>
                         </div>
                       )}
-                      {property.varifed && (
+                      {property.verified && (
                         <div className="flex items-center gap-2">
                           <img
                             className="w-5 h-5"
-                            src={property.varifed}
+                            src={property.verified}
                             alt="Verified"
                           />
                         </div>
