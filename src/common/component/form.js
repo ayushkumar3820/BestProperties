@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-lone-blocks */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { liveUrl } from "./url";

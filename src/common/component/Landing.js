@@ -1,4 +1,4 @@
-import React from "react";
+
 import BuyerTwo from "./buyerTwo";
 import { Helmet } from "react-helmet";
 

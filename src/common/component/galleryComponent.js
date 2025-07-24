@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "../../App.css";
 import { useNavigate } from "react-router-dom";
 import Bed from "../../assets/img/bed.png";
@@ -62,21 +60,19 @@ export default function GalleryComponent() {
       `getDynamicSaleTag - Property Type: ${propertyType}, Name: ${panelName}, Index: ${index}`
     );
 
-    // Check panel.name for specific keywords and assign rotating tags
     if (panelName.includes("kothi")) {
-      return kothiTags[index % kothiTags.length]; // Rotate through kothi tags
+      return kothiTags[index % kothiTags.length]; 
     } else if (
       panelName.includes("plot") ||
       panelName.includes("polt") ||
       panelName.includes("poly")
     ) {
-      return plotTags[index % plotTags.length]; // Rotate through plot tags
+      return plotTags[index % plotTags.length]; 
     } else if (panelName.includes("flat")) {
-      return flatTags[index % flatTags.length]; // Rotate through flat tags
+      return flatTags[index % flatTags.length]; 
     }
 
-    // Fallback to default tag for other cases
-    return defaultTags[index % defaultTags.length]; // Rotate through default tags
+    return defaultTags[index % defaultTags.length]; 
   };
 
   const handleShowMore = () => {

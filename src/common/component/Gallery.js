@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
-import React from "react";
 import Home from "../../assets/img/image8.jpg";
 import Navbar from "./navbar";
 import BottomBar from "./bottomBar";

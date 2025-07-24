@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GalleryComponent from "./galleryComponent";
 import AnimatedText from "./HeadingAnimation";

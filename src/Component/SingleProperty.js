@@ -5,7 +5,6 @@ import OurServices from "../common/component/ourServices";
 import BottomBar from "../common/component/bottomBar";
 import Searching from "../common/component/searching";
 import { liveUrl, token } from "../common/component/url";
-import "../Css/SingleProperty.css";
 import PlotImage from "../../src/assets/img/Plot.jpg";
 import RectangleImage from "../../src/assets/img/kothi-image2.jpg";
 import NoImage from "../../src/assets/img/image-not.jpg";
@@ -221,6 +220,7 @@ const SingleProperty = () => {
                             <span className="font-semibold">Type:</span> {item.property_type}
                           </div>
                         )}
+
                         {item.furnishing && (
                           <div>
                             <span className="font-semibold">Furnishing:</span>{" "}
