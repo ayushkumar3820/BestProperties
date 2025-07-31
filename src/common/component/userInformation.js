@@ -820,6 +820,14 @@ export default function UserInformation() {
                     </span>
                   </div>
                 )}
+                {propertyData.bhk > 0 && (
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
+                    <img className="w-5 h-5" src={Bed} alt="Bed" />
+                    <span className="font-semibold text-sm">
+                      {propertyData.bhk} BHK
+                    </span>
+                  </div>
+                )}
                 {propertyData.kitchen > 0 && (
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                     <img className="w-5 h-5" src={Kitchen} alt="Kitchen" />
@@ -890,7 +898,7 @@ export default function UserInformation() {
                           <strong>Built Area:</strong> {propertyData.built}{" "}
                           {propertyData.built_unit
                             ? propertyData.built_unit
-                            : "Sq. Yard"}
+                            : "Sq.Ft."}
                         </span>
                       )}
                       {propertyData.land && (
@@ -898,7 +906,7 @@ export default function UserInformation() {
                           <strong>Land Area:</strong> {propertyData.land}{" "}
                           {propertyData.land_unit
                             ? propertyData.land_unit
-                            : "Sq. Yard"}
+                            : "Sq.Ft."}
                         </span>
                       )}
                       {propertyData.bhk && (
@@ -951,7 +959,7 @@ export default function UserInformation() {
                           Area:
                         </h4>
                         <p className="text-gray-700 text-sm">
-                          {propertyData.sqft} {propertyData.measureUnit || ""}
+                          {propertyData.sqft} {propertyData.measureUnit || "Sq.Ft."}
                         </p>
                       </div>
                     )}
@@ -1075,6 +1083,12 @@ export default function UserInformation() {
                         <div className="flex items-center gap-2">
                           <img className="w-5 h-5" src={Bed} alt="Bed" />
                           <span className="text-sm">{property.bedrooms}</span>
+                        </div>
+                      )}
+                      {property.bhk>0 && (
+                        <div className="flex items-center gap-2">
+                          |<img className="w-5 h-5" src={Bath}alt="Bath"/>
+                          <span className="text-sm">{property.bhk}</span>
                         </div>
                       )}
                       {property.verified && (

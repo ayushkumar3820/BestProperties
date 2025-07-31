@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Bed from "../../assets/img/bed.png";
 import Bath from "../../assets/img/bath.png";
 import NoImage from "../../assets/img/image-not.jpg";
+
+// Helper functions for localStorage
+const loadWishlistFromStorage = () => {
+  const stored = localStorage.getItem("wishlist");
+  return stored ? JSON.parse(stored) : [];
+};
+
+const saveWishlistToStorage = (wishlist) => {
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+};
 
 const PropertyCard = ({
   panel,
@@ -17,13 +27,53 @@ const PropertyCard = ({
   sanitizePropertyName,
 }) => {
   const navigate = useNavigate();
+  const [localWishlist, setLocalWishlist] = useState(loadWishlistFromStorage());
+  const [wishlistStatus, setWishlistStatus] = useState(false);
+
+  // Sync wishlist status with localStorage and prop
+  useEffect(() => {
+    const propertyId = panel.id || panel.property_id;
+    const storedWishlist = loadWishlistFromStorage();
+    setLocalWishlist(storedWishlist);
+    setWishlistStatus(isWishlist(propertyId) || storedWishlist.includes(propertyId));
+  }, [panel.id, panel.property_id, isWishlist]);
+
+  // Handle wishlist toggle
+  const handleToggleWishlist = useCallback(
+    async (e) => {
+      e.stopPropagation();
+      const propertyId = panel.id || panel.property_id;
+      if (!propertyId) return;
+
+      try {
+        // Optimistically update UI
+        setWishlistStatus(!wishlistStatus);
+        const updatedWishlist = wishlistStatus
+          ? localWishlist.filter((id) => id !== propertyId)
+          : [...localWishlist, propertyId];
+        setLocalWishlist(updatedWishlist);
+        saveWishlistToStorage(updatedWishlist);
+
+        // Call server to sync
+        await toggleWishlist(panel);
+
+        // Re-sync with server state
+        const storedWishlist = loadWishlistFromStorage();
+        setWishlistStatus(isWishlist(propertyId) || storedWishlist.includes(propertyId));
+      } catch (error) {
+        console.error("Failed to toggle wishlist:", error);
+        // Revert optimistic update on error
+        setWishlistStatus(wishlistStatus);
+        setLocalWishlist(loadWishlistFromStorage());
+      }
+    },
+    [panel, toggleWishlist, wishlistStatus, localWishlist, isWishlist]
+  );
 
   return (
     <div
-      className={`property-div w-full max-w-[350px] rounded-md shadow-lg transition duration-300 ease-in-out ${
-        isWishlist(panel.id || panel.property_id) ? "" : ""
-      }`}
-      key={panel.id || index}
+      className="property-div w-full max-w-[350px] rounded-md shadow-lg transition duration-300 ease-in-out"
+      key={`${panel.id || index}-${wishlistStatus}`} // Ensure re-render on wishlist change
     >
       <div className="flex flex-col h-full">
         <div
@@ -35,7 +85,12 @@ const PropertyCard = ({
             navigate(`/property/-${panel.id || index}-${modifiedPanelName}`);
           }}
         >
-          {panel.image && typeof panel.image === "string" && (panel.image.endsWith(".jpg") || panel.image.endsWith(".jpeg") || panel.image.endsWith(".png") || panel.image.endsWith(".svg")) ? (
+          {panel.image &&
+          typeof panel.image === "string" &&
+          (panel.image.endsWith(".jpg") ||
+            panel.image.endsWith(".jpeg") ||
+            panel.image.endsWith(".png") ||
+            panel.image.endsWith(".svg")) ? (
             <img
               className="rounded-t-md h-[200px] w-full object-cover"
               src={panel.image}
@@ -53,21 +108,36 @@ const PropertyCard = ({
           </div>
           <div
             className="absolute top-2 right-2 cursor-pointer z-10 p-1 bg-white bg-opacity-70 rounded-full shadow-md hover:bg-opacity-100 transition-all duration-200"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleWishlist(panel);
-            }}
-            title={isWishlist(panel.id || panel.property_id) ? "Remove from wishlist" : "Add to wishlist"}
+            onClick={handleToggleWishlist}
+            title={wishlistStatus ? "Remove from wishlist" : "Add to wishlist"}
           >
             {wishlistLoading.has(panel.id || panel.property_id) ? (
-              <svg className="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"></path>
+              <svg
+                className="animate-spin h-6 w-6 text-gray-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                ></path>
               </svg>
             ) : (
               <svg
                 className={`h-6 w-6 cursor-pointer transition-all duration-300 transform ${
-                  isWishlist(panel.id || panel.property_id) ? "fill-red-500 text-red-500 scale-110" : "fill-gray-400 text-gray-400 hover:fill-red-300"
+                  wishlistStatus
+                    ? "fill-red-500 text-red-500 scale-110"
+                    : "fill-gray-400 text-gray-400 hover:fill-red-300 hover:text-red-300"
                 }`}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -89,7 +159,12 @@ const PropertyCard = ({
                 {panel.sqft && (
                   <div className="flex items-center space-x-2">
                     <span className="text-[#303030] text-sm cursor-pointer">
-                      {convertArea(panel.sqft, unitSelections[`${panel.id || index}-main`] || "sq.ft.", panel.id || index, "main")}
+                      {convertArea(
+                        panel.sqft,
+                        unitSelections[`${panel.id || index}-main`] || "sq.ft.",
+                        panel.id || index,
+                        "main"
+                      )}
                     </span>
                   </div>
                 )}
@@ -98,12 +173,22 @@ const PropertyCard = ({
             {panel.built_up_area && (
               <div className="flex items-center space-x-2 mt-2">
                 <span className="text-[#303030] text-sm cursor-pointer">
-                  Built-Up: {convertArea(panel.built_up_area, unitSelections[`${panel.id || index}-built`] || "sq.ft.", panel.id || index, "built")}
+                  Built-Up:{" "}
+                  {convertArea(
+                    panel.built_up_area,
+                    unitSelections[`${panel.id || index}-built`] || "sq.ft.",
+                    panel.id || index,
+                    "built"
+                  )}
                 </span>
                 <div className="relative">
                   <select
-                    value={unitSelections[`${panel.id || index}-built`] || "sq.ft."}
-                    onChange={(e) => handleUnitChange(panel.id || index, e.target.value, "built")}
+                    value={
+                      unitSelections[`${panel.id || index}-built`] || "sq.ft."
+                    }
+                    onChange={(e) =>
+                      handleUnitChange(panel.id || index, e.target.value, "built")
+                    }
                     className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
                     aria-label="Select area unit for built-up area"
                   >
@@ -125,12 +210,22 @@ const PropertyCard = ({
             {panel.land_area && (
               <div className="flex items-center space-x-2 mt-2">
                 <span className="text-[#303030] text-sm cursor-pointer">
-                  Land Area: {convertArea(panel.land_area, unitSelections[`${panel.id || index}-land`] || "sq.ft.", panel.id || index, "land")}
+                  Land Area:{" "}
+                  {convertArea(
+                    panel.land_area,
+                    unitSelections[`${panel.id || index}-land`] || "sq.ft.",
+                    panel.id || index,
+                    "land"
+                  )}
                 </span>
                 <div className="relative">
                   <select
-                    value={unitSelections[`${panel.id || index}-land`] || "sq.ft."}
-                    onChange={(e) => handleUnitChange(panel.id || index, e.target.value, "land")}
+                    value={
+                      unitSelections[`${panel.id || index}-land`] || "sq.ft."
+                    }
+                    onChange={(e) =>
+                      handleUnitChange(panel.id || index, e.target.value, "land")
+                    }
                     className="appearance-none bg-white border text-[#303030] p-1 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#050505]"
                     aria-label="Select area unit for land area"
                   >
@@ -151,7 +246,12 @@ const PropertyCard = ({
             )}
             <div className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer">
               <div>
-                <svg fill="#15803d" className="h-4 w-4 fill-[#303030]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                <svg
+                  fill="#15803d"
+                  className="h-4 w-4 fill-[#303030]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 576 512"
+                >
                   <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 88.4c0 8-1.5 15.8-4.5 23.1l-88 0c-2.9 0-5.6-.6-8-1.7l-191-95c-5.6-2.8-9.2-8.3-9.8-14.3l-4-160.2c0-17.7 14.3-32 32-32l31.1 0 0-80.2c0-26.5 21.5-48 48-48l32 0 0-63.9c0-8.7 3.5-17 10-23.6c6.4-6.6 15.2-10.3 24.2-10.3l96 0c9.1 0 17.8 3.7 24.2 10.3c6.5 6.6 10 14.9 10 23.6l0 63.9 32 0c26.5 0 48 21.5 48 48l0 80.2 0 31.9zM272 192a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm-48 256l0-112 96 48 0 112-96-48z" />
                 </svg>
               </div>
@@ -161,7 +261,12 @@ const PropertyCard = ({
             </div>
             <div className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer">
               <div>
-                <svg fill="#15803d" className="h-4 w-4 fill-[#303030]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <svg
+                  fill="#15803d"
+                  className="h-4 w-4 fill-[#303030]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                >
                   <path d="M32 32C14.3 32 0 46.3 0 64V448c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H32zM160 160c0-17.7 14.3-32 32-32H320c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V160zM288 352c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V288c0-17.7 14.3-32 32-32H256c17.7 0 32 14.3 32 32v64z" />
                 </svg>
               </div>
@@ -171,7 +276,12 @@ const PropertyCard = ({
             </div>
             <div className="flex gap-2 mt-2 items-center text-[#303030] cursor-pointer">
               <div>
-                <svg fill="#15803d" className="h-4 w-4 fill-[#303030]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                <svg
+                  fill="#15803d"
+                  className="h-4 w-4 fill-[#303030]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                >
                   <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                 </svg>
               </div>
@@ -185,7 +295,9 @@ const PropertyCard = ({
                   <img className="w-6" src={Bed} alt="Bedroom icon" />
                 )}
                 <div className="text-sm font-bold text-[#303030]">
-                  {panel.bedrooms != null && panel.bedrooms > 0 ? panel.bedrooms : null}
+                  {panel.bedrooms != null && panel.bedrooms > 0
+                    ? panel.bedrooms
+                    : null}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -193,12 +305,19 @@ const PropertyCard = ({
                   <img className="w-6" src={Bath} alt="Bathroom icon" />
                 )}
                 <div className="text-sm font-bold text-[#303030]">
-                  {panel.bathrooms != null && panel.bathrooms > 0 ? panel.bathrooms : null}
+                  {panel.bathrooms != null && panel.bathrooms > 0
+                    ? panel.bathrooms
+                    : null}
                 </div>
               </div>
               <div className="flex gap-2 items-center">
                 {panel.verified && typeof panel.verified === "string" && (
-                  <img className="w-5" src={panel.verified} alt="Verified property icon" onError={(e) => (e.target.src = NoImage)} />
+                  <img
+                    className="w-5"
+                    src={panel.verified}
+                    alt="Verified property icon"
+                    onError={(e) => (e.target.src = NoImage)}
+                  />
                 )}
               </div>
             </div>

@@ -226,7 +226,7 @@ export default function Navbar() {
               className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200 w-full flex items-center justify-center gap-1"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              <span>{isLoggedIn ? "Me" : "Login"}</span>
+              <span>{isLoggedIn ? "Profile" : "Login"}</span>
               <svg
                 className={`w-4 h-4 transform transition-transform ${
                   isDropdownOpen ? "rotate-180" : ""
