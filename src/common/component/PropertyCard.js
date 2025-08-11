@@ -14,13 +14,103 @@ const saveWishlistToStorage = (wishlist) => {
   localStorage.setItem("wishlist", JSON.stringify(wishlist));
 };
 
+// Helper function to normalize budget - same as in main component
+const normalizeBudget = (panel) => {
+  // First try budget_in_words as it's more descriptive
+  const budgetInWords = panel.budget_in_words || '';
+  const budgetValue = panel.budget || '';
+  
+  // Handle budget_in_words first (more accurate)
+  if (budgetInWords) {
+    const budgetStr = String(budgetInWords).toLowerCase().trim();
+    
+    // Handle "lakhs" format like "41,00,000 lakhs"
+    if (budgetStr.includes('lakh')) {
+      const numStr = budgetStr.replace(/[^\d.,]/g, '').replace(/,/g, '');
+      const num = parseFloat(numStr);
+      if (!isNaN(num)) {
+        return num * 100000;
+      }
+    }
+    
+    // Handle "crore" format like "4.50 crore"
+    if (budgetStr.includes('crore')) {
+      const numStr = budgetStr.match(/[\d.]+/);
+      if (numStr) {
+        const num = parseFloat(numStr[0]);
+        if (!isNaN(num)) {
+          return num * 10000000;
+        }
+      }
+    }
+  }
+  
+  // Then handle simple budget field
+  if (budgetValue) {
+    const budgetStr = String(budgetValue).toLowerCase().trim();
+    
+    // If it's already a large number, use as is
+    if (!isNaN(budgetValue) && parseInt(budgetValue) > 1000000) {
+      return parseInt(budgetValue);
+    }
+    
+    // If it's a small number, check if it should be converted
+    const numericValue = parseFloat(budgetStr);
+    if (!isNaN(numericValue)) {
+      // Small numbers (1-100) might be in crores
+      if (numericValue <= 100) {
+        return numericValue * 10000000;
+      }
+      // Otherwise use as is
+      return numericValue;
+    }
+  }
+  
+  return 0;
+};
+
+// Helper function to format budget
+const formatBudgetDisplay = (panel) => {
+  const normalizedBudget = normalizeBudget(panel);
+  
+  if (!normalizedBudget || normalizedBudget === 0) {
+    // Fallback to budget_in_words if available
+    if (panel.budget_in_words) {
+      return panel.budget_in_words;
+    }
+    return "Price on Request";
+  }
+  
+  if (normalizedBudget >= 10000000) {
+    return `₹${(normalizedBudget / 10000000).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} Cr`;
+  }
+  
+  if (normalizedBudget >= 100000) {
+    return `₹${(normalizedBudget / 100000).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} Lac`;
+  }
+  
+  if (normalizedBudget >= 1000) {
+    return `₹${(normalizedBudget / 1000).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+    })} Thousand`;
+  }
+  
+  return `₹${normalizedBudget.toLocaleString()}`;
+};
+
 const PropertyCard = ({
   panel,
   index,
   isWishlist,
   toggleWishlist,
   wishlistLoading,
-  formatBudget,
+  formatBudget, // Keep this prop but we'll use our own function
   convertArea,
   unitSelections,
   handleUnitChange,
@@ -73,7 +163,7 @@ const PropertyCard = ({
   return (
     <div
       className="property-div w-full max-w-[350px] rounded-md shadow-lg transition duration-300 ease-in-out"
-      key={`${panel.id || index}-${wishlistStatus}`} // Ensure re-render on wishlist change
+      key={`${panel.id || index}-${wishlistStatus}`}
     >
       <div className="flex flex-col h-full">
         <div
@@ -154,7 +244,7 @@ const PropertyCard = ({
             <div className="flex items-center justify-between whitespace-nowrap text-lg text-red-800 pr-3">
               <div className="flex items-center space-x-4">
                 <span className="cursor-pointer font-bold">
-                  {formatBudget(panel.budget)}
+                  {formatBudgetDisplay(panel)}
                 </span>
                 {panel.sqft && (
                   <div className="flex items-center space-x-2">

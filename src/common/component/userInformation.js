@@ -16,7 +16,7 @@ import Bed from "../../assets/img/bed.png";
 import Bath from "../../assets/img/bath.png";
 import Kitchen from "../../assets/img/kitchen.png";
 import "./ModalPage.css";
-import Cookie from "js-cookie";
+import Cookies from "js-cookie";
 
 // Bind modal to app element for accessibility
 Modal.setAppElement("#root");
@@ -79,10 +79,10 @@ export default function UserInformation() {
 
   // Retrieve user info and schedule status from cookies
   useEffect(() => {
-    const storedIsLoggedIn = Cookie.get("isLoggedIn") === "true";
-    const userName = Cookie.get("userName") || "";
-    const userPhone = Cookie.get("phone") || "";
-    const isScheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
+    const storedIsLoggedIn = Cookies.get("isLoggedIn") === "true";
+    const userName = Cookies.get("userName") || "";
+    const userPhone = Cookies.get("phone") || "";
+    const isScheduled = Cookies.get(`isScheduled_${propertyId}`) === "true";
 
     if (storedIsLoggedIn && userPhone) {
       setIsLoggedIn(true);
@@ -156,7 +156,7 @@ export default function UserInformation() {
       const data = await response.json();
       const properties = data?.result || [];
       const filteredProperties = properties
-        .filter((prop) => prop.id !== propertyId)
+        .filter((prop) => prop.id?.toString() !== propertyId?.toString())
         .sort(() => Math.random() - 0.5)
         .slice(0, 3);
       setSimilarProperties(filteredProperties);
@@ -175,7 +175,7 @@ export default function UserInformation() {
         return;
       }
       setLoader(true);
-      const userId = Cookie.get("userId");
+      const userId = Cookies.get("userId");
       try {
         const response = await fetch(
           `${liveUrl}api/PropertyDetail/propertyAllDetails`,
@@ -191,7 +191,7 @@ export default function UserInformation() {
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
-        const isScheduled = Cookie.get(`isScheduled_${propertyId}`) === "true";
+        const isScheduled = Cookies.get(`isScheduled_${propertyId}`) === "true";
         setPropertyData({
           ...data?.result?.main_property?.[0],
           is_scheduled:
@@ -201,7 +201,10 @@ export default function UserInformation() {
         });
         const additionalProperties = data?.result?.additional_properties || [];
         if (additionalProperties.length > 0) {
-          setSimilarProperties(additionalProperties);
+          const filteredAdditional = additionalProperties.filter(
+            (prop) => prop.id?.toString() !== propertyId?.toString()
+          );
+          setSimilarProperties(filteredAdditional);
         } else {
           await fetchRandomProperties();
         }
@@ -268,7 +271,7 @@ export default function UserInformation() {
       setLoader(false);
       return;
     }
-    const userId = Cookie.get("userId");
+    const userId = Cookies.get("userId");
     try {
       // Convert visitTime string to ISO format
       const selectedTime = new Date();
@@ -325,8 +328,8 @@ export default function UserInformation() {
           setModalIsOpen(false);
           setUserInfoModal(false);
 
-          // Store the is_scheduled status in Cookie
-          Cookie.set(`isScheduled_${propertyId}`, "true");
+          // Store the is_scheduled status in Cookies
+          Cookies.set(`isScheduled_${propertyId}`, "true");
           setPropertyData((prev) => ({
             ...prev,
             is_scheduled: true,
@@ -363,9 +366,9 @@ export default function UserInformation() {
       toast.error("Enter a valid 10-digit phone number");
       return;
     }
-    Cookie.set("userName", userInfo.firstname);
-    Cookie.set("phone", userInfo.phone);
-    Cookie.set("isLoggedIn", "true");
+    Cookies.set("userName", userInfo.firstname);
+    Cookies.set("phone", userInfo.phone);
+    Cookies.set("isLoggedIn", "true");
     setUserInfoModal(false);
     setFormData((prev) => ({
       ...prev,
@@ -388,14 +391,84 @@ export default function UserInformation() {
     setActiveImage(imageType);
   };
 
-  const formatBudget = (value) => {
-    if (!value) return "N/A";
-    const numValue = Number(value);
-    if (numValue >= 10000000)
-      return `${(numValue / 10000000).toFixed(2)} Crore`;
-    if (numValue >= 100000) return `${(numValue / 100000).toFixed(2)} Lac`;
-    if (numValue >= 1000) return `${(numValue / 1000).toFixed(2)} Thousand`;
-    return numValue.toLocaleString();
+  // Normalize budget function (copied and adapted from PropertyCard)
+  const normalizeBudget = (panel) => {
+    const budgetInWords = panel.budget_in_words || '';
+    const budgetValue = panel.budget || '';
+    
+    if (budgetInWords) {
+      const budgetStr = String(budgetInWords).toLowerCase().trim();
+      
+      if (budgetStr.includes('lakh')) {
+        const numStr = budgetStr.replace(/[^\d.,]/g, '').replace(/,/g, '');
+        const num = parseFloat(numStr);
+        if (!isNaN(num)) {
+          return num * 100000;
+        }
+      }
+      
+      if (budgetStr.includes('crore')) {
+        const numStr = budgetStr.match(/[\d.]+/);
+        if (numStr) {
+          const num = parseFloat(numStr[0]);
+          if (!isNaN(num)) {
+            return num * 10000000;
+          }
+        }
+      }
+    }
+    
+    if (budgetValue) {
+      const budgetStr = String(budgetValue).toLowerCase().trim();
+      
+      if (!isNaN(budgetValue) && parseInt(budgetValue) > 1000000) {
+        return parseInt(budgetValue);
+      }
+      
+      const numericValue = parseFloat(budgetStr);
+      if (!isNaN(numericValue)) {
+        if (numericValue <= 100) {
+          return numericValue * 10000000;
+        }
+        return numericValue;
+      }
+    }
+    
+    return 0;
+  };
+
+  // Format budget display (consistent with PropertyCard)
+  const formatBudgetDisplay = (panel) => {
+    const normalizedBudget = normalizeBudget(panel);
+    
+    if (!normalizedBudget || normalizedBudget === 0) {
+      if (panel.budget_in_words) {
+        return panel.budget_in_words;
+      }
+      return "Price on Request";
+    }
+    
+    if (normalizedBudget >= 10000000) {
+      return `₹${(normalizedBudget / 10000000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} Cr`;
+    }
+    
+    if (normalizedBudget >= 100000) {
+      return `₹${(normalizedBudget / 100000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} Lac`;
+    }
+    
+    if (normalizedBudget >= 1000) {
+      return `₹${(normalizedBudget / 1000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+      })} Thousand`;
+    }
+    
+    return `₹${normalizedBudget.toLocaleString()}`;
   };
 
   const renderPropertyImage = () => {
@@ -530,50 +603,50 @@ export default function UserInformation() {
                 <path
                   fill="currentColor"
                   d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                />
+              </svg>
+            </button>
+          </div>
+          <form onSubmit={handleUserInfoSubmit}>
+            <div className="mb-6">
+              <label className="text-lg font-semibold mb-2 block text-gray-800">
+                Your Name*
+              </label>
+              <input
+                className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                name="firstname"
+                value={userInfo.firstname}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, firstname: e.target.value })
+                }
+                placeholder="Enter your name"
+                required
               />
-            </svg>
-          </button>
+            </div>
+            <div className="mb-6">
+              <label className="text-lg font-semibold mb-2 block text-gray-800">
+                Phone Number*
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={userInfo.phone}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, phone: e.target.value })
+                }
+                className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-lg transition-colors"
+            >
+              Continue
+            </button>
+          </form>
         </div>
-        <form onSubmit={handleUserInfoSubmit}>
-          <div className="mb-6">
-            <label className="text-lg font-semibold mb-2 block text-gray-800">
-              Your Name*
-            </label>
-            <input
-              className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-              name="firstname"
-              value={userInfo.firstname}
-              onChange={(e) =>
-                setUserInfo({ ...userInfo, firstname: e.target.value })
-              }
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="text-lg font-semibold mb-2 block text-gray-800">
-              Phone Number*
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={userInfo.phone}
-              onChange={(e) =>
-                setUserInfo({ ...userInfo, phone: e.target.value })
-              }
-              className="w-full h-14 border border-gray-300 rounded-lg py-3 px-4 text-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-              placeholder="Enter your phone number"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-lg transition-colors"
-          >
-            Continue
-          </button>
-        </form>
-      </div>
       </Modal>
 
       {/* Schedule Visit Modal */}
@@ -772,7 +845,7 @@ export default function UserInformation() {
                     <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                   </svg>
                   <div className="text-xl sm:text-2xl font-semibold text-gray-800">
-                    {formatBudget(propertyData.budget)}
+                    {formatBudgetDisplay(propertyData)}
                   </div>
                 </div>
                 <button
@@ -959,7 +1032,8 @@ export default function UserInformation() {
                           Area:
                         </h4>
                         <p className="text-gray-700 text-sm">
-                          {propertyData.sqft} {propertyData.measureUnit || "Sq.Ft."}
+                          {propertyData.sqft}{" "}
+                          {propertyData.measureUnit || "Sq.Ft."}
                         </p>
                       </div>
                     )}
@@ -1056,7 +1130,7 @@ export default function UserInformation() {
                         <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                       </svg>
                       <span className="font-semibold text-sm text-green-600">
-                        {formatBudget(property.budget)}
+                        {formatBudgetDisplay(property)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -1085,9 +1159,9 @@ export default function UserInformation() {
                           <span className="text-sm">{property.bedrooms}</span>
                         </div>
                       )}
-                      {property.bhk>0 && (
+                      {property.bhk > 0 && (
                         <div className="flex items-center gap-2">
-                          |<img className="w-5 h-5" src={Bath}alt="Bath"/>
+                          <img className="w-5 h-5" src={Bed} alt="Bed" />
                           <span className="text-sm">{property.bhk}</span>
                         </div>
                       )}

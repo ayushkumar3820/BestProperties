@@ -53,6 +53,54 @@ export default function GalleryComponentTwo() {
     navigate("/property?category=All&propertyType=buy");
   };
 
+  //create a helper  function  to normalize  budget value
+
+  const normalizeBudget = (budgetValue) => {
+    if (!budgetValue) return 0;
+
+    // If it's already a number, return it
+    if (typeof budgetValue === "number") return budgetValue;
+
+    const budgetStr = String(budgetValue).toLowerCase().trim();
+
+    // Handle empty or invalid values
+    if (
+      !budgetStr ||
+      budgetStr === "" ||
+      budgetStr === "null" ||
+      budgetStr === "undefined"
+    ) {
+      return 0;
+    }
+
+    // Handle "lakhs" format like "41,00,000 lakhs"
+    if (budgetStr.includes("lakh")) {
+      const numStr = budgetStr.replace(/[^\d.,]/g, "").replace(/,/g, "");
+      const num = parseFloat(numStr);
+      return num * 100000; // Convert lakhs to actual value
+    }
+
+    // Handle "crore" format in budget_in_words
+    if (budgetStr.includes("crore")) {
+      const numStr = budgetStr.replace(/[^\d.]/g, "");
+      const num = parseFloat(numStr);
+      return num * 10000000; // Convert crore to actual value
+    }
+
+    // Handle simple numeric strings that might represent crores
+    const numericValue = parseFloat(budgetStr.replace(/[^\d.]/g, ""));
+    if (!isNaN(numericValue)) {
+      // If it's a small number (1-100), assume it's in crores
+      if (numericValue <= 100) {
+        return numericValue * 10000000;
+      }
+      // Otherwise, use as is
+      return numericValue;
+    }
+
+    return 0;
+  };
+
   useEffect(() => {
     const storedUserId = Cookies.get("userId") || null;
     const storedToken = Cookies.get("authToken") || token;
@@ -134,25 +182,12 @@ export default function GalleryComponentTwo() {
   }, []);
 
   const isWishlist = (propertyId) => {
-    if (!propertyId) {
-      return false;
-    }
+    if (!propertyId) return false;
     const searchId = String(propertyId || "");
-
-    // First check the faster Set lookup
-    if (wishlistIds.has(searchId)) {
-      return true;
-    }
-
-    // Fallback to array check for backward compatibility
-    if (!Array.isArray(wishlist) || wishlist.length === 0) {
-      return false;
-    }
-    return wishlist.some((item) => {
-      const itemId = String(item.id || "");
-      const itemPropertyId = String(item.property_id || "");
-      return itemId === searchId || itemPropertyId === searchId;
-    });
+    return (
+      wishlistIds.has(searchId) ||
+      wishlist.some((item) => String(item.id || item.property_id) === searchId)
+    );
   };
 
   const toggleWishlist = async (property) => {
@@ -163,9 +198,7 @@ export default function GalleryComponentTwo() {
     }
 
     const propertyId = property.id || property.property_id;
-    if (wishlistLoading.has(propertyId)) {
-      return;
-    }
+    if (wishlistLoading.has(propertyId)) return;
 
     setWishlistLoading((prev) => new Set(prev).add(propertyId));
     const isCurrentlyWishlisted = isWishlist(propertyId);
@@ -175,10 +208,6 @@ export default function GalleryComponentTwo() {
     const method = isCurrentlyWishlisted ? "DELETE" : "POST";
 
     try {
-      console.log(
-        `${isCurrentlyWishlisted ? "Removing from" : "Adding to"} wishlist:`,
-        propertyId
-      );
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -192,37 +221,23 @@ export default function GalleryComponentTwo() {
       });
 
       const data = await response.json();
-      console.log("API response:", data);
-
-      if (
-        data.status === "success" ||
-        data.success === true ||
-        data.message?.toLowerCase().includes("success") ||
-        response.ok
-      ) {
-        const propertyIdStr = String(propertyId);
-
+      if (response.ok || data.status === "success") {
         setWishlistIds((prevIds) => {
           const newIds = new Set(prevIds);
-          if (isCurrentlyWishlisted) {
-            newIds.delete(propertyIdStr);
-          } else {
-            newIds.add(propertyIdStr);
-          }
+          if (isCurrentlyWishlisted) newIds.delete(String(propertyId));
+          else newIds.add(String(propertyId));
           return newIds;
         });
 
         setWishlist((prev) => {
-          if (isCurrentlyWishlisted) {
-            const newWishlist = prev.filter(
+          if (isCurrentlyWishlisted)
+            return prev.filter(
               (item) =>
-                String(item.id || item.property_id) !== propertyIdStr &&
-                String(item.property_id || item.id) !== propertyIdStr
+                String(item.id || item.property_id) !== String(propertyId)
             );
-            console.log("Updated wishlist after remove:", newWishlist.length);
-            return newWishlist;
-          } else {
-            const newItem = {
+          return [
+            ...prev,
+            {
               id: propertyId,
               property_id: propertyId,
               property_name:
@@ -232,10 +247,8 @@ export default function GalleryComponentTwo() {
               image: property.image || "",
               property_type: property.property_type || "N/A",
               addedAt: new Date().toISOString(),
-            };
-            console.log("Updated wishlist after add:", prev.length + 1);
-            return [...prev, newItem];
-          }
+            },
+          ];
         });
         alert(
           `Property ${
@@ -243,12 +256,10 @@ export default function GalleryComponentTwo() {
           } wishlist successfully!`
         );
       } else {
-        const errorMessage =
-          data.message || data.error || "Unknown error occurred";
         alert(
           `Failed to ${
             isCurrentlyWishlisted ? "remove from" : "add to"
-          } wishlist: ${errorMessage}`
+          } wishlist: ${data.message || "Unknown error"}`
         );
       }
     } catch (error) {
@@ -288,12 +299,8 @@ export default function GalleryComponentTwo() {
         setIsOpen(false);
       }
     };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const visiblePropertyTypes = showMorePropertyTypes
@@ -304,10 +311,7 @@ export default function GalleryComponentTwo() {
     : amenities.slice(0, 6);
 
   const handleRangeChange = (event) => {
-    setRangeValues({
-      min: parseInt(event.target.value),
-      max: BUDGET_MAX,
-    });
+    setRangeValues({ min: parseInt(event.target.value), max: BUDGET_MAX });
   };
 
   const handleSortChange = (event) => {
@@ -318,13 +322,8 @@ export default function GalleryComponentTwo() {
     setLocationFilter(event.target.value);
   };
 
-  const handleToggleDropdown = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
+  const handleToggleDropdown = () => setIsOpen((prev) => !prev);
+  const handleSearchChange = (event) => setSearchQuery(event.target.value);
 
   const handleCheckboxChange = (amenity) => {
     setSelectedAmenities((prev) =>
@@ -343,38 +342,32 @@ export default function GalleryComponentTwo() {
   };
 
   const formatBudget = (value) => {
-    if (!value || isNaN(value)) return "N/A";
+    if (!value || isNaN(value) || value === 0) return "N/A";
+
     if (value >= 10000000) {
-      return (
-        "₹" +
-        (value / 10000000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) +
-        " Cr"
-      );
-    } else if (value >= 100000) {
-      return (
-        "₹" +
-        (value / 100000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) +
-        " Lac"
-      );
-    } else {
-      return (
-        "₹" +
-        (value / 1000).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-        }) +
-        " Thousand"
-      );
+      return `₹${(value / 10000000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} Cr`;
     }
+
+    if (value >= 100000) {
+      return `₹${(value / 100000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} Lac`;
+    }
+
+    if (value >= 1000) {
+      return `₹${(value / 1000).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+      })} Thousand`;
+    }
+
+    return `₹${value.toLocaleString()}`;
   };
 
   const isValidArea = (area) => area && !isNaN(area) && area > 0;
-
   const convertArea = (area, unit, panelId, areaType) => {
     if (!isValidArea(area)) return "N/A";
     const effectiveArea = area;
@@ -384,8 +377,9 @@ export default function GalleryComponentTwo() {
       "sq.yards": effectiveArea / 9,
       hectares: effectiveArea / 107639,
     };
-    const convertedValue = conversions[unit] || effectiveArea;
-    return `${Math.round(convertedValue).toLocaleString()} ${unit}`;
+    return `${Math.round(
+      conversions[unit] || effectiveArea
+    ).toLocaleString()} ${unit}`;
   };
 
   const handleUnitChange = (panelId, unit, areaType) => {
@@ -396,46 +390,83 @@ export default function GalleryComponentTwo() {
   };
 
   const filterPanelsByBudget = (panel) => {
-    const panelBudget = parseInt(panel.budget) || 0;
+    // Normalize the budget - try both budget and budget_in_words fields
+    const panelBudget =
+      normalizeBudget(panel.budget) || normalizeBudget(panel.budget_in_words);
+
     const panelAmenities = panel.amenities ? panel.amenities.split("~-~") : [];
     const propertyCheck = (panel.property_type || "").toLowerCase().trim();
     const propertyName = (panel.property_name || panel.name || "")
       .toLowerCase()
       .trim();
     const searchLower = searchQuery.toLowerCase().trim();
+
+    // Get URL parameters
     const queryParams = new URLSearchParams(location.search);
     const category = queryParams.get("category") || "All";
+    const propertyTypeParam = queryParams.get("propertyType") || "buy";
+
+    // Budget range check
     const isBudgetInRange =
       panelBudget >= rangeValues.min && panelBudget <= rangeValues.max;
+
+    // Search matching
     const matchesSearch =
       !searchQuery ||
-      (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
-      (panel.property_name && propertyName.includes(searchLower)) ||
-      (panel.address && panel.address.toLowerCase().includes(searchLower)) ||
-      (panel.property_type && propertyCheck.includes(searchLower)) ||
+      propertyName.includes(searchLower) ||
+      propertyCheck.includes(searchLower) ||
       panelAmenities.some((amenity) =>
         amenity.toLowerCase().includes(searchLower)
       ) ||
-      (panel.bedrooms && panel.bedrooms.toString().includes(searchLower)) ||
-      (panel.bathrooms && panel.bathrooms.toString().includes(searchLower)) ||
-      (panel.sqft && panel.sqft.toString().includes(searchLower)) ||
+      (panel.address && panel.address.toLowerCase().includes(searchLower)) ||
       formatBudget(panelBudget).toLowerCase().includes(searchLower);
+
+    // Category matching - simplified logic
     const matchesCategory =
-      category === "All" || propertyCheck.includes(category.toLowerCase());
+      category === "All" ||
+      (category.toLowerCase() === "for sale" && propertyTypeParam === "buy") ||
+      propertyName.includes(category.toLowerCase()) ||
+      propertyCheck.includes(category.toLowerCase());
+
+    // Location filtering
     const matchesLocation =
       !locationFilter ||
       (panel.address &&
         panel.address.toLowerCase().includes(locationFilter.toLowerCase()));
+
+    // Amenities filtering
     const hasSelectedAmenities =
       selectedAmenities.length === 0 ||
       selectedAmenities.every((amenity) => panelAmenities.includes(amenity));
+
+    // Property type filtering
     const hasSelectedPropertyType =
       selectedPropertyType.length === 0 ||
       selectedPropertyType.some((type) =>
         propertyCheck.includes(type.toLowerCase())
       );
+
+    // Rent/Buy filtering
     const matchesRentFilter =
-      !rentFilter || (rentFilter && propertyCheck.includes("rent"));
+      !rentFilter ||
+      (rentFilter &&
+        (propertyCheck.includes("rent") || propertyTypeParam === "rent"));
+
+    // Status check - include active properties and those without status field
+    const isActive = !panel.status || panel.status.toLowerCase() !== "inactive";
+
+    console.log("Panel:", panel.id, {
+      panelBudget,
+      isBudgetInRange,
+      matchesSearch,
+      matchesCategory,
+      matchesLocation,
+      hasSelectedAmenities,
+      hasSelectedPropertyType,
+      matchesRentFilter,
+      isActive,
+    });
+
     return (
       isBudgetInRange &&
       matchesSearch &&
@@ -443,7 +474,8 @@ export default function GalleryComponentTwo() {
       matchesLocation &&
       hasSelectedAmenities &&
       hasSelectedPropertyType &&
-      matchesRentFilter
+      matchesRentFilter &&
+      isActive
     );
   };
 
@@ -460,9 +492,7 @@ export default function GalleryComponentTwo() {
   });
 
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   const handleItemsPerPageChange = (event) => {
@@ -478,12 +508,7 @@ export default function GalleryComponentTwo() {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
         console.log("API Response (Properties):", data);
         const properties = Array.isArray(data.result) ? data.result : [];
@@ -504,12 +529,7 @@ export default function GalleryComponentTwo() {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
         console.log("API Response (Property Types):", data);
         setPropertyType(Array.isArray(data.result) ? data.result : []);
@@ -529,12 +549,7 @@ export default function GalleryComponentTwo() {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
         console.log("API Response (Amenities):", data);
         setAmenities(Array.isArray(data.result) ? data.result : []);
