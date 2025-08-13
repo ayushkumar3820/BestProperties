@@ -181,7 +181,7 @@ const propertyConfig = {
     "Builder Floor": {
       step1: [
         {
-          name: "floor_no",
+          name: "construction_status",
           label: "Independent/Builder Floor Type",
           type: "select",
           options: [
@@ -192,6 +192,7 @@ const propertyConfig = {
             "Top Floor",
           ],
         },
+
       ],
       step2: [
         {
