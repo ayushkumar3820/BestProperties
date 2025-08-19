@@ -49,7 +49,9 @@ const SingleProperty = () => {
             ? item.amenities.join(", ")
             : item.amenities || "No amenities listed",
           sqft: item.sqft ? parseFloat(item.sqft) : null,
-          sqyd: item.sqft ? (parseFloat(item.sqft) * 0.111111).toFixed(2) : null,
+          sqyd: item.sqft
+            ? (parseFloat(item.sqft) * 0.111111).toFixed(2)
+            : null,
         }));
         setSingleDetail(normalizedData);
         setMainImage(passedImageUrl || normalizedData[0]?.Image_URLs[0]);
@@ -61,20 +63,53 @@ const SingleProperty = () => {
       });
   }, [id, passedImageUrl]);
 
-  const formatBudget = (value) => {
-    const numericValue = parseFloat(value);
-    if (isNaN(numericValue)) return "N/A";
-    if (numericValue >= 10000000) {
-      return `${(numericValue / 10000000).toFixed(2)} Cr`;
-    } else if (numericValue >= 100000) {
-      return `${(numericValue / 100000).toFixed(2)} Lac`;
-    } else if (numericValue >= 1000) {
-      return `${(numericValue / 1000).toFixed(2)} K`;
+  const formatBudget = (value, budgetInWords = null) => {
+    // If budget_in_words is available and budget is a small number or string, use budget_in_words
+    if (
+      budgetInWords &&
+      budgetInWords.trim() !== "" &&
+      (isNaN(value) || value < 1000)
+    ) {
+      return budgetInWords;
     }
-    return numericValue.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+
+    // Convert string to number if needed
+    const numericValue = typeof value === "string" ? parseFloat(value) : value;
+
+    // If conversion failed or value is invalid, use budget_in_words if available
+    if (isNaN(numericValue) || numericValue <= 0) {
+      return budgetInWords && budgetInWords.trim() !== ""
+        ? budgetInWords
+        : "Price on Request";
+    }
+
+    // Format numeric values
+    if (numericValue >= 10000000) {
+      return (
+        (numericValue / 10000000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) + " Cr"
+      );
+    } else if (numericValue >= 100000) {
+      return (
+        (numericValue / 100000).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) + " Lac"
+      );
+    } else if (numericValue >= 1000) {
+      return (
+        (numericValue / 1000).toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+        }) + "K"
+      );
+    } else {
+      return numericValue.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
   };
 
   const getImageUrl = (image, item) => {
@@ -143,10 +178,14 @@ const SingleProperty = () => {
                         <img
                           key={index}
                           className={`h-16 w-16 object-cover rounded-md border-2 cursor-pointer hover:border-green-500 transition ${
-                            mainImage === img ? "border-green-500" : "border-gray-300"
+                            mainImage === img
+                              ? "border-green-500"
+                              : "border-gray-300"
                           }`}
                           src={getImageUrl(img, item)}
-                          alt={`${item.type || "Property"} thumbnail ${index + 1}`}
+                          alt={`${item.type || "Property"} thumbnail ${
+                            index + 1
+                          }`}
                           onClick={() => setMainImage(img)}
                           onError={(e) => handleImageError(e, item)}
                         />
@@ -158,8 +197,9 @@ const SingleProperty = () => {
                 <div className="flex flex-col gap-6">
                   <div className="flex justify-between items-center">
                     <div className="font-bold text-2xl text-green-800">
-                      ₹ {formatBudget(item.budget)}
+                      ₹{formatBudget(item.budget, item.budget_in_words)}
                     </div>
+
                     <Link to="/" aria-label="Close property details">
                       <div className="p-2 rounded-full bg-red-600 hover:bg-red-700 transition">
                         <svg
@@ -173,7 +213,9 @@ const SingleProperty = () => {
                       </div>
                     </Link>
                   </div>
-                  <div className="text-green-800 font-bold text-xl">{item.name}</div>
+                  <div className="text-green-800 font-bold text-xl">
+                    {item.name}
+                  </div>
                   <div className="text-gray-600 text-sm">
                     {item.type} - {item.city}
                   </div>
@@ -195,7 +237,8 @@ const SingleProperty = () => {
                       >
                         {item.address && (
                           <div>
-                            <span className="font-semibold">Address:</span> {item.address}
+                            <span className="font-semibold">Address:</span>{" "}
+                            {item.address}
                           </div>
                         )}
                         {item.property_for && (
@@ -212,12 +255,14 @@ const SingleProperty = () => {
                         )}
                         {item.bhk && (
                           <div>
-                            <span className="font-semibold">BHK:</span> {item.bhk}
+                            <span className="font-semibold">BHK:</span>{" "}
+                            {item.bhk}
                           </div>
                         )}
                         {item.property_type && (
                           <div>
-                            <span className="font-semibold">Type:</span> {item.property_type}
+                            <span className="font-semibold">Type:</span>{" "}
+                            {item.property_type}
                           </div>
                         )}
 
@@ -229,12 +274,14 @@ const SingleProperty = () => {
                         )}
                         {item.facing && (
                           <div>
-                            <span className="font-semibold">Facing:</span> {item.facing}
+                            <span className="font-semibold">Facing:</span>{" "}
+                            {item.facing}
                           </div>
                         )}
                         {item.floor && (
                           <div>
-                            <span className="font-semibold">Floor:</span> {item.floor}
+                            <span className="font-semibold">Floor:</span>{" "}
+                            {item.floor}
                           </div>
                         )}
                         {item.description && (
@@ -244,7 +291,6 @@ const SingleProperty = () => {
                           </div>
                         )}
                       </div>
-                     
                     </div>
                     {/* Amenities */}
                     {item.amenities && (
@@ -254,7 +300,10 @@ const SingleProperty = () => {
                         </div>
                         <div className="space-y-1">
                           {item.amenities.split(", ").map((amenity, index) => (
-                            <div key={index} className="flex items-center gap-2">
+                            <div
+                              key={index}
+                              className="flex items-center gap-2"
+                            >
                               <svg
                                 className="w-3 h-3 text-green-600"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -263,7 +312,9 @@ const SingleProperty = () => {
                               >
                                 <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
                               </svg>
-                              <span className="text-sm text-gray-700">{amenity.trim()}</span>
+                              <span className="text-sm text-gray-700">
+                                {amenity.trim()}
+                              </span>
                             </div>
                           ))}
                         </div>

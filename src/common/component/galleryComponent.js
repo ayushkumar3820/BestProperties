@@ -61,18 +61,18 @@ export default function GalleryComponent() {
     );
 
     if (panelName.includes("kothi")) {
-      return kothiTags[index % kothiTags.length]; 
+      return kothiTags[index % kothiTags.length];
     } else if (
       panelName.includes("plot") ||
       panelName.includes("polt") ||
       panelName.includes("poly")
     ) {
-      return plotTags[index % plotTags.length]; 
+      return plotTags[index % plotTags.length];
     } else if (panelName.includes("flat")) {
-      return flatTags[index % flatTags.length]; 
+      return flatTags[index % flatTags.length];
     }
 
-    return defaultTags[index % defaultTags.length]; 
+    return defaultTags[index % defaultTags.length];
   };
 
   const handleShowMore = () => {
@@ -178,32 +178,52 @@ export default function GalleryComponent() {
     handleRent();
   }, []);
 
-  const formatBudget = (value) => {
-    const formattedValue = value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    if (value >= 10000000) {
+  const formatBudget = (value, budgetInWords = null) => {
+    // If budget_in_words is available and budget is a small number or string, use budget_in_words
+    if (
+      budgetInWords &&
+      budgetInWords.trim() !== "" &&
+      (isNaN(value) || value < 1000)
+    ) {
+      return budgetInWords;
+    }
+
+    // Convert string to number if needed
+    const numericValue = typeof value === "string" ? parseFloat(value) : value;
+
+    // If conversion failed or value is invalid, use budget_in_words if available
+    if (isNaN(numericValue) || numericValue <= 0) {
+      return budgetInWords && budgetInWords.trim() !== ""
+        ? budgetInWords
+        : "Price on Request";
+    }
+
+    // Format numeric values
+    if (numericValue >= 10000000) {
       return (
-        (value / 10000000).toLocaleString(undefined, {
+        (numericValue / 10000000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }) + " Cr"
       );
-    } else if (value >= 100000) {
+    } else if (numericValue >= 100000) {
       return (
-        (value / 100000).toLocaleString(undefined, {
+        (numericValue / 100000).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }) + " Lac"
       );
-    } else if (value >= 1000) {
+    } else if (numericValue >= 1000) {
       return (
-        (value / 1000).toLocaleString(undefined, { minimumFractionDigits: 0 }) +
-        "K"
+        (numericValue / 1000).toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+        }) + "K"
       );
     } else {
-      return formattedValue;
+      return numericValue.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
     }
   };
 
@@ -397,15 +417,14 @@ export default function GalleryComponent() {
     e.target.onerror = null;
   };
 
-// Function to convert sqft to sq.yards if measureUnit is not already sq.yard
-const convertToSquareYards = (sqft, measureUnit) => {
-  if (!measureUnit || measureUnit.toLowerCase() !== "sq.yard") {
-    const sqYards = sqft * 0.11;
-    return `${sqYards.toFixed()} sq.yard`;
-  }
-  return `${sqft} sq.yard`;
-};
-
+  // Function to convert sqft to sq.yards if measureUnit is not already sq.yard
+  const convertToSquareYards = (sqft, measureUnit) => {
+    if (!measureUnit || measureUnit.toLowerCase() !== "sq.yard") {
+      const sqYards = sqft * 0.11;
+      return `${sqYards.toFixed()} sq.yard`;
+    }
+    return `${sqft} sq.yard`;
+  };
 
   return (
     <div>
@@ -507,7 +526,11 @@ const convertToSquareYards = (sqft, measureUnit) => {
                                       </div>
                                       {panel.sqft > 0 && (
                                         <div className="text-sm">
-                                          | {convertToSquareYards(panel.sqft, panel.measureUnit)}
+                                          |{" "}
+                                          {convertToSquareYards(
+                                            panel.sqft,
+                                            panel.measureUnit
+                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -613,13 +636,20 @@ const convertToSquareYards = (sqft, measureUnit) => {
                                     >
                                       <path d="M0 64C0 46.3 14.3 32 32 32H96h16H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H231.8c9.6 14.4 16.7 30.6 20.7 48H288c17.7 0 32 14.3 32 32s-14.3 32-32 32H252.4c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256h80c32.8 0 61-19.7 73.3-48H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H185.3C173 115.7 144.8 96 112 96H96 32C14.3 96 0 81.7 0 64z" />
                                     </svg>
-                                   <div className="flex items-center space-x-2 text-sm lg:text-lg ml-2">
+                                    <div className="flex items-center space-x-2 text-sm lg:text-lg ml-2">
                                       <div className="text-red-900 font-bold">
-                                        {formatBudget(item.budget)}
+                                        {formatBudget(
+                                          item.budget,
+                                          item.budget_in_words
+                                        )}
                                       </div>
                                       {item.sqft > 0 && (
                                         <div className="text-sm text-[#303030]">
-                                          | {convertToSquareYards(item.sqft, item.measureUnit)}
+                                          |{" "}
+                                          {convertToSquareYards(
+                                            item.sqft,
+                                            item.measureUnit
+                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -768,23 +798,44 @@ const convertToSquareYards = (sqft, measureUnit) => {
                   <Slider {...ProjectSlider}>
                     {listProjectData.map((data) => {
                       const imageUrl = getPropertyImageUrl(data);
-                      const projectName = data.Project_Name || data.project_name || `Project-${data.id}`;
+                      const projectName =
+                        data.Project_Name ||
+                        data.project_name ||
+                        `Project-${data.id}`;
                       return (
                         <div className="project-card" key={data.id}>
-                          <div onClick={() => handleProjectClicks(data.id, imageUrl, projectName)}>
+                          <div
+                            onClick={() =>
+                              handleProjectClicks(
+                                data.id,
+                                imageUrl,
+                                projectName
+                              )
+                            }
+                          >
                             <div className="project-home-page">
                               <div className="project-image-container">
                                 <img
                                   src={imageUrl}
                                   alt={projectName || "Project Image"}
                                   className="project-image"
-                                  onError={(e) => handlePropertyImageError(e, data)}
+                                  onError={(e) =>
+                                    handlePropertyImageError(e, data)
+                                  }
                                 />
                               </div>
                             </div>
                           </div>
                           <div className="project-details">
-                            <div onClick={() => handleProjectClicks(data.id, imageUrl, projectName)}>
+                            <div
+                              onClick={() =>
+                                handleProjectClicks(
+                                  data.id,
+                                  imageUrl,
+                                  projectName
+                                )
+                              }
+                            >
                               <h5 className="project-title">{projectName}</h5>
                             </div>
                             <p className="project-location">

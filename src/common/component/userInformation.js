@@ -449,26 +449,26 @@ export default function UserInformation() {
     }
     
     if (normalizedBudget >= 10000000) {
-      return `₹${(normalizedBudget / 10000000).toLocaleString(undefined, {
+      return `${(normalizedBudget / 10000000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })} Cr`;
     }
     
     if (normalizedBudget >= 100000) {
-      return `₹${(normalizedBudget / 100000).toLocaleString(undefined, {
+      return `${(normalizedBudget / 100000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })} Lac`;
     }
     
     if (normalizedBudget >= 1000) {
-      return `₹${(normalizedBudget / 1000).toLocaleString(undefined, {
+      return `${(normalizedBudget / 1000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
       })} Thousand`;
     }
     
-    return `₹${normalizedBudget.toLocaleString()}`;
+    return `${normalizedBudget.toLocaleString()}`;
   };
 
   const renderPropertyImage = () => {
