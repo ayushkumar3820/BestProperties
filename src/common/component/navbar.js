@@ -1,21 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import ReportModal from "./ReportModal";
+import { Bug02Icon } from '@hugeicons/react'; // Import the specific icon
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
   const mobileDropdownRef = useRef(null);
 
+  // ✅ Check login
   useEffect(() => {
     const checkLoginStatus = () => {
       const token = Cookies.get("token");
       const flag = Cookies.get("isLoggedIn");
-      const isValid = token && token !== "undefined" && token !== "null" && token.trim() && flag === "true";
+      const isValid =
+        token &&
+        token !== "undefined" &&
+        token !== "null" &&
+        token.trim() &&
+        flag === "true";
+
       setIsLoggedIn(isValid);
+
       if (!isValid && token) {
         Cookies.remove("token");
         Cookies.remove("isLoggedIn");
@@ -23,6 +36,7 @@ export default function Navbar() {
     };
 
     checkLoginStatus();
+
     window.addEventListener("storage", checkLoginStatus);
     window.addEventListener("cookieChange", checkLoginStatus);
 
@@ -32,23 +46,28 @@ export default function Navbar() {
     };
   }, []);
 
+  // ✅ Close menus on route change
   useEffect(() => {
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   }, [location.pathname]);
 
+  // ✅ Logout
   const handleLogout = () => {
     Cookies.remove("token");
     Cookies.remove("isLoggedIn");
     Cookies.remove("userId");
     Cookies.remove("userName");
     Cookies.remove("phone");
+
     window.dispatchEvent(new Event("cookieChange"));
+
     setIsLoggedIn(false);
     setIsDropdownOpen(false);
     navigate("/login");
   };
 
+  // ✅ Main menu items
   const menuItems = [
     { path: "/property", label: "For Sale" },
     { path: "/buyer-data", label: "Buy" },
@@ -62,39 +81,29 @@ export default function Navbar() {
     { path: "/home-loan", label: "Home Loan" },
   ];
 
+  // ✅ Dropdown items
   const dropdownItems = isLoggedIn
     ? [
         { path: "/dashboards", label: "Dashboards" },
         { path: "/wishlist", label: "WishList" },
-        { path: "/myProperties", label: "MyProperties" },
+        { path: "/myProperties", label: "My Properties" },
         { path: "/recommendProperties", label: "Request Properties" },
         { path: null, label: "Logout", onClick: handleLogout },
       ]
     : [
         { path: "/login", label: "Login", state: { from: location.pathname } },
-        {
-          path: isLoggedIn ? "/wishlist" : "/login",
-          label: "WishList",
-          state: !isLoggedIn ? { form: location.pathname } : undefined,
-        },
-        {
-          path: isLoggedIn ? "/myProperties" : "/login",
-          label: "MyProperties",
-          state: !isLoggedIn ? { form: location.pathname } : undefined,
-        },
-        {
-          path: isLoggedIn ? "/dashboards" : "/login",
-          label: "Dashboards",
-          state: !isLoggedIn ? { form: location.pathname } : undefined,
-        },
+        { path: "/wishlist", label: "WishList", state: { from: location.pathname } },
+        { path: "/myProperties", label: "My Properties", state: { from: location.pathname } },
+        { path: "/dashboards", label: "Dashboards", state: { from: location.pathname } },
       ];
 
+  // ✅ Render functions
   const renderMenuItem = (item) => {
-    if (item.hideWhenLoggedIn && isLoggedIn) return null;
     const isActive = location.pathname === item.path;
     const className = `menu-item text-black font-semibold p-3 border-b border-gray-200 ${
       isActive ? "bg-green-600 text-white" : ""
     }`;
+
     return item.path ? (
       <Link
         key={item.path}
@@ -120,18 +129,13 @@ export default function Navbar() {
   };
 
   const renderDesktopMenuItem = (item) => {
-    if (item.hideWhenLoggedIn && isLoggedIn) return null;
     const isActive = location.pathname === item.path;
     const className = `menu-item text-black font-semibold rounded-sm p-1 lg:px-1 ${
       isActive ? "bg-green-600 text-white" : ""
     }`;
+
     return item.path ? (
-      <Link
-        key={item.path}
-        to={item.path}
-        state={item.state}
-        className={className}
-      >
+      <Link key={item.path} to={item.path} state={item.state} className={className}>
         {item.label}
       </Link>
     ) : (
@@ -146,6 +150,7 @@ export default function Navbar() {
       <div className="w-full bg-white z-50">
         <div className="container mx-auto">
           <div className="main-navbar-div flex justify-between items-center p-2">
+            {/* ✅ Logo */}
             <div className="logo-div">
               <Link to="/">
                 <img
@@ -155,6 +160,8 @@ export default function Navbar() {
                 />
               </Link>
             </div>
+
+            {/* ✅ Mobile menu toggle */}
             <div className="lg:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -180,8 +187,20 @@ export default function Navbar() {
                 </svg>
               </button>
             </div>
+
+            {/* ✅ Desktop menu */}
             <div className="hidden lg:flex lg:ml-2 mb-2 mt-2 lg:gap-5 justify-center items-center nav-items-div">
               {menuItems.map(renderDesktopMenuItem)}
+
+              {/* ✅ Report Button */}
+              <button
+                onClick={() => setIsReportOpen(true)}
+                className="menu-item text-black font-semibold rounded-sm p-1 lg:px-1 hover:text-green-600 flex items-center"
+              >
+                <Bug02Icon size={24} color="red" /> {/* Use the imported icon with red color */}
+              </button>
+
+              {/* ✅ Profile Dropdown */}
               <div className="relative group inline-block">
                 <div className="menu-item text-red-600 font-semibold p-1 lg:px-1 flex items-center gap-1 cursor-pointer">
                   <span>{isLoggedIn ? "Profile" : "Login"}</span>
@@ -200,7 +219,7 @@ export default function Navbar() {
                     />
                   </svg>
                 </div>
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50 opacity-0 invisible transition-all duration-500 ease-in-out group-hover:opacity-100 group-hover:visible">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50 opacity-0 invisible transition-all duration-300 group-hover:opacity-100 group-hover:visible">
                   {dropdownItems.map((item) => (
                     <button
                       key={item.label}
@@ -218,56 +237,76 @@ export default function Navbar() {
               </div>
             </div>
           </div>
+
+          {/* ✅ Mobile menu */}
           {isMenuOpen && (
             <div className="lg:hidden flex flex-col bg-white text-center shadow-md absolute top-full left-0 w-full z-50">
               {menuItems.map(renderMenuItem)}
-              <div className="relative" ref={mobileDropdownRef}>
-            <button
-              className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200 w-full flex items-center justify-center gap-1"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span>{isLoggedIn ? "Profile" : "Login"}</span>
-              <svg
-                className={`w-4 h-4 transform transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+
+              {/* ✅ Report button (mobile) */}
+              <button
+                onClick={() => {
+                  setIsReportOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="menu-item text-black font-semibold p-3 border-b border-gray-200 hover:bg-green-600 hover:text-white flex items-center justify-center"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 7l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            {isDropdownOpen && (
-              <div className="flex flex-row bg-white border border-gray-200 shadow-lg w-full">
-                {dropdownItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      if (item.path) {
-                        setIsDropdownOpen(false);
-                        setIsMenuOpen(false);
-                        navigate(item.path, { state: item.state });
-                      } else item.onClick();
-                    }}
-                    className="text-left px-4 py-2 text-black hover:bg-green-600 hover:text-white"
+                <Bug02Icon size={24} color="red" /> {/* Consistent icon for mobile */}
+              </button>
+
+              {/* ✅ Mobile dropdown */}
+              <div className="relative" ref={mobileDropdownRef}>
+                <button
+                  className="menu-item text-red-600 font-semibold p-3 border-b border-gray-200 w-full flex items-center justify-center gap-1"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <span>{isLoggedIn ? "Profile" : "Login"}</span>
+                  <svg
+                    className={`w-4 h-4 transform transition-transform ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <strong>{item.label}</strong>
-                  </button>
-                ))}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 7l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="flex flex-col bg-white border border-gray-200 shadow-lg w-full">
+                    {dropdownItems.map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          if (item.path) {
+                            setIsDropdownOpen(false);
+                            setIsMenuOpen(false);
+                            navigate(item.path, { state: item.state });
+                          } else item.onClick();
+                        }}
+                        className="text-left px-4 py-2 text-black hover:bg-green-600 hover:text-white"
+                      >
+                        <strong>{item.label}</strong>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* ✅ Report Modal */}
+      <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} />
+
       <div className="w-full border-t border-gray-200" />
     </div>
   );

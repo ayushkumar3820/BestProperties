@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GalleryComponent from "./galleryComponent";
 import AnimatedText from "./HeadingAnimation";
+import { liveUrl, token } from "./url";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -10,6 +11,34 @@ export default function Home() {
     searchText: "",
     propertyType: "buy",
   });
+  const saveSearchLog = async (params) => {
+    try {
+      const payload = {
+        search_data: (params.searchText || "").trim(),
+      };
+
+      const response = await fetch(`${liveUrl}search-log`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        console.warn("Search log save failed:", response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log("Search log saved:", data);
+      return data;
+    } catch (err) {
+      console.error("Error saving search log:", err);
+      return null;
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setSearchParams((prev) => ({
@@ -27,6 +56,9 @@ export default function Home() {
       queryParams.append("category", searchParams.category);
     }
     queryParams.append("propertyType", searchParams.propertyType);
+
+  
+    saveSearchLog(searchParams);
     navigate(`/property?${queryParams.toString()}`);
   };
 
@@ -35,9 +67,6 @@ export default function Home() {
       handleSearch();
     }
   };
-
-  // Determine if the search button should be disabled
-  const isSearchDisabled = !searchParams.searchText.trim();
 
   return (
     <div className="min-h-screen">
@@ -75,8 +104,7 @@ export default function Home() {
               </span>
             </div>
             <button
-              className={`w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200  text-gray-200  bg-green-600 hover:bg-green-700 cursor-pointer
-              }`}
+              className="w-full sm:w-auto px-4 py-2 rounded-md transition-colors duration-200 text-gray-200 bg-green-600 hover:bg-green-700 cursor-pointer"
               onClick={handleSearch}
             >
               Search

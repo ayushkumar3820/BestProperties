@@ -123,24 +123,24 @@ export default function UserInformation() {
 
   // Modal styles
   const modalStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      borderRadius: "12px",
-      backgroundColor: "white",
-      padding: "24px",
-      maxWidth: "90vw",
-      maxHeight: "90vh",
-      width: "500px",
-    },
-    overlay: {
-      backgroundColor: "rgba(0, 0, 0, 0.75)",
-      zIndex: 1000,
-    },
+     content: {
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "90vw",
+    height: "90vh",
+    maxWidth: "none",
+    maxHeight: "none",
+    overflow: "hidden",
+    padding: 0,
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    zIndex: 999,
+  },
+
   };
 
   const fetchRandomProperties = async () => {
@@ -433,41 +433,41 @@ export default function UserInformation() {
         return numericValue;
       }
     }
-    
+
     return 0;
   };
 
   // Format budget display (consistent with PropertyCard)
   const formatBudgetDisplay = (panel) => {
     const normalizedBudget = normalizeBudget(panel);
-    
+
     if (!normalizedBudget || normalizedBudget === 0) {
       if (panel.budget_in_words) {
         return panel.budget_in_words;
       }
       return "Price on Request";
     }
-    
+
     if (normalizedBudget >= 10000000) {
       return `${(normalizedBudget / 10000000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })} Cr`;
     }
-    
+
     if (normalizedBudget >= 100000) {
       return `${(normalizedBudget / 100000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })} Lac`;
     }
-    
+
     if (normalizedBudget >= 1000) {
       return `${(normalizedBudget / 1000).toLocaleString(undefined, {
         minimumFractionDigits: 2,
       })} Thousand`;
     }
-    
+
     return `${normalizedBudget.toLocaleString()}`;
   };
 
@@ -552,10 +552,11 @@ export default function UserInformation() {
             </svg>
           </button>
           <img
-            className="h-[80vh] w-auto object-contain rounded"
+            className="w-full h-full object-contain rounded"
             src={imageList[currentIndex] || ImageOne}
             alt={`Property ${currentIndex + 1}`}
           />
+
           <button
             onClick={handleNext}
             className="absolute right-2 sm:right-6 bg-white bg-opacity-80 p-2 rounded-full shadow z-10"

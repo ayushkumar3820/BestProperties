@@ -30,9 +30,13 @@ export default function GalleryComponent() {
   const generateSlug = (text, separator = "-") => {
     return text
       ? text
+          .toString()
           .toLowerCase()
           .replace(/\s+/g, separator)
-          .replace(/[^\w-]+/g, "")
+          .replace(/[^\w\-]+/g, "")
+          .replace(/\-\-+/g, separator)
+          .replace(/^-+/, "")
+          .replace(/-+$/, "")
       : "";
   };
 
@@ -463,10 +467,9 @@ export default function GalleryComponent() {
                         <div
                           key={panel.id}
                           onClick={() => {
-                            const modifiedPanelName = panel.name
-                              .replace(/\s/g, "-")
-                              .replace(/[^\w\s]/g, "")
-                              .toLowerCase();
+                            const modifiedPanelName = generateSlug(
+                              panel.name || `property-${panel.id}`
+                            );
                             navigate(
                               `/property/-${panel.id}-${modifiedPanelName}`
                             );
